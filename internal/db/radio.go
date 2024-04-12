@@ -1,0 +1,178 @@
+package db
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
+	"strings"
+)
+
+// CreateRadio creates a radio
+func (p *postgres) CreateRadio(r Radio) (id int, err error) {
+	query := `INSERT INTO radios (number, channel, wifi, power, bandwidth, guard_interval, access_point_type_id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			RETURNING id`
+	row := p.Pool.QueryRow(context.Background(), query, r.Number, r.Channel, r.WiFi, r.Power, r.Bandwidth, r.GuardInterval, r.AccessPointTypeID)
+	err = row.Scan(&id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create radio")
+	}
+	return
+}
+
+// GetRadio retrieves a radio
+func (p *postgres) GetRadio(radioUUID uuid.UUID) (r Radio, err error) {
+	query := `SELECT * FROM radios WHERE id=$1 AND deleted_at IS NULL`
+	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
+	err = row.Scan(&r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			log.Error().Err(err).Msgf("No radio found with ID %v", radioUUID)
+			return
+		}
+		log.Error().Err(err).Msg("Failed to retrieve radio")
+		return
+	}
+	log.Debug().Msgf("Retrieved radio: %v", r)
+	return
+}
+
+// IsRadioSoftDeleted checks if the radio has been soft deleted
+func (p *postgres) IsRadioSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err error) {
+	var deletedAt sql.NullTime // Use sql.NullTime to properly handle NULL values
+	query := `SELECT deleted_at FROM radios WHERE id = $1`
+	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
+	err = row.Scan(&deletedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			log.Error().Err(err).Msgf("No radio found with uuid %v", radioUUID)
+			return
+		}
+		log.Error().Err(err).Msg("Failed to retrieve radio")
+		return
+	}
+	isDeleted = deletedAt.Valid
+	log.Debug().Msgf("Is radio deleted: %v", isDeleted)
+	return
+}
+
+// GetRadios retrieves radios
+func (p *postgres) GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err error) {
+	query := `SELECT * FROM radios WHERE access_point_type_id = $1 AND deleted_at IS NULL`
+	rows, err := p.Pool.Query(context.Background(), query, accessPointTypeUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve radios")
+		return
+	}
+	defer rows.Close()
+
+	var r *Radio
+	for rows.Next() {
+		r = new(Radio)
+		err = rows.Scan(&r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to scan radios")
+			return
+		}
+		rs = append(rs, r)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("Rows iteration error")
+		return
+	}
+
+	log.Debug().Msgf("Retrieved %d radios", len(rs))
+	return
+}
+
+// SoftDeleteRadio soft delete a radio
+func (p *postgres) SoftDeleteRadio(radioUUID uuid.UUID) (err error) {
+	query := `UPDATE radios SET deleted_at = NOW() WHERE id = $1`
+	commandTag, err := p.Pool.Exec(context.Background(), query, radioUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to soft delete radio")
+		return
+	}
+	if commandTag.RowsAffected() == 0 {
+		log.Error().Msgf("No radio found with the uuid: %v", radioUUID)
+		return
+	}
+	log.Debug().Msg("Access point deleted_at timestamp updated successfully")
+	return
+}
+
+// RestoreRadio restore a radio
+func (p *postgres) RestoreRadio(radioUUID uuid.UUID) (err error) {
+	query := `UPDATE radios SET deleted_at = NULL WHERE id = $1`
+	commandTag, err := p.Pool.Exec(context.Background(), query, radioUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to restore radio")
+		return
+	}
+	if commandTag.RowsAffected() == 0 {
+		log.Error().Msgf("No radio found with the uuid: %v", radioUUID)
+		return
+	}
+	log.Debug().Msg("Radio deleted_at timestamp set null successfully")
+	return
+}
+
+// PatchUpdateRadio updates only the specified fields of a radio
+func (p *postgres) PatchUpdateRadio(id uuid.UUID, r *Radio) (err error) {
+	query := "UPDATE radios SET updated_at = NOW(), "
+	updates := []string{}
+	params := []interface{}{}
+	paramID := 1
+
+	if r.Number != "" {
+		updates = append(updates, fmt.Sprintf("number = $%d", paramID))
+		params = append(params, r.Number)
+		paramID++
+	}
+	if r.Channel != nil {
+		updates = append(updates, fmt.Sprintf("channel = $%d", paramID))
+		params = append(params, r.Channel)
+		paramID++
+	}
+	if r.WiFi != "" {
+		updates = append(updates, fmt.Sprintf("wifi = $%d", paramID))
+		params = append(params, r.WiFi)
+		paramID++
+	}
+	if r.Power != nil {
+		updates = append(updates, fmt.Sprintf("power = $%d", paramID))
+		params = append(params, r.Power)
+		paramID++
+	}
+	if r.Bandwidth != "" {
+		updates = append(updates, fmt.Sprintf("bandwidth = $%d", paramID))
+		params = append(params, r.Bandwidth)
+		paramID++
+	}
+	if r.GuardInterval != nil {
+		updates = append(updates, fmt.Sprintf("guard_interval = $%d", paramID))
+		params = append(params, r.GuardInterval)
+		paramID++
+	}
+
+	if len(updates) == 0 {
+		log.Error().Msg("No fields provided for update")
+		return fmt.Errorf("no fields provided for update")
+	}
+
+	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
+	params = append(params, id)
+
+	_, err = p.Pool.Exec(context.Background(), query, params...)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to execute update")
+		return
+	}
+
+	return
+}
