@@ -27,3 +27,6 @@ go.work
 
 # macOS
 .DS_Store
+
+# Fiber static
+static
