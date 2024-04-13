@@ -3,7 +3,6 @@ package tests
 import (
 	"github.com/gofiber/fiber/v2"
 	"io"
-	"my-project/internal/server"
 	"net/http"
 	"testing"
 )

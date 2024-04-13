@@ -33,6 +33,45 @@ type Service interface {
 	RestoreFloor(floorUUID uuid.UUID) (err error)
 	PatchUpdateFloor(f *Floor) (err error)
 
+	CreateWallType(wt *WallType) (id int, err error)
+	GetWallType(wallTypeUUID uuid.UUID) (wt *WallType, err error)
+	IsWallTypeSoftDeleted(wallTypeUUID uuid.UUID) (isDeleted bool, err error)
+	GetWallTypes(siteUUID uuid.UUID) (wts []*WallType, err error)
+	SoftDeleteWallType(wallTypeUUID uuid.UUID) (err error)
+	RestoreWallType(wallTypeUUID uuid.UUID) (err error)
+	PatchUpdateWallType(wt *WallType) (err error)
+
+	CreateWall(w *Wall) (id int, err error)
+	GetWall(wallUUID uuid.UUID) (w *Wall, err error)
+	IsWallSoftDeleted(wallUUID uuid.UUID) (isDeleted bool, err error)
+	GetWalls(floorUUID uuid.UUID) (ws []*Wall, err error)
+	SoftDeleteWall(wallUUID uuid.UUID) (err error)
+	RestoreWall(wallUUID uuid.UUID) (err error)
+	PatchUpdateWall(w *Wall) (err error)
+
+	CreateAccessPointType(apt *AccessPointType) (id int, err error)
+	GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *AccessPointType, err error)
+	IsAccessPointTypeSoftDeleted(accessPointTypeUUID uuid.UUID) (isDeleted bool, err error)
+	GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointType, err error)
+	SoftDeleteAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
+	RestoreAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
+
+	CreateRadio(r *Radio) (id int, err error)
+	GetRadio(radioUUID uuid.UUID) (r Radio, err error)
+	IsRadioSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err error)
+	GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err error)
+	SoftDeleteRadio(radioUUID uuid.UUID) (err error)
+	RestoreRadio(radioUUID uuid.UUID) (err error)
+	PatchUpdateRadio(r *Radio) (err error)
+
+	CreateAccessPoint(ap *AccessPoint) (id int, err error)
+	GetAccessPoint(accessPointUUID uuid.UUID) (ap *AccessPoint, err error)
+	IsAccessPointSoftDeleted(accessPointUUID uuid.UUID) (isDeleted bool, err error)
+	GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err error)
+	SoftDeleteAccessPoint(accessPointUUID uuid.UUID) (err error)
+	RestoreAccessPoint(accessPointUUID uuid.UUID) (err error)
+	PatchUpdateAccessPoint(ap *AccessPoint) (err error)
+
 	Health() map[string]string
 }
 

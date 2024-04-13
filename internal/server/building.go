@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"location-backend/internal/db"
-	"net/http"
 )
 
 // CreateBuilding creates a building
@@ -78,7 +77,7 @@ func (s *Fiber) SoftDeleteBuilding(c *fiber.Ctx) (err error) {
 			return
 		}
 	} else {
-		return c.Status(http.StatusBadRequest).SendString("Building has already been soft deleted")
+		return c.Status(fiber.StatusBadRequest).SendString("Building has already been soft deleted")
 	}
 	return c.SendStatus(fiber.StatusOK)
 }
@@ -102,7 +101,7 @@ func (s *Fiber) RestoreBuilding(c *fiber.Ctx) (err error) {
 			return
 		}
 	} else {
-		return c.Status(http.StatusBadRequest).SendString("Building has not been soft deleted")
+		return c.Status(fiber.StatusBadRequest).SendString("Building has not been soft deleted")
 	}
 	return c.SendStatus(fiber.StatusOK)
 }

@@ -12,7 +12,7 @@ import (
 )
 
 // CreateAccessPoint creates an access point
-func (p *postgres) CreateAccessPoint(ap AccessPoint) (id int, err error) {
+func (p *postgres) CreateAccessPoint(ap *AccessPoint) (id int, err error) {
 	query := `INSERT INTO access_points (name, x, y, z, floor_id, access_point_type_id)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id`
@@ -124,7 +124,7 @@ func (p *postgres) RestoreAccessPoint(accessPointUUID uuid.UUID) (err error) {
 }
 
 // PatchUpdateAccessPoint updates only the specified fields of an access point
-func (p *postgres) PatchUpdateAccessPoint(id uuid.UUID, ap *AccessPoint) (err error) {
+func (p *postgres) PatchUpdateAccessPoint(ap *AccessPoint) (err error) {
 	query := "UPDATE access_points SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
@@ -157,7 +157,7 @@ func (p *postgres) PatchUpdateAccessPoint(id uuid.UUID, ap *AccessPoint) (err er
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
-	params = append(params, id)
+	params = append(params, ap.ID)
 
 	_, err = p.Pool.Exec(context.Background(), query, params...)
 	if err != nil {

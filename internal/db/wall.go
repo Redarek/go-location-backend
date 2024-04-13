@@ -11,7 +11,7 @@ import (
 )
 
 // CreateWall creates a wall
-func (p *postgres) CreateWall(w Wall) (id int, err error) {
+func (p *postgres) CreateWall(w *Wall) (id int, err error) {
 	sql := `INSERT INTO walls (x1, y1, x2, y2, floor_id, wall_type_id)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id`
@@ -123,7 +123,7 @@ func (p *postgres) RestoreWall(wallUUID uuid.UUID) (err error) {
 }
 
 // PatchUpdateWall updates only the specified fields of a wall
-func (p *postgres) PatchUpdateWall(id uuid.UUID, w *Wall) (err error) {
+func (p *postgres) PatchUpdateWall(w *Wall) (err error) {
 	query := "UPDATE walls SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
@@ -156,7 +156,7 @@ func (p *postgres) PatchUpdateWall(id uuid.UUID, w *Wall) (err error) {
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
-	params = append(params, id)
+	params = append(params, w.ID)
 
 	_, err = p.Pool.Exec(context.Background(), query, params...)
 	if err != nil {

@@ -12,7 +12,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"location-backend/internal/db"
-	"net/http"
+	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -60,13 +60,13 @@ func (s *Fiber) GetFloors(c *fiber.Ctx) (err error) {
 		log.Error().Err(err).Msg("Failed to parse site uuid")
 		return
 	}
-	b, err := s.db.GetFloors(buildingUUID)
+	f, err := s.db.GetFloors(buildingUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get floors")
 		return
 	}
 	return c.JSON(fiber.Map{
-		"data": b,
+		"data": f,
 	})
 }
 
@@ -89,7 +89,7 @@ func (s *Fiber) SoftDeleteFloor(c *fiber.Ctx) (err error) {
 			return
 		}
 	} else {
-		return c.Status(http.StatusBadRequest).SendString("Floor has already been soft deleted")
+		return c.Status(fiber.StatusBadRequest).SendString("Floor has already been soft deleted")
 	}
 	return c.SendStatus(fiber.StatusOK)
 }
@@ -113,7 +113,7 @@ func (s *Fiber) RestoreFloor(c *fiber.Ctx) (err error) {
 			return
 		}
 	} else {
-		return c.Status(http.StatusBadRequest).SendString("Floor has not been soft deleted")
+		return c.Status(fiber.StatusBadRequest).SendString("Floor has not been soft deleted")
 	}
 	return c.SendStatus(fiber.StatusOK)
 }
@@ -146,7 +146,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 	if number, ok := form.Value["number"]; ok && number[0] != "" {
 		parsedNumber, err := strconv.Atoi(strings.TrimSpace(number[0]))
 		if err != nil {
-			return c.Status(http.StatusBadRequest).SendString("Invalid number")
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid number")
 		}
 		f.Number = &parsedNumber
 	} else {
@@ -156,7 +156,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 	if scale, ok := form.Value["scale"]; ok && scale[0] != "" {
 		parsedScale, err := strconv.ParseFloat(strings.TrimSpace(scale[0]), 64)
 		if err != nil {
-			return c.Status(http.StatusBadRequest).SendString("Invalid Scale")
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid Scale")
 		}
 		f.Scale = &parsedScale
 	} else {
@@ -168,7 +168,12 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 	files := form.File["image"]
 	if len(files) > 0 {
 		file, err := files[0].Open()
-		defer file.Close()
+		defer func(file multipart.File) {
+			err = file.Close()
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to defer close file")
+			}
+		}(file)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to close file")
 			return c.SendStatus(fiber.StatusInternalServerError)
@@ -218,7 +223,12 @@ func saveImage(filePath string, img image.Image, format string) error {
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to open file")
 	}
-	defer fileOut.Close()
+	defer func(fileOut *os.File) {
+		err = fileOut.Close()
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to defer close file")
+		}
+	}(fileOut)
 
 	// Конвертация и сохранение изображения в формате webp
 	if format != "webp" {

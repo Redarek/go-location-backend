@@ -9,8 +9,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// CreateAccessPointType creates a access point type
-func (p *postgres) CreateAccessPointType(apt AccessPointType) (id int, err error) {
+// CreateAccessPointType creates an access point type
+func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id int, err error) {
 	query := `INSERT INTO access_point_types (site_id)
 			VALUES ($1)
 			RETURNING id`

@@ -21,67 +21,75 @@ func (s *Fiber) RegisterFiberRoutes() {
 	user.Post("/register", s.Register)
 
 	site := v1.Group("/site")
-	site.Post("/", s.CreateSite) // create site
-	site.Get("/", s.GetSite)     // get one site
-	//site.Get("/full")     // get full one site
-	site.Get("/all", s.GetSites) // get all sites
-	//site.Get("/all/full") // get full all sites
-	//site.Put("/")         // update one site
+	site.Post("/", s.CreateSite)
+	site.Get("/", s.GetSite)
+	site.Get("/all", s.GetSites)
 	site.Patch("/", s.PatchUpdateSite)
-	site.Patch("/sd", s.SoftDeleteSite)   // soft delete one site
-	site.Patch("/restore", s.RestoreSite) // restore one site
-	//site.Delete("/")      // delete one site
+	site.Patch("/sd", s.SoftDeleteSite)
+	site.Patch("/restore", s.RestoreSite)
 
 	building := v1.Group("/building")
-	building.Post("/", s.CreateBuilding)          // create building
-	building.Get("/", s.GetBuilding)              // get one building
-	building.Get("/all", s.GetBuildings)          // get all buildings
-	building.Patch("/", s.PatchUpdateBuilding)    // patch update one floor
-	building.Patch("/sd", s.SoftDeleteBuilding)   // soft delete one site
-	building.Patch("/restore", s.RestoreBuilding) // restore one site
-	//building.Put("/")    // update one building
-	//building.Delete("/") // delete one building
-	//
+	building.Post("/", s.CreateBuilding)
+	building.Get("/", s.GetBuilding)
+	building.Get("/all", s.GetBuildings)
+	building.Patch("/", s.PatchUpdateBuilding)
+	building.Patch("/sd", s.SoftDeleteBuilding)
+	building.Patch("/restore", s.RestoreBuilding)
+
 	floor := v1.Group("/floor")
-	floor.Post("/", s.CreateFloor) // create floor
-	floor.Get("/", s.GetFloor)     // get one floor
-	floor.Get("/all", s.GetFloors) // get all floors
-	//floor.Put("/")    // update one floor
-	floor.Patch("/", s.PatchUpdateFloor)    // patch update one floor
-	floor.Patch("/sd", s.SoftDeleteFloor)   // soft delete one site
-	floor.Patch("/restore", s.RestoreFloor) // restore one site
-	//floor.Delete("/") // delete one floor
-	//
-	//wallType := v1.Group("/wallType")
-	//wallType.Post("/")   // create wallType
-	//wallType.Get("/")    // get one wallType
-	//wallType.Get("/all") // get all wallTypes
-	//wallType.Put("/")    // update one wallType
-	//wallType.Delete("/") // delete one wallType
-	//
-	//wall := v1.Group("/wall")
-	//wall.Post("/")   // create wall
-	//wall.Get("/")    // get one wall
-	//wall.Get("/all") // get all walls
-	//wall.Put("/")    // update one wall
-	//wall.Patch("/")  // patch update one wall
-	//wall.Delete("/") // delete one wall
-	//
-	//ap := v1.Group("/ap")
-	//ap.Post("/")   // create access point
-	//ap.Get("/")    // get one access point
-	//ap.Get("/all") // get all access points
-	//ap.Put("/")    // update one access point
-	//ap.Patch("/")  // patch update one access point
-	//ap.Delete("/") // delete one access point
-	//
+	floor.Post("/", s.CreateFloor)
+	floor.Get("/", s.GetFloor)
+	floor.Get("/all", s.GetFloors)
+	floor.Patch("/", s.PatchUpdateFloor)
+	floor.Patch("/sd", s.SoftDeleteFloor)
+	floor.Patch("/restore", s.RestoreFloor)
+
+	wallType := v1.Group("/wallType")
+	wallType.Post("/", s.CreateWallType)
+	wallType.Get("/", s.GetWallType)
+	wallType.Get("/all", s.GetWallTypes)
+	wallType.Patch("/", s.PatchUpdateWallType)
+	wallType.Patch("/sd", s.SoftDeleteWallType)
+	wallType.Patch("/restore", s.RestoreWallType)
+
+	wall := v1.Group("/wall")
+	wall.Post("/", s.CreateWall)
+	wall.Get("/", s.GetWall)
+	wall.Get("/all", s.GetWalls)
+	wall.Patch("/", s.PatchUpdateWall)
+	wall.Patch("/sd", s.SoftDeleteWall)
+	wall.Patch("/restore", s.RestoreWall)
+
+	apt := v1.Group("/apt")
+	apt.Post("/", s.CreateAccessPointType)
+	apt.Get("/", s.GetAccessPointType)
+	apt.Get("/all", s.GetAccessPointTypes)
+	apt.Patch("/sd", s.SoftDeleteAccessPointType)
+	apt.Patch("/restore", s.RestoreAccessPointType)
+
+	radio := v1.Group("/radio")
+	radio.Post("/", s.CreateRadio)
+	radio.Get("/", s.GetRadio)
+	radio.Get("/all", s.GetRadios)
+	radio.Patch("/", s.PatchUpdateRadio)
+	radio.Patch("/sd", s.SoftDeleteRadio)
+	radio.Patch("/restore", s.RestoreRadio)
+
+	ap := v1.Group("/ap")
+	ap.Post("/", s.CreateAccessPoint)
+	ap.Get("/", s.GetAccessPoint)
+	ap.Get("/all", s.GetAccessPoints)
+	ap.Patch("/", s.PatchUpdateAccessPoint)
+	ap.Patch("/sd", s.SoftDeleteAccessPoint)
+	ap.Patch("/restore", s.RestoreAccessPoint)
+
 	//sensor := v1.Group("/sensor")
-	//sensor.Post("/")   // create sensor
-	//sensor.Get("/")    // get one sensor
-	//sensor.Get("/all") // get all sensors
-	//sensor.Put("/")    // update one sensor
-	//sensor.Patch("/")  // patch update one sensor
-	//sensor.Delete("/") // delete one sensor
+	//sensor.Post("/", s.CreateSensor)
+	//sensor.Get("/", s.GetSensor)
+	//sensor.Get("/all", s.GetSensor)
+	//sensor.Patch("/", s.PatchUpdateSensor)
+	//sensor.Patch("/sd", s.SoftDeleteSensor)
+	//sensor.Patch("/restore", s.RestoreSensor)
 }
 
 func (s *Fiber) HelloWorldHandler(c *fiber.Ctx) error {

@@ -12,7 +12,7 @@ import (
 )
 
 // CreateRadio creates a radio
-func (p *postgres) CreateRadio(r Radio) (id int, err error) {
+func (p *postgres) CreateRadio(r *Radio) (id int, err error) {
 	query := `INSERT INTO radios (number, channel, wifi, power, bandwidth, guard_interval, access_point_type_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING id`
@@ -123,7 +123,7 @@ func (p *postgres) RestoreRadio(radioUUID uuid.UUID) (err error) {
 }
 
 // PatchUpdateRadio updates only the specified fields of a radio
-func (p *postgres) PatchUpdateRadio(id uuid.UUID, r *Radio) (err error) {
+func (p *postgres) PatchUpdateRadio(r *Radio) (err error) {
 	query := "UPDATE radios SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
@@ -166,7 +166,7 @@ func (p *postgres) PatchUpdateRadio(id uuid.UUID, r *Radio) (err error) {
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
-	params = append(params, id)
+	params = append(params, r.ID)
 
 	_, err = p.Pool.Exec(context.Background(), query, params...)
 	if err != nil {

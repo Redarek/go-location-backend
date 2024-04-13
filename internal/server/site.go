@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"location-backend/internal/db"
-	"net/http"
 )
 
 // CreateSite creates a site
@@ -88,7 +87,7 @@ func (s *Fiber) SoftDeleteSite(c *fiber.Ctx) (err error) {
 			return
 		}
 	} else {
-		return c.Status(http.StatusBadRequest).SendString("Site has already been soft deleted")
+		return c.Status(fiber.StatusBadRequest).SendString("Site has already been soft deleted")
 	}
 	return c.SendStatus(fiber.StatusOK)
 }
@@ -112,7 +111,7 @@ func (s *Fiber) RestoreSite(c *fiber.Ctx) (err error) {
 			return
 		}
 	} else {
-		return c.Status(http.StatusBadRequest).SendString("Site has not been soft deleted")
+		return c.Status(fiber.StatusBadRequest).SendString("Site has not been soft deleted")
 	}
 	return c.SendStatus(fiber.StatusOK)
 }
