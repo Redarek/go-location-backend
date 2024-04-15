@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   psql:
@@ -11,6 +11,19 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - psql_volume:/var/lib/postgresql/data
+
+  centrifugo:
+    container_name: centrifugo
+    image: centrifugo/centrifugo:v5
+    volumes:
+      - ./centrifugo_config.json:/centrifugo/centrifugo_config.json
+    command: centrifugo -c centrifugo_config.json
+    ports:
+      - 8000:8000
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
 
 volumes:
   psql_volume:

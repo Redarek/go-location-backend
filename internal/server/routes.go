@@ -7,6 +7,7 @@ import (
 )
 
 func (s *Fiber) RegisterFiberRoutes() {
+
 	s.App.Get("/", s.HelloWorldHandler)
 	s.App.Static("/static", "./static")
 
@@ -90,6 +91,7 @@ func (s *Fiber) RegisterFiberRoutes() {
 	//sensor.Patch("/", s.PatchUpdateSensor)
 	//sensor.Patch("/sd", s.SoftDeleteSensor)
 	//sensor.Patch("/restore", s.RestoreSensor)
+
 }
 
 func (s *Fiber) HelloWorldHandler(c *fiber.Ctx) error {
