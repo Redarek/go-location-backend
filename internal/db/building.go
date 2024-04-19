@@ -12,7 +12,7 @@ import (
 )
 
 // CreateBuilding creates a building
-func (p *postgres) CreateBuilding(b *Building) (id int, err error) {
+func (p *postgres) CreateBuilding(b *Building) (id uuid.UUID, err error) {
 	query := `INSERT INTO buildings (name, description, country, city, address, site_id)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id`

@@ -17,7 +17,7 @@ type Service interface {
 	RestoreSite(siteUUID uuid.UUID) (err error)
 	PatchUpdateSite(site *Site) (err error)
 
-	CreateBuilding(b *Building) (id int, err error)
+	CreateBuilding(b *Building) (id uuid.UUID, err error)
 	GetBuilding(buildingUUID uuid.UUID) (b *Building, err error)
 	IsBuildingSoftDeleted(buildingUUID uuid.UUID) (isDeleted bool, err error)
 	GetBuildings(siteUUID uuid.UUID) (bs []*Building, err error)
@@ -25,7 +25,7 @@ type Service interface {
 	RestoreBuilding(buildingUUID uuid.UUID) (err error)
 	PatchUpdateBuilding(b *Building) (err error)
 
-	CreateFloor(f *Floor) (id int, err error)
+	CreateFloor(f *Floor) (id uuid.UUID, err error)
 	GetFloor(floorUUID uuid.UUID) (f *Floor, err error)
 	IsFloorSoftDeleted(floorUUID uuid.UUID) (isDeleted bool, err error)
 	GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error)
@@ -33,7 +33,7 @@ type Service interface {
 	RestoreFloor(floorUUID uuid.UUID) (err error)
 	PatchUpdateFloor(f *Floor) (err error)
 
-	CreateWallType(wt *WallType) (id int, err error)
+	CreateWallType(wt *WallType) (id uuid.UUID, err error)
 	GetWallType(wallTypeUUID uuid.UUID) (wt *WallType, err error)
 	IsWallTypeSoftDeleted(wallTypeUUID uuid.UUID) (isDeleted bool, err error)
 	GetWallTypes(siteUUID uuid.UUID) (wts []*WallType, err error)
@@ -41,7 +41,7 @@ type Service interface {
 	RestoreWallType(wallTypeUUID uuid.UUID) (err error)
 	PatchUpdateWallType(wt *WallType) (err error)
 
-	CreateWall(w *Wall) (id int, err error)
+	CreateWall(w *Wall) (id uuid.UUID, err error)
 	GetWall(wallUUID uuid.UUID) (w *Wall, err error)
 	IsWallSoftDeleted(wallUUID uuid.UUID) (isDeleted bool, err error)
 	GetWalls(floorUUID uuid.UUID) (ws []*Wall, err error)
@@ -49,14 +49,14 @@ type Service interface {
 	RestoreWall(wallUUID uuid.UUID) (err error)
 	PatchUpdateWall(w *Wall) (err error)
 
-	CreateAccessPointType(apt *AccessPointType) (id int, err error)
+	CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error)
 	GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *AccessPointType, err error)
 	IsAccessPointTypeSoftDeleted(accessPointTypeUUID uuid.UUID) (isDeleted bool, err error)
 	GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointType, err error)
 	SoftDeleteAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
 	RestoreAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
 
-	CreateRadio(r *Radio) (id int, err error)
+	CreateRadio(r *Radio) (id uuid.UUID, err error)
 	GetRadio(radioUUID uuid.UUID) (r Radio, err error)
 	IsRadioSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err error)
 	GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err error)
@@ -64,7 +64,7 @@ type Service interface {
 	RestoreRadio(radioUUID uuid.UUID) (err error)
 	PatchUpdateRadio(r *Radio) (err error)
 
-	CreateAccessPoint(ap *AccessPoint) (id int, err error)
+	CreateAccessPoint(ap *AccessPoint) (id uuid.UUID, err error)
 	GetAccessPoint(accessPointUUID uuid.UUID) (ap *AccessPoint, err error)
 	IsAccessPointSoftDeleted(accessPointUUID uuid.UUID) (isDeleted bool, err error)
 	GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err error)
@@ -76,131 +76,131 @@ type Service interface {
 }
 
 type User struct {
-	ID        uuid.UUID  `db:"id"`
-	Username  string     `db:"username"`
-	Password  string     `db:"password"`
-	CreatedAt time.Time  `db:"created_at"`
-	UpdatedAt time.Time  `db:"updated_at"`
-	DeletedAt *time.Time `db:"deleted_at"` // Используйте указатель для NULL-значений
+	ID        uuid.UUID  `json:"id" db:"id"`
+	Username  string     `json:"username" db:"username"`
+	Password  string     `json:"password" db:"password"`
+	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
 }
 
 type Role struct {
-	ID        uuid.UUID  `db:"id"`
-	Name      string     `db:"name"`
-	CreatedAt time.Time  `db:"created_at"`
-	UpdatedAt time.Time  `db:"updated_at"`
-	DeletedAt *time.Time `db:"deleted_at"`
+	ID        uuid.UUID  `json:"id" db:"id"`
+	Name      string     `json:"name" db:"name"`
+	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
 }
 
 type UserRole struct {
-	ID        uuid.UUID  `db:"id"`
-	UserID    uuid.UUID  `db:"user_id"`
-	RoleID    uuid.UUID  `db:"role_id"`
-	CreatedAt time.Time  `db:"created_at"`
-	UpdatedAt time.Time  `db:"updated_at"`
-	DeletedAt *time.Time `db:"deleted_at"`
+	ID        uuid.UUID  `json:"id" db:"id"`
+	UserID    uuid.UUID  `json:"userId" db:"user_id"`
+	RoleID    uuid.UUID  `json:"roleId" db:"role_id"`
+	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
 }
 
 type RefreshToken struct {
-	ID     uuid.UUID  `db:"id"`
-	Token  string     `db:"token"`
-	Expiry *time.Time `db:"expiry"`
-	UserID uuid.UUID  `db:"user_id"`
+	ID     uuid.UUID  `json:"id" db:"id"`
+	Token  string     `json:"token" db:"token"`
+	Expiry *time.Time `json:"expiry" db:"expiry"`
+	UserID uuid.UUID  `json:"userId" db:"user_id"`
 }
 
 type Site struct {
-	ID          uuid.UUID  `db:"id"`
-	Name        string     `db:"name"`
-	Description string     `db:"description"`
-	CreatedAt   time.Time  `db:"created_at"`
-	UpdatedAt   time.Time  `db:"updated_at"`
-	DeletedAt   *time.Time `db:"deleted_at"`
-	UserID      uuid.UUID  `db:"user_id"`
+	ID          uuid.UUID  `json:"id" db:"id"`
+	Name        string     `json:"name" db:"name"`
+	Description string     `json:"description" db:"description"`
+	CreatedAt   time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt   *time.Time `json:"deletedAt" db:"deleted_at"`
+	UserID      uuid.UUID  `json:"userId" db:"user_id"`
 }
 
 type Building struct {
-	ID          uuid.UUID  `db:"id"`
-	Name        string     `db:"name"`
-	Description string     `db:"description"`
-	Country     string     `db:"country"`
-	City        string     `db:"city"`
-	Address     string     `db:"address"`
-	CreatedAt   time.Time  `db:"created_at"`
-	UpdatedAt   time.Time  `db:"updated_at"`
-	DeletedAt   *time.Time `db:"deleted_at"`
-	SiteID      uuid.UUID  `db:"site_id"`
+	ID          uuid.UUID  `json:"id" db:"id"`
+	Name        string     `json:"name" db:"name"`
+	Description string     `json:"description" db:"description"`
+	Country     string     `json:"country" db:"country"`
+	City        string     `json:"city" db:"city"`
+	Address     string     `json:"address" db:"address"`
+	CreatedAt   time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt   *time.Time `json:"deletedAt" db:"deleted_at"`
+	SiteID      uuid.UUID  `json:"siteId" db:"site_id"`
 }
 
 type Floor struct {
-	ID         uuid.UUID  `db:"id"`
-	Name       *string    `db:"name"`
-	Number     *int       `db:"number"`
-	Image      *string    `db:"image"`
-	Scale      *float64   `db:"scale"`
-	CreatedAt  time.Time  `db:"created_at"`
-	UpdatedAt  time.Time  `db:"updated_at"`
-	DeletedAt  *time.Time `db:"deleted_at"`
-	BuildingID uuid.UUID  `db:"building_id"`
+	ID         uuid.UUID  `json:"id" db:"id"`
+	Name       *string    `json:"name" db:"name"`
+	Number     *int       `json:"number" db:"number"`
+	Image      *string    `json:"image" db:"image"`
+	Scale      *float64   `json:"scale" db:"scale"`
+	CreatedAt  time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt  time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt  *time.Time `json:"deletedAt" db:"deleted_at"`
+	BuildingID uuid.UUID  `json:"buildingId" db:"building_id"`
 }
 
 type AccessPoint struct {
-	ID                uuid.UUID  `db:"id"`
-	Name              string     `db:"name"`
-	X                 *int       `db:"x"`
-	Y                 *int       `db:"y"`
-	Z                 *float64   `db:"z"`
-	CreatedAt         time.Time  `db:"created_at"`
-	UpdatedAt         time.Time  `db:"updated_at"`
-	DeletedAt         *time.Time `db:"deleted_at"`
-	FloorID           uuid.UUID  `db:"floor_id"`
-	AccessPointTypeID uuid.UUID  `db:"access_point_type_id"`
+	ID                uuid.UUID  `json:"id" db:"id"`
+	Name              string     `json:"name" db:"name"`
+	X                 *int       `json:"x" db:"x"`
+	Y                 *int       `json:"y" db:"y"`
+	Z                 *float64   `json:"z" db:"z"`
+	CreatedAt         time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt         time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt         *time.Time `json:"deletedAt" db:"deleted_at"`
+	FloorID           uuid.UUID  `json:"floorId" db:"floor_id"`
+	AccessPointTypeID uuid.UUID  `json:"accessPointTypeId" db:"access_point_type_id"`
 }
 
 type AccessPointType struct {
-	ID        uuid.UUID  `db:"id"`
-	CreatedAt time.Time  `db:"created_at"`
-	UpdatedAt time.Time  `db:"updated_at"`
-	DeletedAt *time.Time `db:"deleted_at"`
-	SiteID    uuid.UUID  `db:"site_id"`
+	ID        uuid.UUID  `json:"id" db:"id"`
+	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
+	SiteID    uuid.UUID  `json:"siteId" db:"site_id"`
 }
 
 type Radio struct {
-	ID                uuid.UUID  `db:"id"`
-	Number            string     `db:"number"`
-	Channel           *int       `db:"channel"`
-	WiFi              string     `db:"wifi"`
-	Power             *int       `db:"power"`
-	Bandwidth         string     `db:"bandwidth"`
-	GuardInterval     *int       `db:"guard_interval"`
-	CreatedAt         time.Time  `db:"created_at"`
-	UpdatedAt         time.Time  `db:"updated_at"`
-	DeletedAt         *time.Time `db:"deleted_at"`
-	AccessPointTypeID uuid.UUID  `db:"access_point_type_id"`
+	ID                uuid.UUID  `json:"id" db:"id"`
+	Number            string     `json:"number" db:"number"`
+	Channel           *int       `json:"channel" db:"channel"`
+	WiFi              string     `json:"wifi" db:"wifi"`
+	Power             *int       `json:"power" db:"power"`
+	Bandwidth         string     `json:"bandwidth" db:"bandwidth"`
+	GuardInterval     *int       `json:"guardInterval" db:"guard_interval"`
+	CreatedAt         time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt         time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt         *time.Time `json:"deletedAt" db:"deleted_at"`
+	AccessPointTypeID uuid.UUID  `json:"accessPointTypeId" db:"access_point_type_id"`
 }
 
 type Wall struct {
-	ID         uuid.UUID  `db:"id"`
-	X1         *int       `db:"x1"`
-	Y1         *int       `db:"y1"`
-	X2         *int       `db:"x2"`
-	Y2         *int       `db:"y2"`
-	CreatedAt  time.Time  `db:"created_at"`
-	UpdatedAt  time.Time  `db:"updated_at"`
-	DeletedAt  *time.Time `db:"deleted_at"`
-	FloorID    uuid.UUID  `db:"floor_id"`
-	WallTypeID uuid.UUID  `db:"wall_type_id"`
+	ID         uuid.UUID  `json:"id" db:"id"`
+	X1         *int       `json:"x1" db:"x1"`
+	Y1         *int       `json:"y1" db:"y1"`
+	X2         *int       `json:"x2" db:"x2"`
+	Y2         *int       `json:"y2" db:"y2"`
+	CreatedAt  time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt  time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt  *time.Time `json:"deletedAt" db:"deleted_at"`
+	FloorID    uuid.UUID  `json:"floorId" db:"floor_id"`
+	WallTypeID uuid.UUID  `json:"wallTypeId" db:"wall_type_id"`
 }
 
 type WallType struct {
-	ID           uuid.UUID  `db:"id"`
-	Name         string     `db:"name"`
-	Color        string     `db:"color"`
-	Attenuation1 *float64   `db:"attenuation1"`
-	Attenuation2 *float64   `db:"attenuation2"`
-	Attenuation3 *float64   `db:"attenuation3"`
-	Thickness    *float64   `db:"thickness"`
-	CreatedAt    time.Time  `db:"created_at"`
-	UpdatedAt    time.Time  `db:"updated_at"`
-	DeletedAt    *time.Time `db:"deleted_at"`
-	SiteID       uuid.UUID  `db:"site_id"`
+	ID           uuid.UUID  `json:"id" db:"id"`
+	Name         string     `json:"name" db:"name"`
+	Color        string     `json:"color" db:"color"`
+	Attenuation1 *float64   `json:"attenuation1" db:"attenuation1"`
+	Attenuation2 *float64   `json:"attenuation2" db:"attenuation2"`
+	Attenuation3 *float64   `json:"attenuation3" db:"attenuation3"`
+	Thickness    *float64   `json:"thickness" db:"thickness"`
+	CreatedAt    time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt    time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt    *time.Time `json:"deletedAt" db:"deleted_at"`
+	SiteID       uuid.UUID  `json:"siteId" db:"site_id"`
 }

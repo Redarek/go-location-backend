@@ -14,12 +14,13 @@ func (s *Fiber) RegisterFiberRoutes() {
 	s.App.Get("/health", s.healthHandler)
 
 	api := s.App.Group("/api")
-	v1 := api.Group("/v1") // TODO: implement refresh token route
-	v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
+	v1 := api.Group("/v1")
 
 	user := v1.Group("/user")
-	user.Post("/login", s.Login)
 	user.Post("/register", s.Register)
+	user.Post("/login", s.Login)
+
+	v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}})) // TODO: implement refresh token route
 
 	site := v1.Group("/site")
 	site.Post("/", s.CreateSite)

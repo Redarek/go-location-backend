@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS floors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR NOT NULL,
     number INTEGER NOT NULL,
-    image VARCHAR NOT NULL DEFAULT '',
+    image VARCHAR,
     scale FLOAT NOT NULL CHECK (scale > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,

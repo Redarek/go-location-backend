@@ -12,7 +12,7 @@ import (
 )
 
 // CreateAccessPoint creates an access point
-func (p *postgres) CreateAccessPoint(ap *AccessPoint) (id int, err error) {
+func (p *postgres) CreateAccessPoint(ap *AccessPoint) (id uuid.UUID, err error) {
 	query := `INSERT INTO access_points (name, x, y, z, floor_id, access_point_type_id)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id`

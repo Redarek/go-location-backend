@@ -12,11 +12,11 @@ import (
 )
 
 // CreateFloor creates a floor
-func (p *postgres) CreateFloor(f *Floor) (id int, err error) {
-	query := `INSERT INTO floors (name, number, image, scale, building_id)
-			VALUES ($1, $2, $3, $4, $5)
+func (p *postgres) CreateFloor(f *Floor) (id uuid.UUID, err error) {
+	query := `INSERT INTO floors (name, number, scale, building_id)
+			VALUES ($1, $2, $3, $4)
 			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, f.Name, f.Number, f.Image, f.Scale, f.BuildingID)
+	row := p.Pool.QueryRow(context.Background(), query, f.Name, f.Number, f.Scale, f.BuildingID)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create floor")

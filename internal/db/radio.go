@@ -12,7 +12,7 @@ import (
 )
 
 // CreateRadio creates a radio
-func (p *postgres) CreateRadio(r *Radio) (id int, err error) {
+func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
 	query := `INSERT INTO radios (number, channel, wifi, power, bandwidth, guard_interval, access_point_type_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING id`
