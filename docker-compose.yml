@@ -3,6 +3,7 @@ version: '3.9'
 services:
   psql:
     image: postgres:latest
+    container_name: psql
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
@@ -11,6 +12,8 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - psql_volume:/var/lib/postgresql/data
+    networks:
+      - webnet
 
   centrifugo:
     container_name: centrifugo
@@ -24,6 +27,24 @@ services:
       nofile:
         soft: 65535
         hard: 65535
+    networks:
+      - webnet
+
+  backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+    networks:
+      - webnet
 
 volumes:
   psql_volume:
+
+networks:
+  webnet:
+    driver: bridge
