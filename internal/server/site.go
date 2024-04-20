@@ -68,6 +68,66 @@ func (s *Fiber) GetSites(c *fiber.Ctx) (err error) {
 	})
 }
 
+// GetSitesDetailed retrieves sites detailed
+func (s *Fiber) GetSitesDetailed(c *fiber.Ctx) (err error) {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	userUUID, err := uuid.Parse(claims["id"].(string))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse user uuid")
+		return
+	}
+	sites, err := s.db.GetSites(userUUID)
+	for _, site := range sites {
+		log.Debug().Msgf("Site: %s", site)
+		buildings, err := s.db.GetBuildings(site.ID)
+		if err != nil {
+			continue
+		}
+
+		for _, building := range buildings {
+			log.Debug().Msgf("Building: %s", building)
+			floors, err := s.db.GetFloors(building.ID)
+			if err != nil {
+				continue
+			}
+
+			for _, floor := range floors {
+				log.Debug().Msgf("Floor: %s", floor)
+				aps, err := s.db.GetAccessPointsDetailed(floor.ID)
+				if err != nil {
+					continue
+				}
+				walls, err := s.db.GetWallsDetailed(floor.ID)
+				floor.AccessPoints = aps
+				floor.Walls = walls
+			}
+			building.Floors = floors
+		}
+		site.Buildings = buildings
+
+		wallTypes, err := s.db.GetWallTypes(site.ID)
+		if err != nil {
+			continue
+		}
+		site.WallTypes = wallTypes
+
+		accessPointTypes, err := s.db.GetAccessPointTypes(site.ID)
+		if err != nil {
+			continue
+		}
+		site.AccessPointTypes = accessPointTypes
+
+	}
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get sites")
+		return
+	}
+	return c.JSON(fiber.Map{
+		"data": sites,
+	})
+}
+
 // SoftDeleteSite soft delete a site
 func (s *Fiber) SoftDeleteSite(c *fiber.Ctx) (err error) {
 	siteUUID, err := uuid.Parse(c.Query("id"))

@@ -102,6 +102,8 @@ CREATE TABLE IF NOT EXISTS floors (
 
 CREATE TABLE IF NOT EXISTS access_point_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR NOT NULL,
+    color VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     deleted_at TIMESTAMPTZ,
@@ -131,7 +133,15 @@ CREATE TABLE IF NOT EXISTS access_points (
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     deleted_at TIMESTAMPTZ,
+    floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
     access_point_type_id UUID NOT NULL REFERENCES access_point_types(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS radio_states (
+    access_point_id UUID NOT NULL REFERENCES access_points(id) ON DELETE SET NULL,
+    radio_id UUID NOT NULL REFERENCES radios(id) ON DELETE SET NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (access_point_id, radio_id)
 );
 
 CREATE TABLE IF NOT EXISTS wall_types (

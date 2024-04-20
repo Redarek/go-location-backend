@@ -29,7 +29,7 @@ func (p *postgres) GetAccessPoint(accessPointUUID uuid.UUID) (ap *AccessPoint, e
 	query := `SELECT * FROM access_points WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, accessPointUUID)
 	ap = &AccessPoint{}
-	err = row.Scan(&ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.FloorID, &ap.AccessPointTypeID)
+	err = row.Scan(&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt, &ap.FloorID, &ap.AccessPointTypeID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No access point found with uuid %v", accessPointUUID)
@@ -74,7 +74,7 @@ func (p *postgres) GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err
 	var ap *AccessPoint
 	for rows.Next() {
 		ap = new(AccessPoint)
-		err = rows.Scan(&ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.FloorID, &ap.AccessPointTypeID)
+		err = rows.Scan(&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt, &ap.FloorID, &ap.AccessPointTypeID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan access point")
 			return
@@ -88,6 +88,108 @@ func (p *postgres) GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err
 	}
 
 	log.Debug().Msgf("Retrieved %d access points", len(aps))
+	return
+}
+
+//// GetAccessPointsDetailed retrieves detailed access points
+//func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPointDetailed, err error) {
+//	query := `
+//SELECT ap.id, ap.name, ap.x, ap.y, ap.z, ap.created_at, ap.updated_at, ap.deleted_at, ap.floor_id, ap.access_point_type_id, apt.id, apt.created_at, apt.updated_at, apt.deleted_at, apt.site_id, r.id, r.number, r.channel, r.wifi, r.power, r.bandwidth, r.guard_interval, r.created_at, r.updated_at, r.deleted_at, r.access_point_type_id, COALESCE(rs.is_active, FALSE)
+//FROM access_points ap
+//LEFT JOIN access_point_types apt ON ap.access_point_type_id = apt.id
+//LEFT JOIN radios r ON apt.id = r.access_point_type_id
+//LEFT JOIN radio_states rs ON r.id = rs.radio_id AND rs.access_point_id = ap.id
+//WHERE ap.floor_id = $1 AND ap.deleted_at IS NULL AND r.deleted_at IS NULL
+//`
+//	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
+//	if err != nil {
+//		log.Error().Err(err).Msg("Failed to retrieve access points")
+//		return
+//	}
+//	defer rows.Close()
+//
+//	for rows.Next() {
+//		ap := new(AccessPointDetailed)
+//		r := new(Radio)
+//		apt := new(AccessPointType)
+//		err = rows.Scan(
+//			&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt, &ap.FloorID, &ap.AccessPointTypeID,
+//			&apt.ID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID,
+//			&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID, &r.IsActive,
+//		)
+//		if err != nil {
+//			log.Error().Err(err).Msg("Failed to scan access points and related data")
+//			return
+//		}
+//		ap.AccessPointType = apt
+//		ap.Radios = append(ap.Radios, r)
+//		aps = append(aps, ap)
+//	}
+//
+//	if err = rows.Err(); err != nil {
+//		log.Error().Err(err).Msg("Rows iteration error")
+//		return
+//	}
+//
+//	log.Debug().Msgf("Retrieved %d access points with detailed info", len(aps))
+//	return
+//}
+
+func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPointDetailed, err error) {
+	query := `
+SELECT ap.id, ap.name, ap.x, ap.y, ap.z, ap.created_at, ap.updated_at, ap.deleted_at, ap.floor_id, ap.access_point_type_id, apt.id, apt.created_at, apt.updated_at, apt.deleted_at, apt.site_id, r.id, r.number, r.channel, r.wifi, r.power, r.bandwidth, r.guard_interval, r.created_at, r.updated_at, r.deleted_at, r.access_point_type_id, COALESCE(rs.is_active, FALSE)
+FROM access_points ap
+LEFT JOIN access_point_types apt ON ap.access_point_type_id = apt.id
+LEFT JOIN radios r ON apt.id = r.access_point_type_id
+LEFT JOIN radio_states rs ON r.id = rs.radio_id AND rs.access_point_id = ap.id
+WHERE ap.floor_id = $1 AND ap.deleted_at IS NULL AND r.deleted_at IS NULL
+`
+	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve access points")
+		return
+	}
+	defer rows.Close()
+
+	apMap := make(map[uuid.UUID]*AccessPointDetailed) // Map to track access points and avoid duplicates
+
+	for rows.Next() {
+		ap := new(AccessPointDetailed)
+		r := new(Radio)
+		apt := new(AccessPointType)
+
+		err = rows.Scan(
+			&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt, &ap.FloorID, &ap.AccessPointTypeID,
+			&apt.ID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID,
+			&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID, &r.IsActive,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to scan access points and related data")
+			return
+		}
+
+		if existingAP, exists := apMap[ap.ID]; exists {
+			// If access point is already in the map, append the new radio to its list
+			existingAP.Radios = append(existingAP.Radios, r)
+		} else {
+			// If it's a new access point, initialize and add to map
+			ap.AccessPointType = apt
+			ap.Radios = append(ap.Radios, r)
+			apMap[ap.ID] = ap
+		}
+	}
+
+	// Convert map to slice
+	for _, ap := range apMap {
+		aps = append(aps, ap)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("Rows iteration error")
+		return
+	}
+
+	log.Debug().Msgf("Retrieved %d unique access points with detailed info", len(aps))
 	return
 }
 
@@ -167,3 +269,45 @@ func (p *postgres) PatchUpdateAccessPoint(ap *AccessPoint) (err error) {
 
 	return
 }
+
+func (p *postgres) SetRadioState(rs *RadioState) (id uuid.UUID, err error) {
+	query := `
+    INSERT INTO radio_states (access_point_id, radio_id, is_active) 
+    VALUES ($1, $2, $3)
+    ON CONFLICT (access_point_id, radio_id) 
+    DO UPDATE SET is_active = EXCLUDED.is_active;
+    `
+	row := p.Pool.QueryRow(context.Background(), query, rs.AccessPointID, rs.RadioID, rs.IsActive)
+	err = row.Scan(&id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to set radio state")
+	}
+	return
+}
+
+//
+//func (p *postgres) GetRadioStates(accessPointID uuid.UUID) (radioStates []RadioState, err error) {
+//	query := `
+//    SELECT r.radio_id, r.is_active
+//    FROM radios r
+//    INNER JOIN radio_states rs ON rs.radio_id = r.id
+//    WHERE rs.access_point_id = $1;
+//    `
+//
+//	rows, err := p.Pool.Query(context.Background(), query, accessPointID)
+//	if err != nil {
+//		log.Error().Err(err).Msg("Unable to get radio states")
+//		return
+//	}
+//	defer rows.Close()
+//
+//	for rows.Next() {
+//		var state RadioState
+//		if err = rows.Scan(&state.RadioID, &state.IsActive); err != nil {
+//			return
+//		}
+//		radioStates = append(radioStates, state)
+//	}
+//	return
+//
+//}

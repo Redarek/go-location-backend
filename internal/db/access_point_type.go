@@ -11,10 +11,10 @@ import (
 
 // CreateAccessPointType creates an access point type
 func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error) {
-	query := `INSERT INTO access_point_types (site_id)
-			VALUES ($1)
+	query := `INSERT INTO access_point_types (name, color, site_id)
+			VALUES ($1, $2, $3)
 			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, apt.SiteID)
+	row := p.Pool.QueryRow(context.Background(), query, apt.Name, apt.Color, apt.SiteID)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create access point type")
@@ -27,7 +27,7 @@ func (p *postgres) GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *Acces
 	query := `SELECT * FROM access_point_types WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, accessPointTypeUUID)
 	apt = &AccessPointType{}
-	err = row.Scan(&apt.ID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID)
+	err = row.Scan(&apt.ID, &apt.Name, &apt.Color, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No access point type found with uuid %v", accessPointTypeUUID)
@@ -72,7 +72,7 @@ func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointT
 	var apt *AccessPointType
 	for rows.Next() {
 		apt = new(AccessPointType)
-		err = rows.Scan(&apt.ID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID)
+		err = rows.Scan(&apt.ID, &apt.Name, &apt.Color, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan access point types")
 			return

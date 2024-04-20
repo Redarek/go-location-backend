@@ -43,18 +43,35 @@ func (s *Fiber) GetAccessPoint(c *fiber.Ctx) (err error) {
 
 // GetAccessPoints retrieves access points
 func (s *Fiber) GetAccessPoints(c *fiber.Ctx) (err error) {
-	siteUUID, err := uuid.Parse(c.Query("id"))
+	floorUUID, err := uuid.Parse(c.Query("id"))
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to parse site uuid")
+		log.Error().Err(err).Msg("Failed to parse floor uuid")
 		return
 	}
-	ap, err := s.db.GetAccessPoints(siteUUID)
+	aps, err := s.db.GetAccessPoints(floorUUID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get access point")
+		log.Error().Err(err).Msg("Failed to get access points")
 		return
 	}
 	return c.JSON(fiber.Map{
-		"data": ap,
+		"data": aps,
+	})
+}
+
+// GetAccessPointsDetailed retrieves detailed access points
+func (s *Fiber) GetAccessPointsDetailed(c *fiber.Ctx) (err error) {
+	floorUUID, err := uuid.Parse(c.Query("id"))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse floor uuid")
+		return
+	}
+	aps, err := s.db.GetAccessPointsDetailed(floorUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get access points")
+		return
+	}
+	return c.JSON(fiber.Map{
+		"data": aps,
 	})
 }
 
@@ -120,4 +137,21 @@ func (s *Fiber) PatchUpdateAccessPoint(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(fiber.StatusOK)
+}
+
+// SetRadioState upsert a radio state (on/off)
+func (s *Fiber) SetRadioState(c *fiber.Ctx) (err error) {
+	rs := new(db.RadioState)
+	err = c.BodyParser(rs)
+	if err != nil {
+		return err
+	}
+
+	rsID, err := s.db.SetRadioState(rs)
+	if err != nil {
+		return err
+	}
+	return c.JSON(fiber.Map{
+		"id": rsID,
+	})
 }

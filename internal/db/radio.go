@@ -28,7 +28,7 @@ func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
 func (p *postgres) GetRadio(radioUUID uuid.UUID) (r Radio, err error) {
 	query := `SELECT * FROM radios WHERE id=$1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
-	err = row.Scan(&r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
+	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No radio found with ID %v", radioUUID)
@@ -61,9 +61,14 @@ func (p *postgres) IsRadioSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err 
 }
 
 // GetRadios retrieves radios
-func (p *postgres) GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err error) {
-	query := `SELECT * FROM radios WHERE access_point_type_id = $1 AND deleted_at IS NULL`
-	rows, err := p.Pool.Query(context.Background(), query, accessPointTypeUUID)
+func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
+	query := `
+SELECT r.id, r.number, r.channel, r.wifi, r.power, r.bandwidth, r.guard_interval, r.created_at, r.updated_at, r.deleted_at, r.access_point_type_id, COALESCE(rs.is_active, FALSE)
+FROM radios r
+LEFT JOIN radio_states rs ON rs.radio_id = r.id AND rs.access_point_id = $1
+WHERE r.access_point_type_id = (SELECT access_point_type_id FROM access_points WHERE id = $1) AND r.deleted_at IS NULL
+`
+	rows, err := p.Pool.Query(context.Background(), query, accessPointID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve radios")
 		return
@@ -73,7 +78,7 @@ func (p *postgres) GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err er
 	var r *Radio
 	for rows.Next() {
 		r = new(Radio)
-		err = rows.Scan(&r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
+		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID, &r.IsActive)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan radios")
 			return
@@ -89,6 +94,48 @@ func (p *postgres) GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err er
 	log.Debug().Msgf("Retrieved %d radios", len(rs))
 	return
 }
+
+//// GetRadios retrieves radios
+//func (p *postgres) GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err error) {
+//	//query := `SELECT * FROM radios WHERE access_point_type_id = $1 AND deleted_at IS NULL`
+//	query := `
+//		SELECT r.id, r.number, r.channel, r.wifi, r.power, r.bandwidth, r.guard_interval, r.created_at, r.updated_at, r.deleted_at, r.access_point_type_id, rs.is_active
+//		FROM radios r
+//		LEFT JOIN radio_states rs ON rs.radio_id = r.id AND rs.access_point_id = $1
+//		WHERE r.access_point_type_id = (SELECT access_point_type_id FROM access_points WHERE id = $1) AND r.deleted_at IS NULL
+//		`
+//	rows, err := p.Pool.Query(context.Background(), query, accessPointTypeUUID)
+//	if err != nil {
+//		log.Error().Err(err).Msg("Failed to retrieve radios")
+//		return
+//	}
+//	defer rows.Close()
+//
+//	var r *Radio
+//	for rows.Next() {
+//		r = new(Radio)
+//		var isActive sql.NullBool
+//		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID, &isActive)
+//		if err != nil {
+//			log.Error().Err(err).Msg("Failed to scan radios")
+//			return
+//		}
+//		if isActive.Valid {
+//			r.IsActive = isActive.Bool
+//		} else {
+//			r.IsActive = false // Set default state if not specified
+//		}
+//		rs = append(rs, r)
+//	}
+//
+//	if err = rows.Err(); err != nil {
+//		log.Error().Err(err).Msg("Rows iteration error")
+//		return
+//	}
+//
+//	log.Debug().Msgf("Retrieved %d radios", len(rs))
+//	return
+//}
 
 // SoftDeleteRadio soft delete a radio
 func (p *postgres) SoftDeleteRadio(radioUUID uuid.UUID) (err error) {

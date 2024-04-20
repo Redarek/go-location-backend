@@ -45,11 +45,12 @@ type Service interface {
 	GetWall(wallUUID uuid.UUID) (w *Wall, err error)
 	IsWallSoftDeleted(wallUUID uuid.UUID) (isDeleted bool, err error)
 	GetWalls(floorUUID uuid.UUID) (ws []*Wall, err error)
+	GetWallsDetailed(floorUUID uuid.UUID) (walls []*WallDetailed, err error)
 	SoftDeleteWall(wallUUID uuid.UUID) (err error)
 	RestoreWall(wallUUID uuid.UUID) (err error)
 	PatchUpdateWall(w *Wall) (err error)
 
-	CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error)
+	CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error) // TODO: add color for apt
 	GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *AccessPointType, err error)
 	IsAccessPointTypeSoftDeleted(accessPointTypeUUID uuid.UUID) (isDeleted bool, err error)
 	GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointType, err error)
@@ -68,9 +69,13 @@ type Service interface {
 	GetAccessPoint(accessPointUUID uuid.UUID) (ap *AccessPoint, err error)
 	IsAccessPointSoftDeleted(accessPointUUID uuid.UUID) (isDeleted bool, err error)
 	GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err error)
+	GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPointDetailed, err error)
 	SoftDeleteAccessPoint(accessPointUUID uuid.UUID) (err error)
 	RestoreAccessPoint(accessPointUUID uuid.UUID) (err error)
 	PatchUpdateAccessPoint(ap *AccessPoint) (err error)
+
+	SetRadioState(rs *RadioState) (id uuid.UUID, err error)
+	//GetRadioStates(accessPointID uuid.UUID) (radioStates []RadioState, err error)
 
 	Health() map[string]string
 }
@@ -109,13 +114,16 @@ type RefreshToken struct {
 }
 
 type Site struct {
-	ID          uuid.UUID  `json:"id" db:"id"`
-	Name        string     `json:"name" db:"name"`
-	Description string     `json:"description" db:"description"`
-	CreatedAt   time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt   time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt   *time.Time `json:"deletedAt" db:"deleted_at"`
-	UserID      uuid.UUID  `json:"userId" db:"user_id"`
+	ID               uuid.UUID          `json:"id" db:"id"`
+	Name             string             `json:"name" db:"name"`
+	Description      string             `json:"description" db:"description"`
+	CreatedAt        time.Time          `json:"createdAt" db:"created_at"`
+	UpdatedAt        time.Time          `json:"updatedAt" db:"updated_at"`
+	DeletedAt        *time.Time         `json:"deletedAt" db:"deleted_at"`
+	UserID           uuid.UUID          `json:"userId" db:"user_id"`
+	Buildings        []*Building        `json:"buildings"`
+	AccessPointTypes []*AccessPointType `json:"accessPointTypes"`
+	WallTypes        []*WallType        `json:"wallTypes"`
 }
 
 type Building struct {
@@ -129,18 +137,22 @@ type Building struct {
 	UpdatedAt   time.Time  `json:"updatedAt" db:"updated_at"`
 	DeletedAt   *time.Time `json:"deletedAt" db:"deleted_at"`
 	SiteID      uuid.UUID  `json:"siteId" db:"site_id"`
+	Floors      []*Floor   `json:"floors"`
 }
 
 type Floor struct {
-	ID         uuid.UUID  `json:"id" db:"id"`
-	Name       *string    `json:"name" db:"name"`
-	Number     *int       `json:"number" db:"number"`
-	Image      *string    `json:"image" db:"image"`
-	Scale      *float64   `json:"scale" db:"scale"`
-	CreatedAt  time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt  time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt  *time.Time `json:"deletedAt" db:"deleted_at"`
-	BuildingID uuid.UUID  `json:"buildingId" db:"building_id"`
+	ID           uuid.UUID              `json:"id" db:"id"`
+	Name         *string                `json:"name" db:"name"`
+	Number       *int                   `json:"number" db:"number"`
+	Image        *string                `json:"image" db:"image"`
+	Scale        *float64               `json:"scale" db:"scale"`
+	CreatedAt    time.Time              `json:"createdAt" db:"created_at"`
+	UpdatedAt    time.Time              `json:"updatedAt" db:"updated_at"`
+	DeletedAt    *time.Time             `json:"deletedAt" db:"deleted_at"`
+	BuildingID   uuid.UUID              `json:"buildingId" db:"building_id"`
+	AccessPoints []*AccessPointDetailed `json:"accessPoints"`
+	Walls        []*WallDetailed        `json:"walls"`
+	//Sensors      []*Sensor      `json:"sensors"`
 }
 
 type AccessPoint struct {
@@ -158,6 +170,8 @@ type AccessPoint struct {
 
 type AccessPointType struct {
 	ID        uuid.UUID  `json:"id" db:"id"`
+	Name      string     `json:"name" db:"name"`
+	Color     string     `json:"color" db:"color"`
 	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
 	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
@@ -176,6 +190,19 @@ type Radio struct {
 	UpdatedAt         time.Time  `json:"updatedAt" db:"updated_at"`
 	DeletedAt         *time.Time `json:"deletedAt" db:"deleted_at"`
 	AccessPointTypeID uuid.UUID  `json:"accessPointTypeId" db:"access_point_type_id"`
+	IsActive          bool       `json:"isActive" db:"is_active"`
+}
+
+type RadioState struct {
+	AccessPointID uuid.UUID `json:"accessPointId" db:"access_point_id"`
+	RadioID       uuid.UUID `json:"radioId" db:"radio_id"`
+	IsActive      bool      `json:"isActive" db:"is_active"`
+}
+
+type AccessPointDetailed struct {
+	AccessPoint
+	AccessPointType *AccessPointType `json:"accessPointType"`
+	Radios          []*Radio         `json:"radios"`
 }
 
 type Wall struct {
@@ -203,4 +230,9 @@ type WallType struct {
 	UpdatedAt    time.Time  `json:"updatedAt" db:"updated_at"`
 	DeletedAt    *time.Time `json:"deletedAt" db:"deleted_at"`
 	SiteID       uuid.UUID  `json:"siteId" db:"site_id"`
+}
+
+type WallDetailed struct {
+	Wall
+	WallType *WallType `json:"wallType"`
 }
