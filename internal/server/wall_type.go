@@ -113,7 +113,7 @@ func (s *Fiber) PatchUpdateWallType(c *fiber.Ctx) error {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")
 	}
-
+	log.Debug().Msgf("Updating wall type: %v", input)
 	if err := s.db.PatchUpdateWallType(&input); err != nil {
 		log.Error().Err(err).Msg("Failed to update wall type")
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to update wall type")

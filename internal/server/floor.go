@@ -205,9 +205,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 	// Отправляем ответ
-	return c.JSON(fiber.Map{
-		"message": "Floor updated successfully",
-	})
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func saveImage(filePath string, img image.Image, format string) error {

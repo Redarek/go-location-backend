@@ -10,7 +10,7 @@ import (
 )
 
 // CreateAccessPointType creates an access point type
-func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id int, err error) {
+func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error) {
 	query := `INSERT INTO access_point_types (site_id)
 			VALUES ($1)
 			RETURNING id`

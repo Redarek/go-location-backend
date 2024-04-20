@@ -11,7 +11,7 @@ import (
 )
 
 // CreateWallType creates a wall type
-func (p *postgres) CreateWallType(wt *WallType) (id int, err error) {
+func (p *postgres) CreateWallType(wt *WallType) (id uuid.UUID, err error) {
 	sql := `INSERT INTO wall_types (name, color, attenuation1, attenuation2, attenuation3, thickness, site_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING id`
@@ -124,6 +124,7 @@ func (p *postgres) RestoreWallType(wallTypeUUID uuid.UUID) (err error) {
 
 // PatchUpdateWallType updates only the specified fields of a wall type
 func (p *postgres) PatchUpdateWallType(wt *WallType) (err error) {
+	log.Debug().Msgf("Patching wall type: %v", wt)
 	query := "UPDATE wall_types SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}

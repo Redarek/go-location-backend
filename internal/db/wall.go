@@ -11,7 +11,7 @@ import (
 )
 
 // CreateWall creates a wall
-func (p *postgres) CreateWall(w *Wall) (id int, err error) {
+func (p *postgres) CreateWall(w *Wall) (id uuid.UUID, err error) {
 	sql := `INSERT INTO walls (x1, y1, x2, y2, floor_id, wall_type_id)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id`
