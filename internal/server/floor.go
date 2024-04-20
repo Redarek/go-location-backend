@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"github.com/chai2010/webp"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -228,13 +227,14 @@ func saveImage(filePath string, img image.Image, format string) error {
 		}
 	}(fileOut)
 
-	// Конвертация и сохранение изображения в формате webp
-	if format != "webp" {
-		err = webp.Encode(fileOut, img, &webp.Options{Quality: 10})
-	} else {
-		// Если изображение уже в формате webp, просто сохраняем его
-		_, err = fileOut.Write(img.(*image.RGBA).Pix)
-	}
+	//// Конвертация и сохранение изображения в формате webp
+	//if format != "webp" {
+	//	err = webp.Encode(fileOut, img, &webp.Options{Quality: 10})
+	//} else {
+	//	// Если изображение уже в формате webp, просто сохраняем его
+	//
+	//}
+	_, err = fileOut.Write(img.(*image.RGBA).Pix)
 
 	return err
 }
