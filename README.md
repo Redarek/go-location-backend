@@ -33,6 +33,11 @@ Shutdown DB container
 make docker-down
 ```
 
+Cleanup all docker data
+```bash
+make docker-clean
+```
+
 live reload the application
 ```bash
 make watch
