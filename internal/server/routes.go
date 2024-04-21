@@ -3,15 +3,35 @@ package server
 import (
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"location-backend/internal/config"
 )
 
 func (s *Fiber) RegisterFiberRoutes() {
+	s.App.Use(cors.New(cors.Config{
+		AllowOrigins: config.App.ClientURL,
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
+		AllowHeaders: "Content-Type, Authorization, X-Requested-With",
+	}))
+
+	// Helmet middleware helps secure your apps by setting various HTTP headers.
+	s.App.Use(helmet.New())
 
 	s.App.Get("/", s.HelloWorldHandler)
 	s.App.Static("/static", "./static")
 
 	s.App.Get("/health", s.healthHandler)
+
+	// Initialize default config (Assign the middleware to /metrics)
+	s.App.Get("/metrics", monitor.New())
+
+	// Liveness and readiness probes middleware for Fiber that provides two endpoints
+	// for checking the liveness and readiness state of HTTP applications.
+	// default endpoints: /livez and /readyz
+	s.App.Use(healthcheck.New())
 
 	api := s.App.Group("/api")
 	v1 := api.Group("/v1")
