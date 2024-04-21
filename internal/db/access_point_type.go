@@ -40,6 +40,47 @@ func (p *postgres) GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *Acces
 	return
 }
 
+// GetAccessPointTypeDetailed retrieves an access point type
+func (p *postgres) GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (apt *AccessPointTypeDetailed, err error) {
+	query := `
+	SELECT apt.id, apt.name, apt.color, apt.created_at, apt.updated_at, apt.deleted_at, apt.site_id,
+	       rt.id, rt.number, rt.channel, rt.wifi, rt.power, rt.bandwidth, rt.guard_interval, rt.created_at, rt.updated_at, rt.deleted_at, rt.access_point_type_id
+	FROM access_point_types apt
+	LEFT JOIN radio_templates rt ON rt.access_point_type_id = apt.id AND rt.deleted_at IS NULL
+	WHERE apt.id = $1 AND apt.deleted_at IS NULL`
+	rows, err := p.Pool.Query(context.Background(), query, accessPointTypeUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve access point type")
+		return
+	}
+	defer rows.Close()
+
+	apt = new(AccessPointTypeDetailed)
+
+	for rows.Next() {
+		rt := new(RadioTemplate)
+
+		err = rows.Scan(
+			&apt.ID, &apt.Name, &apt.Color, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID,
+			&rt.ID, &rt.Number, &rt.Channel, &rt.WiFi, &rt.Power, &rt.Bandwidth, &rt.GuardInterval, &rt.CreatedAt, &rt.UpdatedAt, &rt.DeletedAt, &rt.AccessPointTypeID,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to scan access point type and related data")
+			return
+		}
+
+		apt.RadioTemplates = append(apt.RadioTemplates, rt)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("Rows iteration error")
+		return
+	}
+
+	log.Debug().Msgf("Retrieved access point type with detailed info: %v", apt)
+	return
+}
+
 // IsAccessPointTypeSoftDeleted checks if the access point type has been soft deleted
 func (p *postgres) IsAccessPointTypeSoftDeleted(accessPointTypeUUID uuid.UUID) (isDeleted bool, err error) {
 	var deletedAt sql.NullTime // Use sql.NullTime to properly handle NULL values
@@ -86,6 +127,59 @@ func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointT
 	}
 
 	log.Debug().Msgf("Retrieved %d access point types", len(apts))
+	return
+}
+
+func (p *postgres) GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*AccessPointTypeDetailed, err error) {
+	query := `
+SELECT apt.id, apt.name, apt.color, apt.created_at, apt.updated_at, apt.deleted_at, apt.site_id, r.id, r.number, r.channel, r.wifi, r.power, r.bandwidth, r.guard_interval, r.created_at, r.updated_at, r.deleted_at, r.access_point_type_id
+FROM access_point_types apt
+LEFT JOIN radio_templates r ON apt.id = r.access_point_type_id AND r.deleted_at IS NULL
+WHERE apt.site_id = $1 AND apt.deleted_at IS NULL
+`
+	rows, err := p.Pool.Query(context.Background(), query, siteUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve access point types")
+		return
+	}
+	defer rows.Close()
+
+	aptMap := make(map[uuid.UUID]*AccessPointTypeDetailed) // Map to track access points and avoid duplicates
+
+	for rows.Next() {
+		apt := new(AccessPointTypeDetailed)
+		r := new(RadioTemplate)
+
+		err = rows.Scan(
+			&apt.ID, &apt.Name, &apt.Color, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID,
+			&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to scan access points and related data")
+			return
+		}
+
+		if existingAP, exists := aptMap[apt.ID]; exists {
+			// If access point is already in the map, append the new radio to its list
+			existingAP.RadioTemplates = append(existingAP.RadioTemplates, r)
+		} else {
+			// If it's a new access point type, initialize and add to map
+			apt.RadioTemplates = append(apt.RadioTemplates, r)
+			aptMap[apt.ID] = apt
+		}
+	}
+
+	// Convert map to slice
+	for _, ap := range aptMap {
+		aps = append(aps, ap)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("Rows iteration error")
+		return
+	}
+
+	log.Debug().Msgf("Retrieved %d unique access point types with detailed info", len(aps))
 	return
 }
 

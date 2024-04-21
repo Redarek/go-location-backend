@@ -11,70 +11,71 @@ import (
 	"strings"
 )
 
-// CreateRadio creates a radio
-func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
-	query := `INSERT INTO radios (number, channel, wifi, power, bandwidth, guard_interval, is_active, access_point_id)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+// CreateRadioTemplate creates a radio template
+func (p *postgres) CreateRadioTemplate(r *RadioTemplate) (id uuid.UUID, err error) {
+	query := `INSERT INTO radio_templates (number, channel, wifi, power, bandwidth, guard_interval, access_point_type_id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, r.Number, r.Channel, r.WiFi, r.Power, r.Bandwidth, r.GuardInterval, r.IsActive, r.AccessPointID)
+	row := p.Pool.QueryRow(context.Background(), query, r.Number, r.Channel, r.WiFi, r.Power, r.Bandwidth, r.GuardInterval, r.AccessPointTypeID)
 	err = row.Scan(&id)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to create radio")
+		log.Error().Err(err).Msg("Failed to create radio template")
 	}
 	return
 }
 
-// GetRadio retrieves a radio
-func (p *postgres) GetRadio(radioUUID uuid.UUID) (r Radio, err error) {
-	query := `SELECT * FROM radios WHERE id=$1 AND deleted_at IS NULL`
+// GetRadioTemplate retrieves a radio template
+func (p *postgres) GetRadioTemplate(radioUUID uuid.UUID) (r RadioTemplate, err error) {
+	query := `SELECT * FROM radio_templates WHERE id=$1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
-	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointID)
+	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			log.Error().Err(err).Msgf("No radio found with ID %v", radioUUID)
+			log.Error().Err(err).Msgf("No radio template found with ID %v", radioUUID)
 			return
 		}
-		log.Error().Err(err).Msg("Failed to retrieve radio")
+		log.Error().Err(err).Msg("Failed to retrieve radio template")
 		return
 	}
-	log.Debug().Msgf("Retrieved radio: %v", r)
+	log.Debug().Msgf("Retrieved radio template: %v", r)
 	return
 }
 
-// IsRadioSoftDeleted checks if the radio has been soft deleted
-func (p *postgres) IsRadioSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err error) {
+// IsRadioTemplateSoftDeleted checks if the radio template has been soft deleted
+func (p *postgres) IsRadioTemplateSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err error) {
 	var deletedAt sql.NullTime // Use sql.NullTime to properly handle NULL values
-	query := `SELECT deleted_at FROM radios WHERE id = $1`
+	query := `SELECT deleted_at FROM radio_templates WHERE id = $1`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
 	err = row.Scan(&deletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			log.Error().Err(err).Msgf("No radio found with uuid %v", radioUUID)
+			log.Error().Err(err).Msgf("No radio template found with uuid %v", radioUUID)
 			return
 		}
-		log.Error().Err(err).Msg("Failed to retrieve radio")
+		log.Error().Err(err).Msg("Failed to retrieve radio template")
 		return
 	}
 	isDeleted = deletedAt.Valid
-	log.Debug().Msgf("Is radio deleted: %v", isDeleted)
+	log.Debug().Msgf("Is radio template deleted: %v", isDeleted)
 	return
 }
 
-// GetRadios retrieves radios
-func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
-	query := `SELECT * FROM radios WHERE access_point_id = $1 AND deleted_at IS NULL`
-	rows, err := p.Pool.Query(context.Background(), query, accessPointID)
+// GetRadioTemplates retrieves radio templates
+func (p *postgres) GetRadioTemplates(accessPointTypeID uuid.UUID) (rs []*RadioTemplate, err error) {
+	query := `SELECT * FROM radio_templates WHERE access_point_type_id = $1 AND deleted_at IS NULL`
+	rows, err := p.Pool.Query(context.Background(), query, accessPointTypeID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to retrieve radios")
+		log.Error().Err(err).Msg("Failed to retrieve radio templates")
 		return
 	}
 	defer rows.Close()
 
+	var r *RadioTemplate
 	for rows.Next() {
-		r := new(Radio)
-		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointID)
+		r = new(RadioTemplate)
+		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to scan radios")
+			log.Error().Err(err).Msg("Failed to scan radio templates")
 			return
 		}
 		rs = append(rs, r)
@@ -85,11 +86,11 @@ func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
 		return
 	}
 
-	log.Debug().Msgf("Retrieved %d radios", len(rs))
+	log.Debug().Msgf("Retrieved %d radio templates", len(rs))
 	return
 }
 
-//// GetRadios retrieves radios
+//// GetRadios retrieves radio templates
 //func (p *postgres) GetRadios(accessPointTypeUUID uuid.UUID) (rs []*Radio, err error) {
 //	//query := `SELECT * FROM radios WHERE access_point_type_id = $1 AND deleted_at IS NULL`
 //	query := `
@@ -131,41 +132,41 @@ func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
 //	return
 //}
 
-// SoftDeleteRadio soft delete a radio
-func (p *postgres) SoftDeleteRadio(radioUUID uuid.UUID) (err error) {
-	query := `UPDATE radios SET deleted_at = NOW() WHERE id = $1`
+// SoftDeleteRadioTemplate soft delete a radio template
+func (p *postgres) SoftDeleteRadioTemplate(radioUUID uuid.UUID) (err error) {
+	query := `UPDATE radio_templates SET deleted_at = NOW() WHERE id = $1`
 	commandTag, err := p.Pool.Exec(context.Background(), query, radioUUID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to soft delete radio")
+		log.Error().Err(err).Msg("Failed to soft delete radio template")
 		return
 	}
 	if commandTag.RowsAffected() == 0 {
-		log.Error().Msgf("No radio found with the uuid: %v", radioUUID)
+		log.Error().Msgf("No radio template found with the uuid: %v", radioUUID)
 		return
 	}
-	log.Debug().Msg("Access point deleted_at timestamp updated successfully")
+	log.Debug().Msg("Radio template deleted_at timestamp updated successfully")
 	return
 }
 
-// RestoreRadio restore a radio
-func (p *postgres) RestoreRadio(radioUUID uuid.UUID) (err error) {
-	query := `UPDATE radios SET deleted_at = NULL WHERE id = $1`
+// RestoreRadioTemplate restore a radio template
+func (p *postgres) RestoreRadioTemplate(radioUUID uuid.UUID) (err error) {
+	query := `UPDATE radio_templates SET deleted_at = NULL WHERE id = $1`
 	commandTag, err := p.Pool.Exec(context.Background(), query, radioUUID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to restore radio")
+		log.Error().Err(err).Msg("Failed to restore radio template")
 		return
 	}
 	if commandTag.RowsAffected() == 0 {
-		log.Error().Msgf("No radio found with the uuid: %v", radioUUID)
+		log.Error().Msgf("No radio template found with the uuid: %v", radioUUID)
 		return
 	}
-	log.Debug().Msg("Radio deleted_at timestamp set null successfully")
+	log.Debug().Msg("Radio template deleted_at timestamp set null successfully")
 	return
 }
 
-// PatchUpdateRadio updates only the specified fields of a radio
-func (p *postgres) PatchUpdateRadio(r *Radio) (err error) {
-	query := "UPDATE radios SET updated_at = NOW(), "
+// PatchUpdateRadioTemplate updates only the specified fields of a radio template
+func (p *postgres) PatchUpdateRadioTemplate(r *RadioTemplate) (err error) {
+	query := "UPDATE radio_templates SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
 	paramID := 1
@@ -198,11 +199,6 @@ func (p *postgres) PatchUpdateRadio(r *Radio) (err error) {
 	if r.GuardInterval != nil {
 		updates = append(updates, fmt.Sprintf("guard_interval = $%d", paramID))
 		params = append(params, r.GuardInterval)
-		paramID++
-	}
-	if r.IsActive != nil {
-		updates = append(updates, fmt.Sprintf("is_active = $%d", paramID))
-		params = append(params, r.IsActive)
 		paramID++
 	}
 

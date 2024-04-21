@@ -52,10 +52,20 @@ type Service interface {
 
 	CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error) // TODO: add color for apt
 	GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *AccessPointType, err error)
+	GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (apt *AccessPointTypeDetailed, err error)
 	IsAccessPointTypeSoftDeleted(accessPointTypeUUID uuid.UUID) (isDeleted bool, err error)
 	GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointType, err error)
+	GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*AccessPointTypeDetailed, err error)
 	SoftDeleteAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
 	RestoreAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
+
+	CreateRadioTemplate(r *RadioTemplate) (id uuid.UUID, err error)
+	GetRadioTemplate(radioUUID uuid.UUID) (r RadioTemplate, err error)
+	IsRadioTemplateSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err error)
+	GetRadioTemplates(accessPointTypeID uuid.UUID) (rs []*RadioTemplate, err error)
+	SoftDeleteRadioTemplate(radioUUID uuid.UUID) (err error)
+	RestoreRadioTemplate(radioUUID uuid.UUID) (err error)
+	PatchUpdateRadioTemplate(r *RadioTemplate) (err error)
 
 	CreateRadio(r *Radio) (id uuid.UUID, err error)
 	GetRadio(radioUUID uuid.UUID) (r Radio, err error)
@@ -67,6 +77,7 @@ type Service interface {
 
 	CreateAccessPoint(ap *AccessPoint) (id uuid.UUID, err error)
 	GetAccessPoint(accessPointUUID uuid.UUID) (ap *AccessPoint, err error)
+	GetAccessPointDetailed(accessPointUUID uuid.UUID) (ap *AccessPointDetailed, err error)
 	IsAccessPointSoftDeleted(accessPointUUID uuid.UUID) (isDeleted bool, err error)
 	GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err error)
 	GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPointDetailed, err error)
@@ -74,7 +85,7 @@ type Service interface {
 	RestoreAccessPoint(accessPointUUID uuid.UUID) (err error)
 	PatchUpdateAccessPoint(ap *AccessPoint) (err error)
 
-	SetRadioState(rs *RadioState) (id uuid.UUID, err error)
+	//SetRadioState(rs *RadioState) (id uuid.UUID, err error)
 	//GetRadioStates(accessPointID uuid.UUID) (radioStates []RadioState, err error)
 
 	Health() map[string]string
@@ -178,31 +189,50 @@ type AccessPointType struct {
 	SiteID    uuid.UUID  `json:"siteId" db:"site_id"`
 }
 
-type Radio struct {
+type RadioTemplate struct {
 	ID                uuid.UUID  `json:"id" db:"id"`
-	Number            string     `json:"number" db:"number"`
+	Number            *int       `json:"number" db:"number"`
 	Channel           *int       `json:"channel" db:"channel"`
-	WiFi              string     `json:"wifi" db:"wifi"`
+	WiFi              *string    `json:"wifi" db:"wifi"`
 	Power             *int       `json:"power" db:"power"`
-	Bandwidth         string     `json:"bandwidth" db:"bandwidth"`
+	Bandwidth         *string    `json:"bandwidth" db:"bandwidth"`
 	GuardInterval     *int       `json:"guardInterval" db:"guard_interval"`
 	CreatedAt         time.Time  `json:"createdAt" db:"created_at"`
 	UpdatedAt         time.Time  `json:"updatedAt" db:"updated_at"`
 	DeletedAt         *time.Time `json:"deletedAt" db:"deleted_at"`
 	AccessPointTypeID uuid.UUID  `json:"accessPointTypeId" db:"access_point_type_id"`
-	IsActive          bool       `json:"isActive" db:"is_active"`
 }
 
-type RadioState struct {
-	AccessPointID uuid.UUID `json:"accessPointId" db:"access_point_id"`
-	RadioID       uuid.UUID `json:"radioId" db:"radio_id"`
-	IsActive      bool      `json:"isActive" db:"is_active"`
+type Radio struct {
+	ID            uuid.UUID  `json:"id" db:"id"`
+	Number        *int       `json:"number" db:"number"`
+	Channel       *int       `json:"channel" db:"channel"`
+	WiFi          *string    `json:"wifi" db:"wifi"`
+	Power         *int       `json:"power" db:"power"`
+	Bandwidth     *string    `json:"bandwidth" db:"bandwidth"`
+	GuardInterval *int       `json:"guardInterval" db:"guard_interval"`
+	IsActive      *bool      `json:"isActive" db:"is_active"`
+	CreatedAt     time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt     time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt     *time.Time `json:"deletedAt" db:"deleted_at"`
+	AccessPointID uuid.UUID  `json:"accessPointId" db:"access_point_id"`
 }
+
+//type RadioState struct {
+//	AccessPointID uuid.UUID `json:"accessPointId" db:"access_point_id"`
+//	RadioID       uuid.UUID `json:"radioId" db:"radio_id"`
+//	IsActive      bool      `json:"isActive" db:"is_active"`
+//}
 
 type AccessPointDetailed struct {
 	AccessPoint
 	AccessPointType *AccessPointType `json:"accessPointType"`
 	Radios          []*Radio         `json:"radios"`
+}
+
+type AccessPointTypeDetailed struct {
+	AccessPointType
+	RadioTemplates []*RadioTemplate `json:"radioTemplates"`
 }
 
 type Wall struct {

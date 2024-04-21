@@ -110,9 +110,9 @@ CREATE TABLE IF NOT EXISTS access_point_types (
     site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS radios (
+CREATE TABLE IF NOT EXISTS radio_templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    number VARCHAR NOT NULL,
+    number INTEGER NOT NULL CHECK (number > 0),
     channel INTEGER NOT NULL CHECK (channel > 0),
     wifi VARCHAR NOT NULL,
     power INTEGER NOT NULL,
@@ -137,11 +137,19 @@ CREATE TABLE IF NOT EXISTS access_points (
     access_point_type_id UUID NOT NULL REFERENCES access_point_types(id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS radio_states (
-    access_point_id UUID NOT NULL REFERENCES access_points(id) ON DELETE SET NULL,
-    radio_id UUID NOT NULL REFERENCES radios(id) ON DELETE SET NULL,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (access_point_id, radio_id)
+CREATE TABLE IF NOT EXISTS radios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    number INTEGER NOT NULL CHECK (number > 0),
+    channel INTEGER NOT NULL CHECK (channel > 0),
+    wifi VARCHAR NOT NULL,
+    power INTEGER NOT NULL,
+    bandwidth VARCHAR NOT NULL,
+    guard_interval INTEGER NOT NULL CHECK (guard_interval > 0),
+    is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMPTZ,
+    access_point_id UUID NOT NULL REFERENCES access_points(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS wall_types (
