@@ -35,11 +35,11 @@ services:
     networks:
       - webnet
 
-  backend:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: backend
+    container_name: app
     ports:
       - "8080:8080"
     env_file:

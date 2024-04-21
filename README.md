@@ -23,17 +23,27 @@ run the application
 make run
 ```
 
-Create DB container
+run backend containers
 ```bash
 make docker-run
 ```
 
-Shutdown DB container
+shutdown backend containers
 ```bash
 make docker-down
 ```
 
-Cleanup all docker data
+build and run backend containers
+```bash
+make docker-build
+```
+
+rebuild the app container
+```bash
+make docker-rebuild-app
+```
+
+cleanup all docker data
 ```bash
 make docker-clean
 ```
