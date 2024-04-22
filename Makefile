@@ -41,7 +41,7 @@ docker-build:
 
 # Rebuild the application container
 docker-rebuild-app:
-	@docker-compose up --build --force-recreate --no-deps -d backend
+	@docker-compose up --build --force-recreate --no-deps -d app
 
 # Test the application
 test:

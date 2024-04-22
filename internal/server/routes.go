@@ -12,9 +12,10 @@ import (
 
 func (s *Fiber) RegisterFiberRoutes() {
 	s.App.Use(cors.New(cors.Config{
-		AllowOrigins: config.App.ClientURL,
-		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
-		AllowHeaders: "Content-Type, Authorization, X-Requested-With, Origin, Accept",
+		AllowHeaders:     "Origin, Content-Type, Accept, Content-Length, Accept-Language, Accept-Encoding, Connection, Access-Control-Allow-Origin",
+		AllowOrigins:     "*",
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
 
 	// Helmet middleware helps secure your apps by setting various HTTP headers.
