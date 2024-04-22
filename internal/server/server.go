@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"location-backend/internal/db"
 )
 
@@ -11,8 +12,10 @@ type Fiber struct {
 }
 
 func New(db db.Service) *Fiber {
+	app := fiber.New()
+	app.Use(cors.New())
 	server := &Fiber{
-		App: fiber.New(),
+		App: app,
 		db:  db,
 	}
 

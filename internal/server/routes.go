@@ -3,7 +3,6 @@ package server
 import (
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
@@ -11,11 +10,6 @@ import (
 )
 
 func (s *Fiber) RegisterFiberRoutes() {
-	s.App.Use(cors.New(cors.Config{
-		AllowOrigins: config.App.ClientURL,
-		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
-		AllowHeaders: "Content-Type, Authorization, X-Requested-With",
-	}))
 
 	// Helmet middleware helps secure your apps by setting various HTTP headers.
 	s.App.Use(helmet.New())
