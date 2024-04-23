@@ -26,7 +26,7 @@ import (
 //import type { XYcoordinate, XYZcoordinate } from "./math_functionality";
 
 type MatrixPoint struct {
-	id       uuid.UUID
+	id       int
 	sensorId uuid.UUID
 	x        int
 	y        int
@@ -57,16 +57,16 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
 	var maxY int = inputData.maxY
 	var cell_size_meters float64 = inputData.cell_size_meters
 
-	// var i int = 0;
+	var i int = 0
 
 	ch := make(chan MatrixPoint)
 	go func() {
 
 		for y := minY; y < maxY+1; y++ {
 			for x := minX; x < maxX+1; x++ {
-				// i++;
+				i++
 				var matrixWithPoint MatrixPoint = MatrixPoint{
-					// id: i,
+					id: i,
 					// sensorId: -1,
 					x:        x,
 					y:        y,
