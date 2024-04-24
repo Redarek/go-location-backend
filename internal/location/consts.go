@@ -32,7 +32,7 @@ const PENETRATION_FACTOR24 float64 = 1
 const ATTENUATION_FACTOR24 float64 = 2 // 2.5 или 2.71
 
 // Частота для 5 ГГц диапазона
-const FREQUENCY5 float64 = 5250 // 48 - 52 channel
+const FREQUENCY5 int = 5250 // 48 - 52 channel
 
 // Коэффициент распространения сигнала для 5 ГГц
 const PENETRATION_FACTOR5 float64 = 1 // был 6

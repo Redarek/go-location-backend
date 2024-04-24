@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
-	"strings"
 )
 
 // CreateWall creates a wall
@@ -112,7 +113,7 @@ WHERE w.floor_id = $1 AND w.deleted_at IS NULL AND wt.deleted_at IS NULL
 
 		err = rows.Scan(
 			&w.ID, &w.X1, &w.Y1, &w.X2, &w.Y2, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt, &w.FloorID, &w.WallTypeID,
-			&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation1, &wt.Attenuation2, &wt.Attenuation3, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID,
+			&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation24, &wt.Attenuation5, &wt.Attenuation6, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan walls and related data")

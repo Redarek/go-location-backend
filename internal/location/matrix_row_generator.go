@@ -1,224 +1,283 @@
 // CTRL + A, затем раскомментировать
 
-// package location;
-// // import logger from "../../../logger"
-// // import Sensor from "../models/sensors.model"
-// // import Wall from "../models/walls.model"
+package location
 
-// // import ("consts");
+import (
+	"encoding/json"
+	"errors"
+	"location-backend/internal/db"
+	. "math"
 
-// // import { getHorizontalAzimuthDeg, getVerticalAzimuthDeg, getWallPathLengthThrough } from "./math_functionality";
+	"github.com/google/uuid"
 
-// // import type { Client, InputData } from "./matrix_creator"
-// //import type { XYcoordinate, XYZcoordinate } from "./math_functionality";
+	// "location-backend/internal/logger"
+	"github.com/rs/zerolog/log"
+)
 
-// type MatrixPoint struct {
-//     id int
-//     sensorId int
-//     x int
-//     y int
-//     x_m float64
-//     y_m float64
-//     rssi24 float64
-//     rssi5 float64
-//     rssi6 float64
-//     distance float64
-// }
+// import logger from "../../../logger"
+// import Sensor from "../models/sensors.model"
+// import Wall from "../models/walls.model"
 
-// type InputData struct = {
-//     client Client
-//     walls Wall[]
-//     sensors Sensor[]
-//     cell_size_meters float64
-//     minX int
-//     minY int
-//     maxX int
-//     maxY int
-// }
+// import ("consts");
 
-// func generateMatrixRow(inputData InputData) chan MatrixPoint {
-//     var int
-//     client, walls, sensors, cell_size_meters, minX, minY, maxX, maxY := inputData;
+// import { getHorizontalAzimuthDeg, getVerticalAzimuthDeg, getWallPathLengthThrough } from "./math_functionality";
 
-//     var i int = 0;
+// import type { Client, InputData } from "./matrix_creator"
+//import type { XYcoordinate, XYZcoordinate } from "./math_functionality";
 
-//     for (let y = minY; y < maxY + 1; y++) {
-//         for (let x = minX; x < maxX + 1; x++) {
-//             i++;
-//             const matrixWithPoint: MatrixPoint = {
-//                 id: i,
-//                 sensorId: -1,
-//                 x: x,
-//                 y: y,
-//                 x_m: x * cell_size_meters,
-//                 y_m: y * cell_size_meters,
-//                 rssi24: RSSI_INVISIBLE,
-//                 rssi5: RSSI_INVISIBLE,
-//                 rssi6: RSSI_INVISIBLE,
-//                 distance: DISTANCE_INVISIBLE
-//             }
+type MatrixPoint struct {
+	id       int
+	sensorId uuid.UUID
+	x        int
+	y        int
+	x_m      float64
+	y_m      float64
+	rssi24   float64
+	rssi5    float64
+	rssi6    float64
+	distance float64
+}
 
-//             for (const sensor of sensors) {
-//                 let distance: number = _getDistance(x, y, client, sensor, cell_size_meters);
-//                 const [freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6] = _getFreeSpaceRSSI(x, y, client, sensor, distance);
-//                 let wallsLoss24 = 0;
-//                 let wallsLoss5 = 0;
-//                 let wallsLoss6 = 0;
+type Client struct {
+	trSignalPower int
+	trAntGain     int
+	zM            float64
+}
 
-//                 if (CALCULATE_WALLS) {
-//                     if (freeSpaceRSSI24 >= RSII_CUTOFF || freeSpaceRSSI5 >= RSII_CUTOFF || freeSpaceRSSI6 >= RSII_CUTOFF) {
-//                         [wallsLoss24, wallsLoss5, wallsLoss6] = _getWallsAttenuation(x, y, walls, sensor, client, cell_size_meters);
-//                     }
-//                 }
+// type Generator chan MatrixPoint
 
-//                 const tempRSSI24: number = freeSpaceRSSI24 + wallsLoss24 + CORRECTION_COEFFICIENT_24;
-//                 const rssi_24: number = (tempRSSI24 >= RSII_CUTOFF) ? Number(tempRSSI24.toFixed(1)) : RSSI_INVISIBLE;
-//                 const tempRSSI5: number = freeSpaceRSSI5 + wallsLoss5 + CORRECTION_COEFFICIENT_5;
-//                 const rssi_5: number = (tempRSSI5 >= RSII_CUTOFF) ? Number(tempRSSI5.toFixed(1)) : RSSI_INVISIBLE;
-//                 const tempRSSI6: number = freeSpaceRSSI6 + wallsLoss6 + CORRECTION_COEFFICIENT_6;
-//                 const rssi_6: number = (tempRSSI6 >= RSII_CUTOFF) ? Number(tempRSSI6.toFixed(1)) : RSSI_INVISIBLE;
-//                 distance = Number(distance.toFixed(1));
+func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
+	// var client, walls, sensors, cell_size_meters, minX, minY, maxX, maxY int = inputData;
+	var client Client = inputData.client
+	var walls []Wall = inputData.walls
+	var sensors []db.Sensor = inputData.sensors
+	var minX int = inputData.minX
+	var minY int = inputData.minY
+	var maxX int = inputData.maxX
+	var maxY int = inputData.maxY
+	var cell_size_meters float64 = inputData.cell_size_meters
 
-//                 matrixWithPoint.sensorId = sensor.id;
-//                 matrixWithPoint.rssi24 = rssi_24;
-//                 matrixWithPoint.rssi5 = rssi_5;
-//                 matrixWithPoint.rssi6 = rssi_6;
-//                 matrixWithPoint.distance = distance;
+	var i int = 0
 
-//                 yield matrixWithPoint;
-//             }
-//         }
-//     }
-// }
+	ch := make(chan MatrixPoint)
+	go func() {
 
-// /**
-//  * Returns the negative numbers of total walls attenuation for 2.4, 5 and 6 HHz bands.
-//  * @param clientX
-//  * @param clientY
-//  * @param walls
-//  * @param sensor
-//  * @param client
-//  * @returns
-//  */
-// func _getWallsAttenuation(clientX: number, clientY: number, walls: Wall[], sensor: Sensor, client: Client, cell_size_meters: number): [number, number, number] {
-//     let loss24 = 0;
-//     let loss5 = 0;
-//     let loss6 = 0;
+		for y := minY; y < maxY+1; y++ {
+			for x := minX; x < maxX+1; x++ {
+				i++
+				var matrixWithPoint MatrixPoint = MatrixPoint{
+					id: i,
+					// sensorId: -1,
+					x:        x,
+					y:        y,
+					x_m:      float64(x) * cell_size_meters,
+					y_m:      float64(y) * cell_size_meters,
+					rssi24:   RSSI_INVISIBLE,
+					rssi5:    RSSI_INVISIBLE,
+					rssi6:    RSSI_INVISIBLE,
+					distance: DISTANCE_INVISIBLE,
+				}
 
-//     for (const wall of walls) {
-//         const wall_path_length_through: number = getWallPathLengthThrough([clientX, clientY, client.zM],
-//             [sensor.x as number, sensor.y as number, sensor.z as number],
-//             [wall.x1, wall.y1, 0],
-//             [wall.x2, wall.y2, 0],
-//             wall.thickness,
-//             cell_size_meters);
+				for _, sensor := range sensors {
+					var distance float64 = _getDistance(x, y, client, sensor, cell_size_meters)
+					var freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6 = _getFreeSpaceRSSI(x, y, client, sensor, distance)
+					var wallsLoss24 float64 = 0
+					var wallsLoss5 float64 = 0
+					var wallsLoss6 float64 = 0
 
-//         if (wall_path_length_through) {
-//             const pathDivideThickness: number = wall_path_length_through / wall.thickness;
-//             loss24 -= wall.atten24 * pathDivideThickness;
-//             loss5 -= wall.atten5 * pathDivideThickness;
-//             loss6 -= wall.atten6 * pathDivideThickness;
+					if CALCULATE_WALLS {
+						if freeSpaceRSSI24 >= RSII_CUTOFF || freeSpaceRSSI5 >= RSII_CUTOFF || freeSpaceRSSI6 >= RSII_CUTOFF {
+							wallsLoss24, wallsLoss5, wallsLoss6 = _getWallsAttenuation(x, y, walls, sensor, client, cell_size_meters)
+						}
+					}
 
-//             if (loss24 <= RSII_CUTOFF && loss5 <= RSII_CUTOFF && loss6 <= RSII_CUTOFF)
-//                 break;
-//         }
-//     }
+					var tempRSSI24 float64 = freeSpaceRSSI24 + wallsLoss24 + CORRECTION_COEFFICIENT_24
+					// var rssi_24 float64 = (tempRSSI24 >= RSII_CUTOFF) ? Number(tempRSSI24.toFixed(1)) : RSSI_INVISIBLE;
+					var rssi_24 float64
+					var rssi_5 float64
+					var rssi_6 float64
+					if tempRSSI24 >= RSII_CUTOFF {
+						rssi_24 = Round(tempRSSI24*10) / 10 // округление до 1 знака
+					} else {
+						rssi_24 = RSSI_INVISIBLE
+					}
 
-//     return [loss24, loss5, loss6];
-// }
+					var tempRSSI5 float64 = freeSpaceRSSI5 + wallsLoss5 + CORRECTION_COEFFICIENT_5
+					// var rssi_5 float64 = (tempRSSI5 >= RSII_CUTOFF) ? Number(tempRSSI5.toFixed(1)) : RSSI_INVISIBLE;
+					if tempRSSI5 >= RSII_CUTOFF {
+						rssi_5 = Round(tempRSSI5*10) / 10
+					} else {
+						rssi_5 = RSSI_INVISIBLE
+					}
 
-// /**
-//  * Returns the distance in meters between client and sensor.
-//  * @param clientX Client x coordinate.
-//  * @param clientY Client y coordinate.
-//  * @param client Client`s parameters.
-//  * @param sensor Sensor.
-//  * @returns Distance between client and sensor in meters.
-//  */
-// func _getDistance(clientX: number, clientY: number, client: Client, sensor: Sensor, cell_size_meters: number): number {
-//     return Math.hypot((clientX - (sensor.x as number)) * cell_size_meters, (clientY - (sensor.y as number)) * cell_size_meters, (client.zM - (sensor.z as number)));
-// }
+					var tempRSSI6 float64 = freeSpaceRSSI6 + wallsLoss6 + CORRECTION_COEFFICIENT_6
+					// var rssi_6 float64 = (tempRSSI6 >= RSII_CUTOFF) ? Number(tempRSSI6.toFixed(1)) : RSSI_INVISIBLE;
+					if tempRSSI6 >= RSII_CUTOFF {
+						rssi_6 = Round(tempRSSI6*10) / 10
+					} else {
+						rssi_6 = RSSI_INVISIBLE
+					}
 
-// /**
-//  * Returns the free space pass loss in dB.
-//  * @param frequency Transmission frequency in GHz.
-//  * @param attenuation_factor Attenuation factor.
-//  * @param penetration_factor Penetration factor.
-//  * @param distance Transmission distance.
-//  * @returns Free space pass loss in dB.
-//  */
-// func _getFSPL(frequency: number, attenuation_factor: number, penetration_factor: number, distance: number): number {
-//     if (distance < 1) {
-//         distance = 1
-//     }
-//     return 20 * Math.log10(frequency) + 10 * attenuation_factor * Math.log10(distance) + penetration_factor - 24
-// }
+					distance = Round(distance*10) / 10
 
-// func _approximateAzimuth(azimuth: number, delta: number): number {
-//     return (Math.floor((azimuth + Math.floor(delta / 2)) / delta) * delta) % 360;
-// }
+					matrixWithPoint.sensorId = sensor.ID
+					matrixWithPoint.rssi24 = rssi_24
+					matrixWithPoint.rssi5 = rssi_5
+					matrixWithPoint.rssi6 = rssi_6
+					matrixWithPoint.distance = distance
 
-// /**
-//  * Returns the RSSI for 2.4, 5 and 6 HHz bands in a free space.
-//  * @param clientX Client x coordinate.
-//  * @param clientY Client y coordinate.
-//  * @param client Client`s parameters.
-//  * @param sensor Sensor.
-//  * @param distance Distance between client and sensors in meters.
-//  * @returns Tuple of RSSI for 2.4, 5 and 6 HHz bands.
-//  */
-// func _getFreeSpaceRSSI(clientX: number, clientY: number, client: Client, sensor: Sensor, distance: number): [number, number, number] {
-//     const fspl24: number = _getFSPL(FREQUENCY24, ATTENUATION_FACTOR24, PENETRATION_FACTOR24, distance);
-//     const fspl5: number = _getFSPL(FREQUENCY5, ATTENUATION_FACTOR5, PENETRATION_FACTOR5, distance);
-//     const fspl6: number = _getFSPL(FREQUENCY6, ATTENUATION_FACTOR6, PENETRATION_FACTOR6, distance);
+					ch <- matrixWithPoint
+				}
+			}
+		}
+		close(ch) // Close the channel when done
+	}()
+	return ch
+}
 
-//     let freeSpaceRSSI24: number = client.trSignalPower + client.trAntGain - fspl24 + sensor.correction_factor24;
-//     let freeSpaceRSSI5: number = client.trSignalPower + client.trAntGain - fspl5 + sensor.correction_factor5;
-//     let freeSpaceRSSI6: number = client.trSignalPower + client.trAntGain - fspl6 + sensor.correction_factor6;
+/**
+ * Returns the negative numbers of total walls attenuation for 2.4, 5 and 6 HHz bands.
+ * @param clientX
+ * @param clientY
+ * @param walls
+ * @param sensor
+ * @param client
+ * @returns
+ */
+func _getWallsAttenuation(clientX int, clientY int, walls []Wall, sensor db.Sensor, client Client, cell_size_meters float64) (float64, float64, float64) {
+	var loss24 float64 = 0
+	var loss5 float64 = 0
+	var loss6 float64 = 0
 
-//     if (sensor.radiation_diagram != null) {
-//         let delta = 0;
-//         if (sensor.radiation_diagram.diagram.degree[10] !== undefined) {
-//             delta = 10;
-//         }
-//         if (sensor.radiation_diagram.diagram.degree[15] !== undefined) {
-//             delta = 15;
-//         }
+	for _, wall := range walls {
+		var wall_path_length_through float64 = getWallPathLengthThrough(XYZcoordinate{x: float64(clientX), y: float64(clientY), z: client.zM},
+			XYZcoordinate{x: sensor.X, y: sensor.Y, z: sensor.Z},
+			XYZcoordinate{x: float64(wall.X1), y: float64(wall.Y1), z: 0},
+			XYZcoordinate{x: float64(wall.X2), y: float64(wall.Y2), z: 0},
+			wall.Thickness,
+			cell_size_meters)
 
-//         if (!delta) {
-//             logger.warn(`The radiation diagram can have only the step of 10 or 15 degrees.
-//             Check that the radiation diagram for sensor with id = ${sensor.id} is filled out correctly.
-//             By default, the antenna gain of ${sensor.rx_ant_gain} will be used for all directions.`)
-//         } else {
-//             let ant_gain = 2;
-//             try {
-//                 const hor_azimuth: number = _approximateAzimuth(
-//                     getHorizontalAzimuthDeg(
-//                         [sensor.x as number, sensor.y as number, sensor.z as number],
-//                         [clientX, clientY, client.zM]),
-//                     delta
-//                 )
-//                 const vert_azimuth: number = _approximateAzimuth(
-//                     getVerticalAzimuthDeg(
-//                         [sensor.x as number, sensor.y as number, sensor.z as number],
-//                         [clientX, clientY, client.zM]),
-//                     delta
-//                 )
+		if wall_path_length_through != 0 {
+			var pathDivideThickness float64 = wall_path_length_through / wall.Thickness
+			loss24 -= wall.Attenuation24 * pathDivideThickness
+			loss5 -= wall.Attenuation5 * pathDivideThickness
+			loss6 -= wall.Attenuation6 * pathDivideThickness
 
-//                 ant_gain = Number(((sensor.radiation_diagram.diagram.degree[hor_azimuth].hor_gain + sensor.radiation_diagram.diagram.degree[vert_azimuth].vert_gain) / 2).toFixed(1));
-//             }
-//             catch (err) {
-//                 ant_gain = sensor.rx_ant_gain;
-//                 freeSpaceRSSI24 += ant_gain;
-//                 freeSpaceRSSI5 += ant_gain;
-//                 freeSpaceRSSI6 += ant_gain;
-//             }
-//         }
-//     } else {
-//         freeSpaceRSSI24 += sensor.rx_ant_gain
-//         freeSpaceRSSI5 += sensor.rx_ant_gain
-//         freeSpaceRSSI6 += sensor.rx_ant_gain
-//     }
+			if loss24 <= RSII_CUTOFF && loss5 <= RSII_CUTOFF && loss6 <= RSII_CUTOFF {
+				break
+			}
+		}
+	}
 
-//     return [freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6];
-// }
+	return loss24, loss5, loss6
+}
+
+/**
+ * Returns the distance in meters between client and sensor.
+ * @param clientX Client x coordinate.
+ * @param clientY Client y coordinate.
+ * @param client Client`s parameters.
+ * @param sensor Sensor.
+ * @returns Distance between client and sensor in meters.
+ */
+func _getDistance(clientX int, clientY int, client Client, sensor db.Sensor, cell_size_meters float64) float64 {
+	return Magnitude(Vector{(float64(clientX) - sensor.X) * cell_size_meters, (float64(clientY) - sensor.Y) * cell_size_meters, (client.zM - sensor.Z)})
+}
+
+/**
+ * Returns the free space pass loss in dB.
+ * @param frequency Transmission frequency in GHz.
+ * @param attenuation_factor Attenuation factor.
+ * @param penetration_factor Penetration factor.
+ * @param distance Transmission distance.
+ * @returns Free space pass loss in dB.
+ */
+func _getFSPL(frequency int, attenuation_factor float64, penetration_factor float64, distance float64) float64 {
+	if distance < 1 {
+		distance = 1
+	}
+	return 20*Log10(float64(frequency)) + 10*attenuation_factor*Log10(distance) + penetration_factor - 24
+}
+
+func _approximateAzimuth(azimuth float64, delta float64) (int, error) {
+	if delta == 0 {
+		return 0, errors.New("delta cannot be zero")
+	}
+
+	return int(Floor((azimuth+Floor(delta/2))/delta)*delta) % 360, nil
+}
+
+/**
+ * Returns the RSSI for 2.4, 5 and 6 HHz bands in a free space.
+ * @param clientX Client x coordinate.
+ * @param clientY Client y coordinate.
+ * @param client Client`s parameters.
+ * @param sensor Sensor.
+ * @param distance Distance between client and sensors in meters.
+ * @returns Tuple of RSSI for 2.4, 5 and 6 HHz bands.
+ */
+func _getFreeSpaceRSSI(clientX int, clientY int, client Client, sensor db.Sensor, distance float64) (float64, float64, float64) {
+	var fspl24 float64 = _getFSPL(FREQUENCY24, ATTENUATION_FACTOR24, PENETRATION_FACTOR24, distance)
+	var fspl5 float64 = _getFSPL(FREQUENCY5, ATTENUATION_FACTOR5, PENETRATION_FACTOR5, distance)
+	var fspl6 float64 = _getFSPL(FREQUENCY6, ATTENUATION_FACTOR6, PENETRATION_FACTOR6, distance)
+
+	var freeSpaceRSSI24 float64 = float64(client.trSignalPower) + float64(client.trAntGain) - fspl24 + sensor.CorrectionFactor24
+	var freeSpaceRSSI5 float64 = float64(client.trSignalPower) + float64(client.trAntGain) - fspl5 + sensor.CorrectionFactor5
+	var freeSpaceRSSI6 float64 = float64(client.trSignalPower) + float64(client.trAntGain) - fspl6 + sensor.CorrectionFactor6
+
+	var ant_gain float64 = 2
+
+	var diagram db.Diagram
+	err := json.Unmarshal(sensor.Diagram, &diagram)
+	if err != nil {
+		var delta int = 0
+		if _, ok := diagram.Degree["10"]; ok {
+			delta = 10
+		}
+		if _, ok := diagram.Degree["15"]; ok {
+			delta = 15
+		}
+
+		if delta == 0 {
+			log.Warn().Msg(`The radiation diagram can have only the step of 10 or 15 degrees.
+            Check that the radiation diagram for sensor with id = ${sensor.id} is filled out correctly.
+            By default, the antenna gain of ${sensor.rx_ant_gain} will be used for all directions.`)
+		} else {
+			hor_azimuth, error := _approximateAzimuth(
+				float64(getHorizontalAzimuthDeg(
+					XYZcoordinate{x: sensor.X, y: sensor.Y, z: sensor.Z},
+					XYZcoordinate{float64(clientX), float64(clientY), client.zM},
+					0)),
+				float64(delta))
+			if error != nil {
+				goto errorHandling
+			}
+
+			vert_azimuth, err := _approximateAzimuth(
+				float64(getVerticalAzimuthDeg(
+					XYZcoordinate{x: sensor.X, y: sensor.Y, z: sensor.Z},
+					XYZcoordinate{float64(clientX), float64(clientY), client.zM},
+					0)),
+				float64(delta))
+			if err != nil {
+				goto errorHandling
+			}
+
+			ant_gain = (diagram.Degree[string(hor_azimuth)].HorGain + diagram.Degree[string(vert_azimuth)].VertGain) / 2 // окр до десятых
+
+		}
+	} else {
+		freeSpaceRSSI24 += sensor.RxAntGain
+		freeSpaceRSSI5 += sensor.RxAntGain
+		freeSpaceRSSI6 += sensor.RxAntGain
+	}
+
+	return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
+
+errorHandling:
+	ant_gain = sensor.RxAntGain
+	freeSpaceRSSI24 += ant_gain
+	freeSpaceRSSI5 += ant_gain
+	freeSpaceRSSI6 += ant_gain
+	return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
+}

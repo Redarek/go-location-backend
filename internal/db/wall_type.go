@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
-	"strings"
 )
 
 // CreateWallType creates a wall type
@@ -15,7 +16,7 @@ func (p *postgres) CreateWallType(wt *WallType) (id uuid.UUID, err error) {
 	sql := `INSERT INTO wall_types (name, color, attenuation1, attenuation2, attenuation3, thickness, site_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), sql, wt.Name, wt.Color, wt.Attenuation1, wt.Attenuation2, wt.Attenuation3, wt.Thickness, wt.SiteID)
+	row := p.Pool.QueryRow(context.Background(), sql, wt.Name, wt.Color, wt.Attenuation24, wt.Attenuation5, wt.Attenuation6, wt.Thickness, wt.SiteID)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create wall type")
@@ -28,7 +29,7 @@ func (p *postgres) GetWallType(wallTypeUUID uuid.UUID) (wt *WallType, err error)
 	sql := `SELECT * FROM wall_types WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), sql, wallTypeUUID)
 	wt = &WallType{}
-	err = row.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation1, &wt.Attenuation2, &wt.Attenuation3, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID)
+	err = row.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation24, &wt.Attenuation5, &wt.Attenuation6, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			log.Error().Err(err).Msgf("No wall type found with uuid %v", wallTypeUUID)
@@ -73,7 +74,7 @@ func (p *postgres) GetWallTypes(siteUUID uuid.UUID) (wts []*WallType, err error)
 	var wt *WallType
 	for rows.Next() {
 		wt = new(WallType)
-		err = rows.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation1, &wt.Attenuation2, &wt.Attenuation3, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID)
+		err = rows.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation24, &wt.Attenuation5, &wt.Attenuation6, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan wall type")
 			return
@@ -140,19 +141,19 @@ func (p *postgres) PatchUpdateWallType(wt *WallType) (err error) {
 		params = append(params, wt.Color)
 		paramID++
 	}
-	if wt.Attenuation1 != nil {
+	if wt.Attenuation24 != nil {
 		updates = append(updates, fmt.Sprintf("attenuation1 = $%d", paramID))
-		params = append(params, wt.Attenuation1)
+		params = append(params, wt.Attenuation24)
 		paramID++
 	}
-	if wt.Attenuation2 != nil {
+	if wt.Attenuation5 != nil {
 		updates = append(updates, fmt.Sprintf("attenuation2 = $%d", paramID))
-		params = append(params, wt.Attenuation2)
+		params = append(params, wt.Attenuation5)
 		paramID++
 	}
-	if wt.Attenuation3 != nil {
+	if wt.Attenuation6 != nil {
 		updates = append(updates, fmt.Sprintf("attenuation3 = $%d", paramID))
-		params = append(params, wt.Attenuation3)
+		params = append(params, wt.Attenuation6)
 		paramID++
 	}
 	if wt.Thickness != nil {

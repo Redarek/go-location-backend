@@ -6,11 +6,6 @@ import (
 	. "math"
 )
 
-// TODO Переписать векторы в это!
-// type Vec3[T Float] struct {
-// 	X, Y, Z T
-// }
-
 // const X, Y, Z int = 0, 1, 2
 
 type XYcoordinate struct {
@@ -202,7 +197,7 @@ func _getLinesIntersection2D(line1Point1 XYZcoordinate, line1Point2 XYZcoordinat
  * @param offset_deg ПО УМОЛЧАНИЮ 0!!!!
  * @returns Azimuth in degrees between(0; -1; 0) and (x; y; 0) vectors.
  */
-func getHorizontalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_deg float64) int {
+func getHorizontalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_deg int) int {
 	var vector Vector = _getVector(point1, point2)
 	return _getAzimuth(vector, offset_deg)
 }
@@ -216,7 +211,7 @@ func getHorizontalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_
  * @param offset_deg ПО УМОЛЧАНИЮ 0
  * @returns Azimuth in degrees between(0; 0; 1) and (0; y; z) vectors.
  */
-func getVerticalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_deg float64) int {
+func getVerticalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_deg int) int {
 	var vector Vector = _getVector(point1, point2)
 	return _getPlunge(vector, offset_deg)
 }
@@ -230,12 +225,12 @@ func getVerticalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_de
  * @param offset_deg ПО УМОЛЧАНИЮ 0
  * @returns
  */
-func _getAzimuth(vector Vector, offset_deg float64) int {
+func _getAzimuth(vector Vector, offset_deg int) int {
 	var angle float64 = Atan2(vector.x, -vector.y) * (180 / math.Pi)
 	if angle < 0 {
 		angle += 360
 	}
-	return int(angle+offset_deg) % 360
+	return (int(angle) + offset_deg) % 360
 }
 
 /**
@@ -244,7 +239,7 @@ func _getAzimuth(vector Vector, offset_deg float64) int {
  * @param offset_deg ПО УМОЛЧАНИЮ 0!!!!!!!!!
  * @returns
  */
-func _getPlunge(vector Vector, offset_deg float64) int {
+func _getPlunge(vector Vector, offset_deg int) int {
 	// var x int = vector.x
 	// var y int = vector.y
 	var z float64 = vector.z
@@ -254,7 +249,7 @@ func _getPlunge(vector Vector, offset_deg float64) int {
 	if angle < 0 {
 		angle += 360
 	}
-	return int(angle+offset_deg) % 360
+	return (int(angle) + offset_deg) % 360
 }
 
 // ГОТОВО

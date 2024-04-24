@@ -1,8 +1,10 @@
 package db
 
 import (
-	"github.com/google/uuid"
+	"encoding/json"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Service interface {
@@ -249,20 +251,69 @@ type Wall struct {
 }
 
 type WallType struct {
-	ID           uuid.UUID  `json:"id" db:"id"`
-	Name         string     `json:"name" db:"name"`
-	Color        string     `json:"color" db:"color"`
-	Attenuation1 *float64   `json:"attenuation1" db:"attenuation1"`
-	Attenuation2 *float64   `json:"attenuation2" db:"attenuation2"`
-	Attenuation3 *float64   `json:"attenuation3" db:"attenuation3"`
-	Thickness    *float64   `json:"thickness" db:"thickness"`
-	CreatedAt    time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt    time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt    *time.Time `json:"deletedAt" db:"deleted_at"`
-	SiteID       uuid.UUID  `json:"siteId" db:"site_id"`
+	ID            uuid.UUID  `json:"id" db:"id"`
+	Name          string     `json:"name" db:"name"`
+	Color         string     `json:"color" db:"color"`
+	Attenuation24 *float64   `json:"attenuation24" db:"attenuation24"`
+	Attenuation5  *float64   `json:"attenuation5" db:"attenuation5"`
+	Attenuation6  *float64   `json:"attenuation6" db:"attenuation6"`
+	Thickness     *float64   `json:"thickness" db:"thickness"`
+	CreatedAt     time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt     time.Time  `json:"updatedAt" db:"updated_at"`
+	DeletedAt     *time.Time `json:"deletedAt" db:"deleted_at"`
+	SiteID        uuid.UUID  `json:"siteId" db:"site_id"`
 }
 
 type WallDetailed struct {
 	Wall
 	WallType *WallType `json:"wallType"`
 }
+
+// ? TODO Возможно стоит из названий убрать приписку sensor_
+type Sensor struct {
+	ID         uuid.UUID `json:"id" db:"id"`                  // "id" INTEGER [pk, increment]
+	Mac        string    `json:"mac" db:"sensor_mac"`         //   "sensor_mac" VARCHAR(17) [unique, not null]
+	Ip         string    `json:"ip" db:"sensor_ip"`           //   "sensor_ip" VARCHAR(64) [not null]
+	Name       string    `json:"name" db:"sensor_name"`       //   "sensor_name" VARCHAR(45)
+	Allias     string    `json:"allias" db:"allias"`          //   "allias" VARCHAR(45)
+	Interface0 string    `json:"interface0" db:"interface_0"` //   "interface_0" VARCHAR(45) [not null]
+	Interface1 string    `json:"interface1" db:"interface_1"` //   "interface_1" VARCHAR(45)
+	Interface2 string    `json:"interface2" db:"interface_2"` //   "interface_2" VARCHAR(45)
+	// TODO "state" sensors_state_enum [not null, default: "DOWN"]
+	// TODO "state_change" DATETIME [not null]
+	// TODO "packets_captured" INTEGER [not null, default: 0]
+	// TODO  "uptime" TIME [not null]
+	// TODO  "logs_path" VARCHAR(45)
+	// TODO  "approved" TINYINT(1) [not null, default: FALSE]
+	// TODO "mode" VARCHAR(45)
+	// TODO "type" TINYINT(1)
+	// TODO  "primary_channel_freq" FLOAT
+	// TODO  "primary_channel_width" VARCHAR(45)
+	// TODO  "primary_interval" FLOAT
+	// TODO  "secondary_interval" FLOAT
+	MapId              uuid.UUID       `json:"mapId" db:"map_id"`                            //  "map_id" INTEGER
+	X                  float64         `json:"x" db:"x"`                                     //   "x" FLOAT
+	Y                  float64         `json:"y" db:"y"`                                     //   "y" FLOAT
+	Z                  float64         `json:"z" db:"z"`                                     //   "z" FLOAT
+	RxAntGain          float64         `json:"rxAntGain" db:"rx_ant_gain"`                   //   "rx_ant_gain" FLOAT [not null, default: 0]
+	HorRotationOffset  int             `json:"horRotationOffset" db:"hor_rotation_offset"`   //   "hor_rotation_offset" INTEGER [not null, default: 0]
+	VertRotationOffset int             `json:"vertRotationOffset" db:"vert_rotation_offset"` //   "vert_rotation_offset" INTEGER [not null, default: 0]
+	CorrectionFactor24 float64         `json:"correctionFactor24" db:"correction_factor24"`  //   "correction_factor24" INTEGER [not null, default: 0]  -> FLOAT
+	CorrectionFactor5  float64         `json:"correctionFactor5" db:"correction_factor5"`    //   "correction_factor5" INTEGER [not null, default: 0] -> FLOAT
+	CorrectionFactor6  float64         `json:"correctionFactor6" db:"correction_factor6"`    //   "correction_factor6" INTEGER [not null, default: 0float64 -> FLOAT
+	Diagram            json.RawMessage `json:"diagram" db:"diagram"`                         // Тип JSON
+}
+
+type Diagram struct {
+	Degree map[string]Degree `json:"degree"`
+}
+
+type Degree struct {
+	HorGain  float64 `json:"hor_gain"`
+	VertGain float64 `json:"vert_gain"`
+}
+
+// type RadiationDiagram struct {
+// 	SensorID uuid.UUID       `json:"sensorId" db:"sensor_id"`
+
+// }
