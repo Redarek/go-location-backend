@@ -199,32 +199,6 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-//
-//func saveImage(filePath string, img image.Image, format string) error {
-//	// Проверяем, существует ли директория `static`, если нет - создаем
-//	if _, err := os.Stat("static"); os.IsNotExist(err) {
-//		if err := os.Mkdir("static", os.ModePerm); err != nil {
-//			log.Error().Err(err).Msg("Failed to create directory")
-//		}
-//	}
-//
-//	// Открываем файл для записи
-//	fileOut, err := os.Create(filePath)
-//	if err != nil {
-//		log.Error().Err(err).Msg("Failed to open file")
-//	}
-//	defer func(fileOut *os.File) {
-//		err = fileOut.Close()
-//		if err != nil {
-//			log.Error().Err(err).Msg("Failed to defer close file")
-//		}
-//	}(fileOut)
-//
-//	_, err = fileOut.Write(img.(*image.RGBA).Pix)
-//
-//	return err
-//}
-
 // saveImage saves an image to the specified file path, handling different image formats
 func saveImage(filePath string, img image.Image) error {
 	if _, err := os.Stat("static"); os.IsNotExist(err) {
