@@ -13,7 +13,7 @@ import (
 
 // CreateWallType creates a wall type
 func (p *postgres) CreateWallType(wt *WallType) (id uuid.UUID, err error) {
-	sql := `INSERT INTO wall_types (name, color, attenuation1, attenuation2, attenuation3, thickness, site_id)
+	sql := `INSERT INTO wall_types (name, color, attenuation24, attenuation5, attenuation6, thickness, site_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING id`
 	row := p.Pool.QueryRow(context.Background(), sql, wt.Name, wt.Color, wt.Attenuation24, wt.Attenuation5, wt.Attenuation6, wt.Thickness, wt.SiteID)
@@ -142,17 +142,17 @@ func (p *postgres) PatchUpdateWallType(wt *WallType) (err error) {
 		paramID++
 	}
 	if wt.Attenuation24 != nil {
-		updates = append(updates, fmt.Sprintf("attenuation1 = $%d", paramID))
+		updates = append(updates, fmt.Sprintf("attenuation24 = $%d", paramID))
 		params = append(params, wt.Attenuation24)
 		paramID++
 	}
 	if wt.Attenuation5 != nil {
-		updates = append(updates, fmt.Sprintf("attenuation2 = $%d", paramID))
+		updates = append(updates, fmt.Sprintf("attenuation5 = $%d", paramID))
 		params = append(params, wt.Attenuation5)
 		paramID++
 	}
 	if wt.Attenuation6 != nil {
-		updates = append(updates, fmt.Sprintf("attenuation3 = $%d", paramID))
+		updates = append(updates, fmt.Sprintf("attenuation6 = $%d", paramID))
 		params = append(params, wt.Attenuation6)
 		paramID++
 	}

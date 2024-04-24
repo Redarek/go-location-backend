@@ -93,7 +93,7 @@ func (p *postgres) GetWalls(floorUUID uuid.UUID) (ws []*Wall, err error) {
 
 func (p *postgres) GetWallsDetailed(floorUUID uuid.UUID) (walls []*WallDetailed, err error) {
 	query := `
-SELECT w.id, w.x1, w.y1, w.x2, w.y2, w.created_at, w.updated_at, w.deleted_at, w.floor_id, w.wall_type_id, wt.id, wt.name, wt.color, wt.attenuation1, wt.attenuation2, wt.attenuation3, wt.thickness, wt.created_at, wt.updated_at, wt.deleted_at, wt.site_id
+SELECT w.id, w.x1, w.y1, w.x2, w.y2, w.created_at, w.updated_at, w.deleted_at, w.floor_id, w.wall_type_id, wt.id, wt.name, wt.color, wt.attenuation24, wt.attenuation5, wt.attenuation6, wt.thickness, wt.created_at, wt.updated_at, wt.deleted_at, wt.site_id
 FROM walls w
 LEFT JOIN wall_types wt ON w.wall_type_id = wt.id
 WHERE w.floor_id = $1 AND w.deleted_at IS NULL AND wt.deleted_at IS NULL
