@@ -1,17 +1,17 @@
 package server
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	_ "golang.org/x/image/webp"
 	"image"
 	_ "image/gif"
+	"image/jpeg"
 	_ "image/jpeg"
+	"image/png"
 	_ "image/png"
 	"location-backend/internal/db"
-	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -117,7 +117,7 @@ func (s *Fiber) RestoreFloor(c *fiber.Ctx) (err error) {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-// UpdateFloor updates floor
+// PatchUpdateFloor updates floor
 func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 
 	form, err := c.MultipartForm()
@@ -134,7 +134,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid floor UUID")
 		}
 	} else {
-		f.ID = uuid.Nil
+		return c.Status(fiber.StatusBadRequest).SendString("id is required")
 	}
 	if name, ok := form.Value["name"]; ok && name[0] != "" {
 		f.Name = &name[0]
@@ -162,79 +162,100 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		f.Scale = nil
 	}
 
-	log.Debug().Msgf("Floor info: %+v", f)
-
 	files := form.File["image"]
 	if len(files) > 0 {
 		file, err := files[0].Open()
-		defer func(file multipart.File) {
-			err = file.Close()
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to defer close file")
-			}
-		}(file)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to close file")
+			log.Error().Err(err).Msg("Failed to open file")
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
+		defer file.Close()
 
-		_, err = file.Seek(0, 0)
-		img, format, err := image.Decode(file)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to decode file")
-			return c.SendStatus(fiber.StatusInternalServerError)
-		}
-
-		newFileName := fmt.Sprintf("%s.%s", uuid.NewString(), format)
+		fileExtension := filepath.Ext(files[0].Filename)
+		newFileName := uuid.NewString() + fileExtension // Using UUID and original file extension
 		filePath := filepath.Join("static", newFileName)
 
-		if err := saveImage(filePath, img, format); err != nil {
-			log.Error().Err(err).Msg("Failed to save file")
+		img, _, err := image.Decode(file) // We no longer use format here, only for decoding
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to decode image")
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		if err := saveImage(filePath, img); err != nil {
+			log.Error().Err(err).Msg("Failed to save image")
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 		f.Image = &newFileName
-		log.Debug().Msgf("Изображение сохранено: %v", filePath)
+		log.Debug().Msgf("Image saved: %v", filePath)
 	}
-	// Обновление информации об этаже в БД
-	// Предполагается, что здесь вы вызываете функцию обновления БД с floor в качестве аргумента
-	// Не забудьте обновлять только те поля, которые были отправлены клиентом
+
+	log.Debug().Msgf("Floor info: %+v", f)
+
 	err = s.db.PatchUpdateFloor(f)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to patch update floor")
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-	// Отправляем ответ
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func saveImage(filePath string, img image.Image, format string) error {
-	// Проверяем, существует ли директория `static`, если нет - создаем
+//
+//func saveImage(filePath string, img image.Image, format string) error {
+//	// Проверяем, существует ли директория `static`, если нет - создаем
+//	if _, err := os.Stat("static"); os.IsNotExist(err) {
+//		if err := os.Mkdir("static", os.ModePerm); err != nil {
+//			log.Error().Err(err).Msg("Failed to create directory")
+//		}
+//	}
+//
+//	// Открываем файл для записи
+//	fileOut, err := os.Create(filePath)
+//	if err != nil {
+//		log.Error().Err(err).Msg("Failed to open file")
+//	}
+//	defer func(fileOut *os.File) {
+//		err = fileOut.Close()
+//		if err != nil {
+//			log.Error().Err(err).Msg("Failed to defer close file")
+//		}
+//	}(fileOut)
+//
+//	_, err = fileOut.Write(img.(*image.RGBA).Pix)
+//
+//	return err
+//}
+
+// saveImage saves an image to the specified file path, handling different image formats
+func saveImage(filePath string, img image.Image) error {
 	if _, err := os.Stat("static"); os.IsNotExist(err) {
-		if err := os.Mkdir("static", os.ModePerm); err != nil {
+		if err = os.Mkdir("static", os.ModePerm); err != nil {
 			log.Error().Err(err).Msg("Failed to create directory")
+			return err
 		}
 	}
 
-	// Открываем файл для записи
 	fileOut, err := os.Create(filePath)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to open file")
+		log.Error().Err(err).Msg("Failed to create file")
+		return err
 	}
-	defer func(fileOut *os.File) {
-		err = fileOut.Close()
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to defer close file")
-		}
-	}(fileOut)
+	defer fileOut.Close()
 
-	//// Конвертация и сохранение изображения в формате webp
-	//if format != "webp" {
-	//	err = webp.Encode(fileOut, img, &webp.Options{Quality: 10})
-	//} else {
-	//	// Если изображение уже в формате webp, просто сохраняем его
-	//
-	//}
-	_, err = fileOut.Write(img.(*image.RGBA).Pix)
+	// Determine the image format based on the file extension
+	switch strings.ToLower(filepath.Ext(filePath)) {
+	case ".jpeg", ".jpg":
+		err = jpeg.Encode(fileOut, img, nil) // nil EncoderOptions uses default settings
+	case ".png":
+		err = png.Encode(fileOut, img)
+	default:
+		// Default to JPEG if no recognized format is specified
+		err = jpeg.Encode(fileOut, img, nil)
+	}
 
-	return err
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to encode and save image")
+		return err
+	}
+
+	return nil
 }
