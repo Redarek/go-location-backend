@@ -6,5 +6,22 @@
   "api_key": "aebc0f53-cb64-42f1-bb48-bb06136935bd",
   "allowed_origins": [
     "http://localhost:3000"
+  ],
+  "namespaces": [
+    {
+      "name": "floor",
+      "presence": true,
+      "history_size": 10,
+      "history_ttl": "300s",
+      "force_recovery": true,
+      "allow_subscribe_for_client": true,
+      "allow_subscribe_for_anonymous": true,
+      "allow_publish_for_subscriber": true,
+      "allow_publish_for_anonymous": true,
+      "allow_history_for_subscriber": true,
+      "allow_history_for_anonymous": true,
+      "allow_presence_for_subscriber": true,
+      "allow_presence_for_anonymous": true
+    }
   ]
 }
