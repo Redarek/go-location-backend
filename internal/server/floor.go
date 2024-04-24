@@ -185,7 +185,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 
-		newFileName := fmt.Sprintf("%s.webp", uuid.NewString())
+		newFileName := fmt.Sprintf("%s.%s", uuid.NewString(), format)
 		filePath := filepath.Join("static", newFileName)
 
 		if err := saveImage(filePath, img, format); err != nil {
