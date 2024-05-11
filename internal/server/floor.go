@@ -186,9 +186,21 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		}
 		f.Image = &newFileName
 		log.Debug().Msgf("Image saved: %v", filePath)
+
+		// Get image dimensions
+		bounds := img.Bounds()
+		width := bounds.Dx()  // Width of the image
+		height := bounds.Dy() // Height of the image
+		log.Debug().Msgf("Image dimensions: %dx%d", width, height)
+
+		f.WidthInPixels = &width
+		f.HeightInPixels = &height
+
+		log.Debug().Msgf("Floor dimensions: %dx%d", *f.WidthInPixels, *f.WidthInPixels)
+
 	}
 
-	log.Debug().Msgf("Floor info: %+v", f)
+	log.Debug().Msgf("Floor info: %+v", *f)
 
 	err = s.db.PatchUpdateFloor(f)
 	if err != nil {

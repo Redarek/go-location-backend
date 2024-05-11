@@ -9,40 +9,40 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// // import Sensor from "../models/sensors.model";
-// // import Wall from "../models/walls.model";
+// // import Sensor from "../models/Sensors.model";
+// // import Wall from "../models/Walls.model";
 
 // // import { generateMatrixRow, MatrixPoint } from "./matrix_row_generator";
 
-func _getMatrix(matrixRowGenerator chan MatrixPoint, mapId uuid.UUID) ([]PointRow, []MatrixRow) {
+func _getMatrix(matrixRowGenerator chan MatrixPoint, mapID uuid.UUID) ([]PointRow, []MatrixRow) {
 	var pointRowsToInsert []PointRow
 	var matrixRowsToInsert []MatrixRow
-	var lastId = -1
+	var lastID = -1
 
 	for row := range matrixRowGenerator {
 
-		// (id, sensorId, x_m, y_m, rssi24, rssi5, rssi6, distance) := row;
+		// (id, sensorID, xM, yM, rssi24, rssi5, rssi6, distance) := row;
 		var id int = row.id
-		var sensorId uuid.UUID = row.sensorId
-		x_m, y_m := row.x_m, row.y_m
+		var sensorID uuid.UUID = row.sensorID
+		xM, yM := row.xM, row.yM
 		rssi24, rssi5, rssi6 := row.rssi24, row.rssi5, row.rssi6
 		var distance float64 = row.distance
 
-		if lastId != id {
-			// pointRowsToInsert.push({ id: id, map_id: mapId, x: x_m, y: y_m });
-			pointRowsToInsert = append(pointRowsToInsert, PointRow{id: id, map_id: mapId, x: x_m, y: y_m})
-			lastId = id
+		if lastID != id {
+			// pointRowsToInsert.push({ id: id, mapID: mapID, x: xM, y: yM });
+			pointRowsToInsert = append(pointRowsToInsert, PointRow{id: id, mapID: mapID, x: xM, y: yM})
+			lastID = id
 		}
 
-		// matrixRowsToInsert.push({ point_id: id, sensor_id: sensorId, rssi24: rssi24, rssi5: rssi5, rssi6: rssi6, distance: distance });
-		matrixRowsToInsert = append(matrixRowsToInsert, MatrixRow{point_id: id, sensor_id: sensorId, rssi24: rssi24, rssi5: rssi5, rssi6: rssi6, distance: distance})
+		// matrixRowsToInsert.push({ pointID: id, sensorID: sensorID, rssi24: rssi24, rssi5: rssi5, rssi6: rssi6, distance: distance });
+		matrixRowsToInsert = append(matrixRowsToInsert, MatrixRow{pointID: id, sensorID: sensorID, rssi24: rssi24, rssi5: rssi5, rssi6: rssi6, distance: distance})
 	}
 
 	return pointRowsToInsert, matrixRowsToInsert
 }
 
-func CreateMatrix(mapId uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow) {
-	log.Info().Msg(`Creating matrix for map_id = ${mapId}...`)
+func CreateMatrix(mapID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow) {
+	log.Info().Msg(`Creating matrix for mapID = ${mapID}...`)
 	var startTestTime time.Time = time.Now()
 
 	// var pointRowsToInsert []PointRow
@@ -52,8 +52,8 @@ func CreateMatrix(mapId uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow
 	//const startFillTime: number = performance.now();
 
 	var matrixRowGenerator chan MatrixPoint = GenerateMatrixRow(inputData)
-	//const [pointSize, matrixSize]: [number, number] = await _insertIntoMatrixAsync(pointRepository, matrixRepository, matrixRowGenerator, mapId);
-	pointRowsToInsert, matrixRowsToInsert := _getMatrix(matrixRowGenerator, mapId)
+	//const [pointSize, matrixSize]: [number, number] = await _insertIntoMatrixAsync(pointRepository, matrixRepository, matrixRowGenerator, mapID);
+	pointRowsToInsert, matrixRowsToInsert := _getMatrix(matrixRowGenerator, mapID)
 
 	//logger.info(`Created ${pointSize} points (${matrixSize} matrix points) in ${((performance.now() - startTestTime) / 1000).toFixed(2)} sec `
 	//    + `(Del: ${deleteTime} sec, Fill: ${((performance.now() - startFillTime) / 1000).toFixed(2)} sec)`);
@@ -71,9 +71,9 @@ func CreateMatrix(mapId uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow
 }
 
 // // type Client = {
-// //     trSignalPower: number,
-// //     trAntGain: number,
-// //     zM: number
+// //     TrSignalPower: number,
+// //     TrAntGain: number,
+// //     ZM: number
 // // }
 
 type Wall struct {
@@ -89,28 +89,28 @@ type Wall struct {
 }
 
 type InputData struct {
-	client           Client
-	walls            []Wall
-	sensors          []db.Sensor
-	cell_size_meters float64
-	minX             int
-	minY             int
-	maxX             int
-	maxY             int
+	Client         Client
+	Walls          []Wall
+	Sensors        []*db.Sensor
+	CellSizeMeters float64
+	MinX           int
+	MinY           int
+	MaxX           int
+	MaxY           int
 }
 
 type PointRow struct {
-	id     int
-	map_id uuid.UUID
-	x      float64
-	y      float64
+	id    int
+	mapID uuid.UUID
+	x     float64
+	y     float64
 }
 
 type MatrixRow struct {
-	point_id  int
-	sensor_id uuid.UUID
-	rssi24    float64
-	rssi5     float64
-	rssi6     float64
-	distance  float64
+	pointID  int
+	sensorID uuid.UUID
+	rssi24   float64
+	rssi5    float64
+	rssi6    float64
+	distance float64
 }

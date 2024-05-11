@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"location-backend/internal/config"
 )
@@ -19,7 +18,7 @@ func (s *Fiber) RegisterFiberRoutes() {
 	}))
 
 	// Helmet middleware helps secure your apps by setting various HTTP headers.
-	s.App.Use(helmet.New())
+	//s.App.Use(helmet.New())
 
 	s.App.Get("/", s.HelloWorldHandler)
 	s.App.Static("/static", "./static")
@@ -117,13 +116,16 @@ func (s *Fiber) RegisterFiberRoutes() {
 	r.Patch("/sd", s.SoftDeleteRadio)
 	r.Patch("/restore", s.RestoreRadio)
 
-	//sensor := v1.Group("/sensor")
-	//sensor.Post("/", s.CreateSensor)
-	//sensor.Get("/", s.GetSensor)
-	//sensor.Get("/all", s.GetSensor)
-	//sensor.Patch("/", s.PatchUpdateSensor)
-	//sensor.Patch("/sd", s.SoftDeleteSensor)
-	//sensor.Patch("/restore", s.RestoreSensor)
+	sensor := v1.Group("/sensor")
+	sensor.Post("/", s.CreateSensor)
+	sensor.Get("/", s.GetSensor)
+	sensor.Get("/all", s.GetSensors)
+	sensor.Patch("/", s.PatchUpdateSensor)
+	sensor.Patch("/sd", s.SoftDeleteSensor)
+	sensor.Patch("/restore", s.RestoreSensor)
+
+	mx := v1.Group("/matrix")
+	mx.Post("/", s.CreateMatrix)
 
 }
 

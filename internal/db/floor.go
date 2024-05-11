@@ -29,7 +29,7 @@ func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
 	query := `SELECT * FROM floors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, floorUUID)
 	f = &Floor{}
-	err = row.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
+	err = row.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No floor found with uuid %v", floorUUID)
@@ -74,7 +74,7 @@ func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
 	var f *Floor
 	for rows.Next() {
 		f = new(Floor)
-		err = rows.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
+		err = rows.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan floor")
 			return
@@ -143,6 +143,16 @@ func (p *postgres) PatchUpdateFloor(f *Floor) (err error) {
 	if f.Image != nil {
 		updates = append(updates, fmt.Sprintf("image = $%d", paramID))
 		params = append(params, f.Image)
+		paramID++
+	}
+	if f.WidthInPixels != nil {
+		updates = append(updates, fmt.Sprintf("width_in_pixels = $%d", paramID))
+		params = append(params, f.WidthInPixels)
+		paramID++
+	}
+	if f.HeightInPixels != nil {
+		updates = append(updates, fmt.Sprintf("height_in_pixels = $%d", paramID))
+		params = append(params, f.HeightInPixels)
 		paramID++
 	}
 	if f.Scale != nil {

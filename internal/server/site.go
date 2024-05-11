@@ -78,10 +78,15 @@ func (s *Fiber) GetSitesDetailed(c *fiber.Ctx) (err error) {
 		return
 	}
 	sites, err := s.db.GetSites(userUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get sites")
+		return
+	}
 	for _, site := range sites {
 		log.Debug().Msgf("Site: %s", site)
 		buildings, err := s.db.GetBuildings(site.ID)
 		if err != nil {
+			log.Error().Err(err).Msg("Failed to get buildings")
 			continue
 		}
 
@@ -89,6 +94,7 @@ func (s *Fiber) GetSitesDetailed(c *fiber.Ctx) (err error) {
 			log.Debug().Msgf("Building: %s", building)
 			floors, err := s.db.GetFloors(building.ID)
 			if err != nil {
+				log.Error().Err(err).Msg("Failed to get floors")
 				continue
 			}
 
@@ -96,11 +102,22 @@ func (s *Fiber) GetSitesDetailed(c *fiber.Ctx) (err error) {
 				log.Debug().Msgf("Floor: %s", floor)
 				aps, err := s.db.GetAccessPointsDetailed(floor.ID)
 				if err != nil {
+					log.Error().Err(err).Msg("Failed to get access point detailed")
 					continue
 				}
 				walls, err := s.db.GetWallsDetailed(floor.ID)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get walls detailed")
+					continue
+				}
+				sensors, err := s.db.GetSensors(floor.ID)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get sensors")
+					continue
+				}
 				floor.AccessPoints = aps
 				floor.Walls = walls
+				floor.Sensors = sensors
 			}
 			building.Floors = floors
 		}
@@ -118,10 +135,6 @@ func (s *Fiber) GetSitesDetailed(c *fiber.Ctx) (err error) {
 		}
 		site.AccessPointTypes = accessPointTypes
 
-	}
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get sites")
-		return
 	}
 	return c.JSON(fiber.Map{
 		"data": sites,

@@ -93,6 +93,8 @@ CREATE TABLE IF NOT EXISTS floors (
     name VARCHAR NOT NULL,
     number INTEGER NOT NULL,
     image VARCHAR,
+    width_in_pixels INTEGER NOT NULL DEFAULT 0,
+    height_in_pixels INTEGER NOT NULL DEFAULT 0,
     scale FLOAT NOT NULL CHECK (scale > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
@@ -152,13 +154,39 @@ CREATE TABLE IF NOT EXISTS radios (
     access_point_id UUID NOT NULL REFERENCES access_points(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS sensors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR NOT NULL,
+    color VARCHAR NOT NULL,
+    x INTEGER NOT NULL CHECK (x > 0),
+    y INTEGER NOT NULL CHECK (y > 0),
+    z FLOAT NOT NULL CHECK (z > 0),
+    mac VARCHAR UNIQUE NOT NULL,
+    ip VARCHAR NOT NULL,
+    alias VARCHAR NOT NULL,
+    interface_0 VARCHAR NOT NULL,
+    interface_1 VARCHAR NOT NULL,
+    interface_2 VARCHAR NOT NULL,
+    rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+    hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
+    vert_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
+    correction_factor_24 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+    correction_factor_5 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+    correction_factor_6 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+    diagram JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMPTZ,
+    floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL
+);
+
 CREATE TABLE IF NOT EXISTS wall_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR NOT NULL,
     color VARCHAR NOT NULL,
-    attenuation24 FLOAT NOT NULL CHECK (attenuation24 > 0),
-    attenuation5 FLOAT NOT NULL CHECK (attenuation5 > 0),
-    attenuation6 FLOAT NOT NULL CHECK (attenuation6 > 0),
+    attenuation_24 FLOAT NOT NULL CHECK (attenuation_24 > 0),
+    attenuation_5 FLOAT NOT NULL CHECK (attenuation_5 > 0),
+    attenuation_6 FLOAT NOT NULL CHECK (attenuation_6 > 0),
     thickness FLOAT NOT NULL CHECK (thickness > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
