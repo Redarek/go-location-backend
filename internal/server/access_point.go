@@ -19,6 +19,7 @@ func (s *Fiber) CreateAccessPoint(c *fiber.Ctx) (err error) {
 
 	apt, err := s.db.GetAccessPointTypeDetailed(ap.AccessPointTypeID)
 	for _, rt := range apt.RadioTemplates {
+		b := false
 		r := &db.Radio{
 			Number:        rt.Number,
 			Channel:       rt.Channel,
@@ -26,6 +27,7 @@ func (s *Fiber) CreateAccessPoint(c *fiber.Ctx) (err error) {
 			Power:         rt.Power,
 			Bandwidth:     rt.Bandwidth,
 			GuardInterval: rt.GuardInterval,
+			IsActive:      &b,
 			AccessPointID: apID,
 		}
 		_, err = s.db.CreateRadio(r)

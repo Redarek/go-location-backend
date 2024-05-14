@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS radios (
     power INTEGER NOT NULL,
     bandwidth VARCHAR NOT NULL,
     guard_interval INTEGER NOT NULL CHECK (guard_interval > 0),
-    is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     deleted_at TIMESTAMPTZ,
