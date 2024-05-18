@@ -2,9 +2,8 @@ package db
 
 import (
 	"encoding/json"
-	"time"
-
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Service interface {
@@ -102,45 +101,45 @@ type Service interface {
 }
 
 type User struct {
-	ID        uuid.UUID  `json:"id" db:"id"`
-	Username  string     `json:"username" db:"username"`
-	Password  string     `json:"password" db:"password"`
-	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
+	ID        uuid.UUID          `json:"id" db:"id"`
+	Username  string             `json:"username" db:"username"`
+	Password  string             `json:"password" db:"password"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 }
 
 type Role struct {
-	ID        uuid.UUID  `json:"id" db:"id"`
-	Name      string     `json:"name" db:"name"`
-	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
+	ID        uuid.UUID          `json:"id" db:"id"`
+	Name      string             `json:"name" db:"name"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 }
 
 type UserRole struct {
-	ID        uuid.UUID  `json:"id" db:"id"`
-	UserID    uuid.UUID  `json:"userId" db:"user_id"`
-	RoleID    uuid.UUID  `json:"roleId" db:"role_id"`
-	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
+	ID        uuid.UUID          `json:"id" db:"id"`
+	UserID    uuid.UUID          `json:"userId" db:"user_id"`
+	RoleID    uuid.UUID          `json:"roleId" db:"role_id"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 }
 
 type RefreshToken struct {
-	ID     uuid.UUID  `json:"id" db:"id"`
-	Token  string     `json:"token" db:"token"`
-	Expiry *time.Time `json:"expiry" db:"expiry"`
-	UserID uuid.UUID  `json:"userId" db:"user_id"`
+	ID     uuid.UUID          `json:"id" db:"id"`
+	Token  string             `json:"token" db:"token"`
+	Expiry pgtype.Timestamptz `json:"expiry" db:"expiry"`
+	UserID uuid.UUID          `json:"userId" db:"user_id"`
 }
 
 type Site struct {
 	ID               uuid.UUID          `json:"id" db:"id"`
 	Name             string             `json:"name" db:"name"`
 	Description      string             `json:"description" db:"description"`
-	CreatedAt        time.Time          `json:"createdAt" db:"created_at"`
-	UpdatedAt        time.Time          `json:"updatedAt" db:"updated_at"`
-	DeletedAt        *time.Time         `json:"deletedAt" db:"deleted_at"`
+	CreatedAt        pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt        pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 	UserID           uuid.UUID          `json:"userId" db:"user_id"`
 	Buildings        []*Building        `json:"buildings"`
 	AccessPointTypes []*AccessPointType `json:"accessPointTypes"`
@@ -148,17 +147,17 @@ type Site struct {
 }
 
 type Building struct {
-	ID          uuid.UUID  `json:"id" db:"id"`
-	Name        string     `json:"name" db:"name"`
-	Description string     `json:"description" db:"description"`
-	Country     string     `json:"country" db:"country"`
-	City        string     `json:"city" db:"city"`
-	Address     string     `json:"address" db:"address"`
-	CreatedAt   time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt   time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt   *time.Time `json:"deletedAt" db:"deleted_at"`
-	SiteID      uuid.UUID  `json:"siteId" db:"site_id"`
-	Floors      []*Floor   `json:"floors"`
+	ID          uuid.UUID          `json:"id" db:"id"`
+	Name        string             `json:"name" db:"name"`
+	Description string             `json:"description" db:"description"`
+	Country     string             `json:"country" db:"country"`
+	City        string             `json:"city" db:"city"`
+	Address     string             `json:"address" db:"address"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt   pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	SiteID      uuid.UUID          `json:"siteId" db:"site_id"`
+	Floors      []*Floor           `json:"floors"`
 }
 
 type Floor struct {
@@ -169,9 +168,9 @@ type Floor struct {
 	WidthInPixels  *int                   `json:"widthInPixels" db:"width_in_pixels"`
 	HeightInPixels *int                   `json:"heightInPixels" db:"height_in_pixels"`
 	Scale          *float64               `json:"scale" db:"scale"`
-	CreatedAt      time.Time              `json:"createdAt" db:"created_at"`
-	UpdatedAt      time.Time              `json:"updatedAt" db:"updated_at"`
-	DeletedAt      *time.Time             `json:"deletedAt" db:"deleted_at"`
+	CreatedAt      pgtype.Timestamptz     `json:"createdAt" db:"created_at"`
+	UpdatedAt      pgtype.Timestamptz     `json:"updatedAt" db:"updated_at"`
+	DeletedAt      pgtype.Timestamptz     `json:"deletedAt" db:"deleted_at"`
 	BuildingID     uuid.UUID              `json:"buildingId" db:"building_id"`
 	AccessPoints   []*AccessPointDetailed `json:"accessPoints"`
 	Walls          []*WallDetailed        `json:"walls"`
@@ -179,55 +178,55 @@ type Floor struct {
 }
 
 type AccessPoint struct {
-	ID                uuid.UUID  `json:"id" db:"id"`
-	Name              string     `json:"name" db:"name"`
-	X                 *int       `json:"x" db:"x"`
-	Y                 *int       `json:"y" db:"y"`
-	Z                 *float64   `json:"z" db:"z"`
-	CreatedAt         time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt         time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt         *time.Time `json:"deletedAt" db:"deleted_at"`
-	FloorID           uuid.UUID  `json:"floorId" db:"floor_id"`
-	AccessPointTypeID uuid.UUID  `json:"accessPointTypeId" db:"access_point_type_id"`
+	ID                uuid.UUID          `json:"id" db:"id"`
+	Name              string             `json:"name" db:"name"`
+	X                 *int               `json:"x" db:"x"`
+	Y                 *int               `json:"y" db:"y"`
+	Z                 *float64           `json:"z" db:"z"`
+	CreatedAt         pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	FloorID           uuid.UUID          `json:"floorId" db:"floor_id"`
+	AccessPointTypeID uuid.UUID          `json:"accessPointTypeId" db:"access_point_type_id"`
 }
 
 type AccessPointType struct {
-	ID        uuid.UUID  `json:"id" db:"id"`
-	Name      string     `json:"name" db:"name"`
-	Color     string     `json:"color" db:"color"`
-	CreatedAt time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
-	SiteID    uuid.UUID  `json:"siteId" db:"site_id"`
+	ID        uuid.UUID          `json:"id" db:"id"`
+	Name      string             `json:"name" db:"name"`
+	Color     string             `json:"color" db:"color"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	SiteID    uuid.UUID          `json:"siteId" db:"site_id"`
 }
 
 type RadioTemplate struct {
-	ID                uuid.UUID  `json:"id" db:"id"`
-	Number            *int       `json:"number" db:"number"`
-	Channel           *int       `json:"channel" db:"channel"`
-	WiFi              *string    `json:"wifi" db:"wifi"`
-	Power             *int       `json:"power" db:"power"`
-	Bandwidth         *string    `json:"bandwidth" db:"bandwidth"`
-	GuardInterval     *int       `json:"guardInterval" db:"guard_interval"`
-	CreatedAt         time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt         time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt         *time.Time `json:"deletedAt" db:"deleted_at"`
-	AccessPointTypeID uuid.UUID  `json:"accessPointTypeId" db:"access_point_type_id"`
+	ID                uuid.UUID          `json:"id" db:"id"`
+	Number            *int               `json:"number" db:"number"`
+	Channel           *int               `json:"channel" db:"channel"`
+	WiFi              *string            `json:"wifi" db:"wifi"`
+	Power             *int               `json:"power" db:"power"`
+	Bandwidth         *string            `json:"bandwidth" db:"bandwidth"`
+	GuardInterval     *int               `json:"guardInterval" db:"guard_interval"`
+	CreatedAt         pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	AccessPointTypeID uuid.UUID          `json:"accessPointTypeId" db:"access_point_type_id"`
 }
 
 type Radio struct {
-	ID            uuid.UUID  `json:"id" db:"id"`
-	Number        *int       `json:"number" db:"number"`
-	Channel       *int       `json:"channel" db:"channel"`
-	WiFi          *string    `json:"wifi" db:"wifi"`
-	Power         *int       `json:"power" db:"power"`
-	Bandwidth     *string    `json:"bandwidth" db:"bandwidth"`
-	GuardInterval *int       `json:"guardInterval" db:"guard_interval"`
-	IsActive      *bool      `json:"isActive" db:"is_active"`
-	CreatedAt     time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt     time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt     *time.Time `json:"deletedAt" db:"deleted_at"`
-	AccessPointID uuid.UUID  `json:"accessPointId" db:"access_point_id"`
+	ID            uuid.UUID          `json:"id" db:"id"`
+	Number        *int               `json:"number" db:"number"`
+	Channel       *int               `json:"channel" db:"channel"`
+	WiFi          *string            `json:"wifi" db:"wifi"`
+	Power         *int               `json:"power" db:"power"`
+	Bandwidth     *string            `json:"bandwidth" db:"bandwidth"`
+	GuardInterval *int               `json:"guardInterval" db:"guard_interval"`
+	IsActive      *bool              `json:"isActive" db:"is_active"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	AccessPointID uuid.UUID          `json:"accessPointId" db:"access_point_id"`
 }
 
 //type RadioState struct {
@@ -248,30 +247,30 @@ type AccessPointTypeDetailed struct {
 }
 
 type Wall struct {
-	ID         uuid.UUID  `json:"id" db:"id"`
-	X1         *int       `json:"x1" db:"x1"`
-	Y1         *int       `json:"y1" db:"y1"`
-	X2         *int       `json:"x2" db:"x2"`
-	Y2         *int       `json:"y2" db:"y2"`
-	CreatedAt  time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt  time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt  *time.Time `json:"deletedAt" db:"deleted_at"`
-	FloorID    uuid.UUID  `json:"floorId" db:"floor_id"`
-	WallTypeID uuid.UUID  `json:"wallTypeId" db:"wall_type_id"`
+	ID         uuid.UUID          `json:"id" db:"id"`
+	X1         *int               `json:"x1" db:"x1"`
+	Y1         *int               `json:"y1" db:"y1"`
+	X2         *int               `json:"x2" db:"x2"`
+	Y2         *int               `json:"y2" db:"y2"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt  pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	FloorID    uuid.UUID          `json:"floorId" db:"floor_id"`
+	WallTypeID uuid.UUID          `json:"wallTypeId" db:"wall_type_id"`
 }
 
 type WallType struct {
-	ID            uuid.UUID  `json:"id" db:"id"`
-	Name          string     `json:"name" db:"name"`
-	Color         string     `json:"color" db:"color"`
-	Attenuation24 *float64   `json:"attenuation24" db:"attenuation_24"`
-	Attenuation5  *float64   `json:"attenuation5" db:"attenuation_5"`
-	Attenuation6  *float64   `json:"attenuation6" db:"attenuation_6"`
-	Thickness     *float64   `json:"thickness" db:"thickness"`
-	CreatedAt     time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt     time.Time  `json:"updatedAt" db:"updated_at"`
-	DeletedAt     *time.Time `json:"deletedAt" db:"deleted_at"`
-	SiteID        uuid.UUID  `json:"siteId" db:"site_id"`
+	ID            uuid.UUID          `json:"id" db:"id"`
+	Name          string             `json:"name" db:"name"`
+	Color         string             `json:"color" db:"color"`
+	Attenuation24 *float64           `json:"attenuation24" db:"attenuation_24"`
+	Attenuation5  *float64           `json:"attenuation5" db:"attenuation_5"`
+	Attenuation6  *float64           `json:"attenuation6" db:"attenuation_6"`
+	Thickness     *float64           `json:"thickness" db:"thickness"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	SiteID        uuid.UUID          `json:"siteId" db:"site_id"`
 }
 
 type WallDetailed struct {
@@ -304,17 +303,17 @@ type Sensor struct {
 	// TODO  "primary_channel_width" VARCHAR(45)
 	// TODO  "primary_interval" FLOAT
 	// TODO  "secondary_interval" FLOAT
-	RxAntGain          *float64         `json:"rxAntGain" db:"rx_ant_gain"`                   //   "rx_ant_gain" FLOAT [not null, default: 0]
-	HorRotationOffset  *int             `json:"horRotationOffset" db:"hor_rotation_offset"`   //   "hor_rotation_offset" INTEGER [not null, default: 0]
-	VertRotationOffset *int             `json:"vertRotationOffset" db:"vert_rotation_offset"` //   "vert_rotation_offset" INTEGER [not null, default: 0]
-	CorrectionFactor24 *float64         `json:"correctionFactor24" db:"correction_factor_24"` //   "correction_factor24" INTEGER [not null, default: 0]  -> FLOAT
-	CorrectionFactor5  *float64         `json:"correctionFactor5" db:"correction_factor_5"`   //   "correction_factor5" INTEGER [not null, default: 0] -> FLOAT
-	CorrectionFactor6  *float64         `json:"correctionFactor6" db:"correction_factor_6"`   //   "correction_factor6" INTEGER [not null, default: 0float64 -> FLOAT
-	Diagram            *json.RawMessage `json:"diagram" db:"diagram"`                         // Тип JSON
-	CreatedAt          time.Time        `json:"createdAt" db:"created_at"`
-	UpdatedAt          time.Time        `json:"updatedAt" db:"updated_at"`
-	DeletedAt          *time.Time       `json:"deletedAt" db:"deleted_at"`
-	FloorID            uuid.UUID        `json:"floorId" db:"floor_id"` //  "map_id" INTEGER
+	RxAntGain          *float64           `json:"rxAntGain" db:"rx_ant_gain"`                   //   "rx_ant_gain" FLOAT [not null, default: 0]
+	HorRotationOffset  *int               `json:"horRotationOffset" db:"hor_rotation_offset"`   //   "hor_rotation_offset" INTEGER [not null, default: 0]
+	VertRotationOffset *int               `json:"vertRotationOffset" db:"vert_rotation_offset"` //   "vert_rotation_offset" INTEGER [not null, default: 0]
+	CorrectionFactor24 *float64           `json:"correctionFactor24" db:"correction_factor_24"` //   "correction_factor24" INTEGER [not null, default: 0]  -> FLOAT
+	CorrectionFactor5  *float64           `json:"correctionFactor5" db:"correction_factor_5"`   //   "correction_factor5" INTEGER [not null, default: 0] -> FLOAT
+	CorrectionFactor6  *float64           `json:"correctionFactor6" db:"correction_factor_6"`   //   "correction_factor6" INTEGER [not null, default: 0float64 -> FLOAT
+	Diagram            *json.RawMessage   `json:"diagram" db:"diagram"`                         // Тип JSON
+	CreatedAt          pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	FloorID            uuid.UUID          `json:"floorId" db:"floor_id"` //  "map_id" INTEGER
 }
 
 type Diagram struct {
