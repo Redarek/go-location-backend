@@ -1,7 +1,9 @@
 package location
 
 import (
+	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -163,9 +165,9 @@ func _getBandCoefficients(band Band) BandCoefficients {
  */
 func _getDeltaRSSI(bandCoefficients BandCoefficients, rssi float64) float64 {
 	var fspl float64 = rssi - EIRP
-	var d float64 = 10 * *((-fspl - bandCoefficients.penetrationFactor - 20*Math.log10(bandCoefficients.frequency) + 24) / (10 * bandCoefficients.attenuationFactor))
+	var d float64 = math.Pow(10, (-fspl-bandCoefficients.penetrationFactor-20*math.Log10(bandCoefficients.frequency)+24)/(10*bandCoefficients.attenuationFactor))
 
-	var delta float64 = Number(((1 - d/bandCoefficients.Dmax) * C_MAX).toFixed(2))
+	var delta float64 = (1 - d/bandCoefficients.Dmax) * C_MAX // было округление до 2
 	if delta <= C_MIN {
 		delta = C_MIN
 	} else if C_MAX < delta {
@@ -175,7 +177,7 @@ func _getDeltaRSSI(bandCoefficients BandCoefficients, rssi float64) float64 {
 	return delta
 }
 
-func _findCellsInMatrixAsync(matrixRepository []Matrix, deviceDetections []Device, accuracy number, mapId number) []Matrix {
+func _findCellsInMatrixAsync(matrix []MatrixRow, deviceDetections []Device, mapId uuid.UUID) []MatrixRow {
 	band, channel := _detectBandAndChannel(deviceDetections)
 	var bandCoefficients BandCoefficients = _getBandCoefficients(band)
 	var bandAccuracyCorrection float64 = _getBandAccuracyCorrection(channel)
@@ -191,8 +193,8 @@ func _findCellsInMatrixAsync(matrixRepository []Matrix, deviceDetections []Devic
 
 		log.Debug().Msg(`Accuracy for RSSI = ${device.rssi} is ${deltaRSSI} dB`)
 
-		var betweenFrom float64 = Number((device.rssi - deltaRSSI + bandAccuracyCorrection).toFixed(2))
-		var betweenTo float64 = Number((device.rssi + deltaRSSI + bandAccuracyCorrection).toFixed(2))
+		var betweenFrom float64 = device.rssi - deltaRSSI + bandAccuracyCorrection // было округление до 2
+		var betweenTo float64 = device.rssi + deltaRSSI + bandAccuracyCorrection   // было округление до 2
 
 		// TODO rewrite
 		// var rssiConditionPart Attributes<Matrix> = { rssi24: { [Op.between]: [betweenFrom, betweenTo] } };
@@ -208,6 +210,7 @@ func _findCellsInMatrixAsync(matrixRepository []Matrix, deviceDetections []Devic
 		//     ]
 		// };
 		// whereConditionOrPartsList.push(whereConditionOrPart);
+
 	}
 
 	// TODO do sth with this
@@ -242,8 +245,13 @@ func _findCellsInMatrixAsync(matrixRepository []Matrix, deviceDetections []Devic
 
 	//     return result;
 	// });
+	var matrixCells []MatrixRow
+	for _, cell := range matrix {
+		// pointRowsToInsert = append(pointRowsToInsert, PointRow{id: id, map_id: mapId, x: x_m, y: y_m})
+		// if (cell.sensor_id == ?)
+	}
 
-	return res
+	return matrixCells
 }
 
 /**
@@ -268,7 +276,7 @@ func _getBandAccuracyCorrection(channel int) float64 {
  * @param deviceDetections Detected devices array.
  * @returns Array of Band enum and band accuracy correction coefficient.
  */
-func _detectBandAndChannel(deviceDetections []Device) (Band, number) {
+func _detectBandAndChannel(deviceDetections []Device) (Band, int) {
 	var band Band = Band.RSSI24 // Диапазон по умолчанию, если channel не указан или не удаётся определить
 	var channel = 6
 
@@ -421,12 +429,13 @@ func _detectBandAndChannel(deviceDetections []Device) (Band, number) {
 //     return matrixCells.length;
 // }
 
-func findXY(mac string, mapId uuid.UUID) (string, unknown, int) {
+func findXY(mac string, mapId uuid.UUID, devices []Device, matrix []MatrixRow) (string, unknown, int) {
 	log.Info().Msg("MAC ${mac} search has been started...")
-	var executionTimeStart time.Time = time.Time.now()
+	var executionTimeStart time.Time = time.Now()
 
 	// const sequelize: Sequelize = db.sequelize;
-	mac = mac.toLowerCase().replace("-", ":")
+	// mac = mac.toLowerCase().replace()
+	mac = strings.ReplaceAll(strings.ToLower(mac), "-", ":")
 
 	// не нужно
 	// log.Info().Msg("Checking existence of required tables in database...");
@@ -455,9 +464,8 @@ func findXY(mac string, mapId uuid.UUID) (string, unknown, int) {
 	// const deviceRepository: Repository<Device> = db.sequelize.getRepository(Device);
 	// const devicePointRepository: Repository<DevicePoint> = db.sequelize.getRepository(DevicePoint);
 
-	var deviceDetections []Device
 	// try {
-	deviceDetections = _findDeviceDetections(deviceRepository, mac, mapId)
+	var deviceDetections []Device = _findDeviceDetections(devices, mac, mapId)
 	// }
 	// catch (err) {
 	//     if (err instanceof MacNotFoundError) {
@@ -470,11 +478,10 @@ func findXY(mac string, mapId uuid.UUID) (string, unknown, int) {
 	//     return [{ 'Error': err, 'status': 'error' }, 500];
 	// }
 
-	var matrixCells []Matrix
-	// try {
-	matrixCells = _findCellsInMatrixAsync(matrixRepository, deviceDetections, accuracy, mapId)
-	logger.info(`${matrixCells.length} cells have been found`)
-	logger.debug(`Founded cells:  ${JSON.stringify(matrixCells.map(cell => ([cell.point.x, cell.point.y])))}`)
+	var matrixCells []MatrixRow = _findCellsInMatrixAsync(matrixRepository, deviceDetections, mapId)
+	log.Info().Msg(fmt.Sprintf("%d cells have been found", len(matrixCells)))
+	// log.Debug().Msg(fmt.Sprintf("Founded cells:  ${JSON.stringify(matrixCells.map(cell => ([cell.point.x, cell.point.y])))}")) // TODO
+
 	// }
 	// catch (err) {
 	//     if (err instanceof MacNotFoundError) {
