@@ -60,7 +60,7 @@ func _findDeviceDetections(deviceDetections []Device, mac string, mapId uuid.UUI
 	//     return result;
 	// });
 
-	// TODO восстановить
+	// TODO восстановить (не точно)
 	// const dateFormate: Intl.DateTimeFormatOptions = {
 	//     year: 'numeric',
 	//     month: '2-digit',
@@ -71,78 +71,81 @@ func _findDeviceDetections(deviceDetections []Device, mac string, mapId uuid.UUI
 	// };
 
 	var logMsg = "Sensors that have ever seen this device:"
-	var tempDates []time.Time
+	// var tempDates []time.Time
+	var maxDate = time.Time{}
 	for _, detection := range deviceDetections {
 		// logMsg += `\n(Sensor id: ${detection.sensor_id}, RSSI: ${detection.rssi}, Channel: ${detection.channel},
 		//     Time: ${detection.last_contact_time.toLocaleDateString("ru-RU", dateFormate)})`;
 		// tempDates.push(detection.lastContactTime)
-		tempDates = append(tempDates, detection.lastContactTime)
+		// tempDates = append(tempDates, detection.lastContactTime)
+		if detection.lastContactTime.Unix() > maxDate.Unix() {
+			maxDate = detection.lastContactTime
+		}
 	}
 	// logger.debug(logMsg);
 
-	// var maxDate time.Date = time.Date(Math.max(...tempDates.map(date => date.getTime())));
-	var maxDate time.Time = time.Date(math.Max()) // TODO
+	// var maxDate time.Date = time.Date(Math.max(...tempDates.map(date => date.getTime()))); // done
 	// var secondsFromLastDetection time.Time = Math.floor((Date.now() - maxDate.getTime()) / 1000); // TODO
+	var secondsFromLastDetection float64 = math.Floor(float64(time.Now().Unix()-maxDate.Unix()) / 1000)
 
-	if secondsFromLastDetection > INFO_AGING_TIME {
+	if int(secondsFromLastDetection) > INFO_AGING_TIME {
 		var timeAgo = "unknown"
 		if secondsFromLastDetection < 60 {
-			timeAgo = `${secondsFromLastDetection} seconds ago`
+			timeAgo = fmt.Sprintf("%d seconds ago", secondsFromLastDetection)
 		} else if secondsFromLastDetection < 120 {
 			timeAgo = "a minute ago"
 		} else if secondsFromLastDetection < 3600 {
-			timeAgo = `${Math.floor(secondsFromLastDetection / 60)} minutes ago`
+			timeAgo = fmt.Sprintf("%d minutes ago", math.Floor(secondsFromLastDetection/60))
 		} else if secondsFromLastDetection < 7200 {
 			timeAgo = "a hour ago"
 		} else if secondsFromLastDetection < 86400 {
-			timeAgo = `${Math.floor(secondsFromLastDetection / 3600)} hours ago`
+			timeAgo = fmt.Sprintf("%d hours ago", math.Floor(secondsFromLastDetection/3600))
 		} else if secondsFromLastDetection < 172800 {
 			timeAgo = "yesterday"
 		} else {
-			timeAgo = `${Math.floor(secondsFromLastDetection / 86400)} days ago`
+			timeAgo = fmt.Sprintf("%d days ago", math.Floor(secondsFromLastDetection/86400))
 		}
 
-		logger.warn(`MAC ${mac} last detect ${timeAgo}`)
+		log.Warn().Msg(fmt.Sprintf("MAC %s last detect %s", mac, timeAgo))
 	}
 
 	logMsg = "Sensors that taken into account:"
 	var resultDetections []Device
 	for _, detection := range deviceDetections {
-		var deltaTime time.Time = Math.floor((maxDate.getTime() - detection.last_contact_time.getTime()) / 1000)
+		var deltaTime int = int(math.Floor(float64(maxDate.Unix()-detection.lastContactTime.Unix()) / 1000))
 		if deltaTime < INFO_AGING_TIME {
-			resultDetections.push(detection)
+			resultDetections = append(resultDetections, detection)
 		}
 
-		logMsg += `\n(Sensor id: ${detection.sensor_id}, RSSI: ${detection.rssi}, Channel: ${detection.channel}, 
-            Time: ${detection.last_contact_time.toLocaleDateString("ru-RU", dateFormate)})`
+		logMsg += fmt.Sprintf("\n(Sensor id: %s, RSSI: %d, Channel: %d, Time: %v",
+			detection.sensorId, detection.rssi, detection.channel, detection.lastContactTime)
 	}
-	logger.debug(logMsg)
+	log.Debug().Msg(logMsg)
 
-	if resultDetections.length < 3 {
-		logger.warn("The number of sensors is less than 3. The determining accuracy will be reduced!")
+	if len(resultDetections) < 3 {
+		log.Warn().Msg("The number of sensors is less than 3. The determining accuracy will be reduced!")
 	}
 
 	return resultDetections
 }
 
-// TODO rewrite
 /**
  * Returns BandCoefficients for Band.
  * @param band Band enum.
  * @returns BandCoefficients for Band.
  */
-func _getBandCoefficients(band Band) BandCoefficients {
-	var frequency float64 = FREQUENCY24
+func _getBandCoefficients(band string) BandCoefficients {
+	var frequency int = FREQUENCY24
 	var attenuationFactor float64 = ATTENUATION_FACTOR24
 	var penetrationFactor float64 = PENETRATION_FACTOR24
 	var Dmax float64 = 50
 
-	if band == Band.RSSI5 {
+	if band == RSSI5 {
 		frequency = FREQUENCY5
 		attenuationFactor = ATTENUATION_FACTOR5
 		penetrationFactor = PENETRATION_FACTOR5
 		Dmax = 55
-	} else if band == Band.RSSI6 { // пересчитать всё!
+	} else if band == RSSI6 { // пересчитать всё!
 		frequency = FREQUENCY6
 		attenuationFactor = ATTENUATION_FACTOR6
 		penetrationFactor = PENETRATION_FACTOR6
@@ -165,7 +168,7 @@ func _getBandCoefficients(band Band) BandCoefficients {
  */
 func _getDeltaRSSI(bandCoefficients BandCoefficients, rssi float64) float64 {
 	var fspl float64 = rssi - EIRP
-	var d float64 = math.Pow(10, (-fspl-bandCoefficients.penetrationFactor-20*math.Log10(bandCoefficients.frequency)+24)/(10*bandCoefficients.attenuationFactor))
+	var d float64 = math.Pow(10, (-fspl-bandCoefficients.penetrationFactor-20*math.Log10(float64(bandCoefficients.frequency))+24)/(10*bandCoefficients.attenuationFactor))
 
 	var delta float64 = (1 - d/bandCoefficients.Dmax) * C_MAX // было округление до 2
 	if delta <= C_MIN {
@@ -191,7 +194,7 @@ func _findCellsInMatrixAsync(matrix []MatrixRow, deviceDetections []Device, mapI
 
 		var deltaRSSI float64 = _getDeltaRSSI(bandCoefficients, device.rssi)
 
-		log.Debug().Msg(`Accuracy for RSSI = ${device.rssi} is ${deltaRSSI} dB`)
+		log.Debug().Msg(fmt.Sprintf("Accuracy for RSSI = %d is %d dB", device.rssi, deltaRSSI))
 
 		var betweenFrom float64 = device.rssi - deltaRSSI + bandAccuracyCorrection // было округление до 2
 		var betweenTo float64 = device.rssi + deltaRSSI + bandAccuracyCorrection   // было округление до 2
@@ -210,10 +213,9 @@ func _findCellsInMatrixAsync(matrix []MatrixRow, deviceDetections []Device, mapI
 		//     ]
 		// };
 		// whereConditionOrPartsList.push(whereConditionOrPart);
-
 	}
 
-	// TODO do sth with this
+	// TODO sth with this
 	// const res: Matrix[] = await matrixRepository.findAll({
 	//     attributes: [
 	//         "point_id",
@@ -276,20 +278,21 @@ func _getBandAccuracyCorrection(channel int) float64 {
  * @param deviceDetections Detected devices array.
  * @returns Array of Band enum and band accuracy correction coefficient.
  */
-func _detectBandAndChannel(deviceDetections []Device) (Band, int) {
-	var band Band = Band.RSSI24 // Диапазон по умолчанию, если channel не указан или не удаётся определить
+func _detectBandAndChannel(deviceDetections []Device) (string, int) {
+	var band string = RSSI24 // Диапазон по умолчанию, если channel не указан или не удаётся определить
 	var channel = 6
 
 	for _, device := range deviceDetections {
-		if device.band == null {
+		if device.band == "" {
 			continue
 		} else {
-			if device.band == Band.RSSI24 {
-				band = Band.RSSI24
-			} else if device.band == Band.RSSI5 {
-				band = Band.RSSI5
-			} else if device.band == Band.RSSI6 {
-				band = Band.RSSI5
+			// TODO delete this later
+			if device.band == RSSI24 {
+				band = RSSI24
+			} else if device.band == RSSI5 {
+				band = RSSI5
+			} else if device.band == RSSI6 {
+				band = RSSI5
 			}
 
 			channel = device.channel
@@ -429,8 +432,8 @@ func _detectBandAndChannel(deviceDetections []Device) (Band, int) {
 //     return matrixCells.length;
 // }
 
-func findXY(mac string, mapId uuid.UUID, devices []Device, matrix []MatrixRow) (string, unknown, int) {
-	log.Info().Msg("MAC ${mac} search has been started...")
+func findXY(mac string, mapId uuid.UUID, devices []Device, matrix []MatrixRow) (int, error) {
+	log.Info().Msg(fmt.Sprintf("MAC %s search has been started...", mac))
 	var executionTimeStart time.Time = time.Now()
 
 	// const sequelize: Sequelize = db.sequelize;
@@ -478,7 +481,7 @@ func findXY(mac string, mapId uuid.UUID, devices []Device, matrix []MatrixRow) (
 	//     return [{ 'Error': err, 'status': 'error' }, 500];
 	// }
 
-	var matrixCells []MatrixRow = _findCellsInMatrixAsync(matrixRepository, deviceDetections, mapId)
+	var matrixCells []MatrixRow = _findCellsInMatrixAsync(matrix, deviceDetections, mapId)
 	log.Info().Msg(fmt.Sprintf("%d cells have been found", len(matrixCells)))
 	// log.Debug().Msg(fmt.Sprintf("Founded cells:  ${JSON.stringify(matrixCells.map(cell => ([cell.point.x, cell.point.y])))}")) // TODO
 
@@ -495,8 +498,8 @@ func findXY(mac string, mapId uuid.UUID, devices []Device, matrix []MatrixRow) (
 	// }
 
 	// try {
-	var result = _insertOrUpdateDevicePointsWithMapIdAsync(devicePointRepository, matrixCells, mac, mapId)
-	log.Info().Msg(`${devicePointRepository.tableName} table has been filled successfully with ${result} rows`)
+	// var result = _insertOrUpdateDevicePointsWithMapIdAsync(devicePointRepository, matrixCells, mac, mapId)
+	// log.Info().Msg(`${devicePointRepository.tableName} table has been filled successfully with ${result} rows`)
 	// }
 	// catch (err) {
 	//     logger.error(`Failed to delete some rows or fill ${devicePointRepository.tableName}`);
@@ -504,8 +507,8 @@ func findXY(mac string, mapId uuid.UUID, devices []Device, matrix []MatrixRow) (
 	//     return [{ 'Error': err, 'status': 'error' }, 500]
 	// }
 
-	log.Debug().Msg(`Total execution time: ${((Date.now() - executionTimeStart) / 1000).toFixed(2)}`)
-	return 200, err
+	log.Debug().Msg(fmt.Sprintf("Total execution time: %v", float64(time.Now().Unix()-executionTimeStart.Unix())/1000))
+	return 200, nil
 }
 
 const (
@@ -529,7 +532,7 @@ type Device struct {
 }
 
 type BandCoefficients struct {
-	frequency         float64
+	frequency         int
 	attenuationFactor float64
 	penetrationFactor float64
 	Dmax              float64
