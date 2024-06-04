@@ -42,7 +42,7 @@ func _getMatrix(matrixRowGenerator chan MatrixPoint, mapID uuid.UUID) ([]PointRo
 }
 
 func CreateMatrix(mapID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow) {
-	log.Info().Msg(`Creating matrix for MapID = ${MapID}...`)
+	log.Info().Msg(fmt.Sprintf("Creating matrix for MapID = %s...", mapID))
 	var startTestTime time.Time = time.Now()
 
 	// var pointRowsToInsert []PointRow
