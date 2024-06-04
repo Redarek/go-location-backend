@@ -21,7 +21,7 @@ func _getMatrix(matrixRowGenerator chan MatrixPoint, mapID uuid.UUID) ([]PointRo
 
 	for row := range matrixRowGenerator {
 
-		// (id, sensorID, xM, yM, rssi24, rssi5, rssi6, distance) := row;
+		// (ID, SensorID, xM, yM, RSSI24, RSSI5, RSSI6, Distance) := row;
 		var id int = row.id
 		var sensorID uuid.UUID = row.sensorID
 		xM, yM := row.xM, row.yM
@@ -29,20 +29,20 @@ func _getMatrix(matrixRowGenerator chan MatrixPoint, mapID uuid.UUID) ([]PointRo
 		var distance float64 = row.distance
 
 		if lastID != id {
-			// pointRowsToInsert.push({ id: id, mapID: mapID, x: xM, y: yM });
-			pointRowsToInsert = append(pointRowsToInsert, PointRow{id: id, mapID: mapID, x: xM, y: yM})
+			// pointRowsToInsert.push({ ID: ID, MapID: MapID, X: xM, Y: yM });
+			pointRowsToInsert = append(pointRowsToInsert, PointRow{ID: id, MapID: mapID, X: xM, Y: yM})
 			lastID = id
 		}
 
-		// matrixRowsToInsert.push({ pointID: id, sensorID: sensorID, rssi24: rssi24, rssi5: rssi5, rssi6: rssi6, distance: distance });
-		matrixRowsToInsert = append(matrixRowsToInsert, MatrixRow{pointID: id, sensorID: sensorID, rssi24: rssi24, rssi5: rssi5, rssi6: rssi6, distance: distance})
+		// matrixRowsToInsert.push({ PointID: ID, SensorID: SensorID, RSSI24: RSSI24, RSSI5: RSSI5, RSSI6: RSSI6, Distance: Distance });
+		matrixRowsToInsert = append(matrixRowsToInsert, MatrixRow{PointID: id, SensorID: sensorID, RSSI24: rssi24, RSSI5: rssi5, RSSI6: rssi6, Distance: distance})
 	}
 
 	return pointRowsToInsert, matrixRowsToInsert
 }
 
 func CreateMatrix(mapID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow) {
-	log.Info().Msg(`Creating matrix for mapID = ${mapID}...`)
+	log.Info().Msg(`Creating matrix for MapID = ${MapID}...`)
 	var startTestTime time.Time = time.Now()
 
 	// var pointRowsToInsert []PointRow
@@ -52,7 +52,7 @@ func CreateMatrix(mapID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow
 	//const startFillTime: number = performance.now();
 
 	var matrixRowGenerator chan MatrixPoint = GenerateMatrixRow(inputData)
-	//const [pointSize, matrixSize]: [number, number] = await _insertIntoMatrixAsync(pointRepository, matrixRepository, matrixRowGenerator, mapID);
+	//const [pointSize, matrixSize]: [number, number] = await _insertIntoMatrixAsync(pointRepository, matrixRepository, matrixRowGenerator, MapID);
 	pointRowsToInsert, matrixRowsToInsert := _getMatrix(matrixRowGenerator, mapID)
 
 	//logger.info(`Created ${pointSize} points (${matrixSize} matrix points) in ${((performance.now() - startTestTime) / 1000).toFixed(2)} sec `
@@ -100,17 +100,17 @@ type InputData struct {
 }
 
 type PointRow struct {
-	id    int
-	mapID uuid.UUID
-	x     float64
-	y     float64
+	ID    int       `json:"ID"`
+	MapID uuid.UUID `json:"mapId"`
+	X     float64   `json:"X"`
+	Y     float64   `json:"Y"`
 }
 
 type MatrixRow struct {
-	pointID  int
-	sensorID uuid.UUID
-	rssi24   float64
-	rssi5    float64
-	rssi6    float64
-	distance float64
+	PointID  int       `json:"pointId"`
+	SensorID uuid.UUID `json:"sensorId"`
+	RSSI24   float64   `json:"RSSI24"`
+	RSSI5    float64   `json:"RSSI5"`
+	RSSI6    float64   `json:"RSSI6"`
+	Distance float64   `json:"Distance"`
 }

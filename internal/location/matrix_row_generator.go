@@ -67,7 +67,7 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
 				i++
 				var matrixWithPoint MatrixPoint = MatrixPoint{
 					id: i,
-					// sensorID: -1,
+					// SensorID: -1,
 					x:        x,
 					y:        y,
 					xM:       float64(x) * cellSizeMeters,
@@ -173,9 +173,9 @@ func _getWallsAttenuation(clientX int, clientY int, walls []Wall, sensor db.Sens
 }
 
 /**
- * Returns the distance in meters between Client and sensor.
- * @param clientX Client x coordinate.
- * @param clientY Client y coordinate.
+ * Returns the Distance in meters between Client and sensor.
+ * @param clientX Client X coordinate.
+ * @param clientY Client Y coordinate.
  * @param Client Client`s parameters.
  * @param sensor Sensor.
  * @returns Distance between Client and sensor in meters.
@@ -189,7 +189,7 @@ func _getDistance(clientX int, clientY int, client Client, sensor db.Sensor, cel
  * @param frequency Transmission frequency in GHz.
  * @param attenuation_factor Attenuation factor.
  * @param penetration_factor Penetration factor.
- * @param distance Transmission distance.
+ * @param Distance Transmission Distance.
  * @returns Free space pass loss in dB.
  */
 func _getFSPL(frequency int, attenuationFactor float64, penetrationFactor float64, distance float64) float64 {
@@ -209,11 +209,11 @@ func _approximateAzimuth(azimuth float64, delta float64) (int, error) {
 
 /**
  * Returns the RSSI for 2.4, 5 and 6 HHz bands in a free space.
- * @param clientX Client x coordinate.
- * @param clientY Client y coordinate.
+ * @param clientX Client X coordinate.
+ * @param clientY Client Y coordinate.
  * @param Client Client`s parameters.
  * @param sensor Sensor.
- * @param distance Distance between Client and Sensors in meters.
+ * @param Distance Distance between Client and Sensors in meters.
  * @returns Tuple of RSSI for 2.4, 5 and 6 HHz bands.
  */
 func _getFreeSpaceRSSI(clientX int, clientY int, client Client, sensor db.Sensor, distance float64) (float64, float64, float64) {
@@ -240,7 +240,7 @@ func _getFreeSpaceRSSI(clientX int, clientY int, client Client, sensor db.Sensor
 
 		if delta == 0 {
 			log.Warn().Msg(`The radiation diagram can have only the step of 10 or 15 degrees.
-            Check that the radiation diagram for sensor with id = ${sensor.id} is filled out correctly.
+            Check that the radiation diagram for sensor with ID = ${sensor.ID} is filled out correctly.
             By default, the antenna gain of ${sensor.rx_ant_gain} will be used for all directions.`)
 		} else {
 			horAzimuth, err := _approximateAzimuth(

@@ -99,8 +99,8 @@ func _areSegmentsIntersect2D(startPoint1 XYZcoordinate, endPoint1 XYZcoordinate,
 // ГОТОВО
 /**
  * Returns vector from two points: (x1; y1; z1) -> (x2; y2; z2).
- * @param point1 [x; y; z] coordinates for the first point.
- * @param point2 [x; y; z] coordinates for the second point.
+ * @param point1 [X; Y; z] coordinates for the first point.
+ * @param point2 [X; Y; z] coordinates for the second point.
  * @returns Returns vector from two points: (x1; y1; z1) -> (x2; y2; z2).
  */
 func _getVector(point1 XYZcoordinate, point2 XYZcoordinate) Vector {
@@ -181,21 +181,21 @@ func _getLinesIntersection2D(line1Point1 XYZcoordinate, line1Point2 XYZcoordinat
 //    if (!div)
 //        return null;
 
-//    const x = (_getDeterminant2D(line1Point1, line2Point1) - line1Point1[1] * line2Point1[0]) / div;
-//    const y = (line1Point1[0] * line2Point1[1] - _getDeterminant2D(line1Point1, line2Point1)) / div;
+//    const X = (_getDeterminant2D(line1Point1, line2Point1) - line1Point1[1] * line2Point1[0]) / div;
+//    const Y = (line1Point1[0] * line2Point1[1] - _getDeterminant2D(line1Point1, line2Point1)) / div;
 
-//    return [x, y];
+//    return [X, Y];
 //}
 //////////////////////
 
 // ГОТОВО
 /**
- * Returns azimuth in degrees between(0; -1; 0) and (x; y; 0) vectors.
- * Returns ZeroDivisionError if (x; y; 0) vector is zero.
+ * Returns azimuth in degrees between(0; -1; 0) and (X; Y; 0) vectors.
+ * Returns ZeroDivisionError if (X; Y; 0) vector is zero.
  * @param point1 Point 1.
  * @param point2 Point 2.
  * @param offset_deg ПО УМОЛЧАНИЮ 0!!!!
- * @returns Azimuth in degrees between(0; -1; 0) and (x; y; 0) vectors.
+ * @returns Azimuth in degrees between(0; -1; 0) and (X; Y; 0) vectors.
  */
 func getHorizontalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_deg int) int {
 	var vector Vector = _getVector(point1, point2)
@@ -204,12 +204,12 @@ func getHorizontalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_
 
 // ГОТОВО
 /**
- * Returns azimuth in degrees between(0; 0; 1) and (0; y; z) vectors.
- * Returns ZeroDivisionError if (0; y; z) vector is zero.
+ * Returns azimuth in degrees between(0; 0; 1) and (0; Y; z) vectors.
+ * Returns ZeroDivisionError if (0; Y; z) vector is zero.
  * @param point1 Point 1.
  * @param point2 Point 2.
  * @param offset_deg ПО УМОЛЧАНИЮ 0
- * @returns Azimuth in degrees between(0; 0; 1) and (0; y; z) vectors.
+ * @returns Azimuth in degrees between(0; 0; 1) and (0; Y; z) vectors.
  */
 func getVerticalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_deg int) int {
 	var vector Vector = _getVector(point1, point2)
@@ -219,7 +219,7 @@ func getVerticalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_de
 // ГОТОВО
 /**
  * Returns azimuth in degrees between your vector and (0; -1; 0).
- * Returns ZeroDivisionError if (x;y;0) vector is zero.
+ * Returns ZeroDivisionError if (X;Y;0) vector is zero.
  * @param vector
  * @param zero_direction
  * @param offset_deg ПО УМОЛЧАНИЮ 0
@@ -240,8 +240,8 @@ func _getAzimuth(vector Vector, offset_deg int) int {
  * @returns
  */
 func _getPlunge(vector Vector, offset_deg int) int {
-	// var x int = vector.x
-	// var y int = vector.y
+	// var X int = vector.X
+	// var Y int = vector.Y
 	var z float64 = vector.z
 	var magnitude float64 = Magnitude(vector)
 
