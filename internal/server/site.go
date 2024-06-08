@@ -135,6 +135,11 @@ func (s *Fiber) GetSitesDetailed(c *fiber.Ctx) (err error) {
 		}
 		site.AccessPointTypes = accessPointTypes
 
+		sensorTypes, err := s.db.GetSensorTypes(site.ID)
+		if err != nil {
+			continue
+		}
+		site.SensorTypes = sensorTypes
 	}
 	return c.JSON(fiber.Map{
 		"data": sites,

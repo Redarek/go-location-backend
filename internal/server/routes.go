@@ -17,20 +17,27 @@ func (s *Fiber) RegisterFiberRoutes() {
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
 
-	// Helmet middleware helps secure your apps by setting various HTTP headers.
+	//s.App.Use(limiter.New(limiter.Config{
+	//	Max:        100,
+	//	Expiration: 1 * time.Minute,
+	//	KeyGenerator: func(c *fiber.Ctx) string {
+	//		return c.IP()
+	//	},
+	//	LimitReached: func(c *fiber.Ctx) error {
+	//		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+	//			"error": "Too Many Requests",
+	//		})
+	//	},
+	//}))
+
 	//s.App.Use(helmet.New())
 
-	s.App.Get("/", s.HelloWorldHandler)
 	s.App.Static("/static", "./static")
 
 	s.App.Get("/health", s.healthHandler)
 
-	// Initialize default config (Assign the middleware to /metrics)
 	s.App.Get("/metrics", monitor.New())
 
-	// Liveness and readiness probes middleware for Fiber that provides two endpoints
-	// for checking the liveness and readiness state of HTTP applications.
-	// default endpoints: /livez and /readyz
 	s.App.Use(healthcheck.New())
 
 	api := s.App.Group("/api")
@@ -40,7 +47,7 @@ func (s *Fiber) RegisterFiberRoutes() {
 	u.Post("/register", s.Register)
 	u.Post("/login", s.Login)
 
-	v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}})) // TODO: implement refresh token route
+	v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 
 	site := v1.Group("/site")
 	site.Post("/", s.CreateSite)
@@ -116,10 +123,20 @@ func (s *Fiber) RegisterFiberRoutes() {
 	r.Patch("/sd", s.SoftDeleteRadio)
 	r.Patch("/restore", s.RestoreRadio)
 
+	sensorType := v1.Group("/sensorType")
+	sensorType.Post("/", s.CreateSensorType)
+	sensorType.Get("/", s.GetSensorType)
+	sensorType.Get("/all", s.GetSensorTypes)
+	sensorType.Patch("/", s.PatchUpdateSensorType)
+	sensorType.Patch("/sd", s.SoftDeleteSensorType)
+	sensorType.Patch("/restore", s.RestoreSensorType)
+
 	sensor := v1.Group("/sensor")
 	sensor.Post("/", s.CreateSensor)
 	sensor.Get("/", s.GetSensor)
+	sensor.Get("/detailed", s.GetSensorDetailed)
 	sensor.Get("/all", s.GetSensors)
+	sensor.Get("/all/detailed", s.GetSensorsDetailed)
 	sensor.Patch("/", s.PatchUpdateSensor)
 	sensor.Patch("/sd", s.SoftDeleteSensor)
 	sensor.Patch("/restore", s.RestoreSensor)

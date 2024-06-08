@@ -33,6 +33,7 @@ type Service interface {
 	SoftDeleteFloor(floorUUID uuid.UUID) (err error)
 	RestoreFloor(floorUUID uuid.UUID) (err error)
 	PatchUpdateFloor(f *Floor) (err error)
+	UpdateFloorHeatmap(floorUUID uuid.UUID, fileName string) (err error)
 
 	CreateWallType(wt *WallType) (id uuid.UUID, err error)
 	GetWallType(wallTypeUUID uuid.UUID) (wt *WallType, err error)
@@ -89,10 +90,20 @@ type Service interface {
 	//SetRadioState(rs *RadioState) (id uuid.UUID, err error)
 	//GetRadioStates(accessPointID uuid.UUID) (radioStates []RadioState, err error)
 
+	CreateSensorType(s *SensorType) (id uuid.UUID, err error)
+	GetSensorType(sensorTypeUUID uuid.UUID) (s *SensorType, err error)
+	IsSensorTypeSoftDeleted(sensorTypeUUID uuid.UUID) (isDeleted bool, err error)
+	GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err error)
+	SoftDeleteSensorType(sensorTypeUUID uuid.UUID) (err error)
+	RestoreSensorType(sensorTypeUUID uuid.UUID) (err error)
+	PatchUpdateSensorType(s *SensorType) (err error)
+
 	CreateSensor(s *Sensor) (id uuid.UUID, err error)
 	GetSensor(sensorUUID uuid.UUID) (s *Sensor, err error)
+	GetSensorDetailed(sensorUUID uuid.UUID) (s *SensorDetailed, err error)
 	IsSensorSoftDeleted(sensorUUID uuid.UUID) (isDeleted bool, err error)
 	GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error)
+	GetSensorsDetailed(floorUUID uuid.UUID) (ss []*SensorDetailed, err error)
 	SoftDeleteSensor(sensorUUID uuid.UUID) (err error)
 	RestoreSensor(sensorUUID uuid.UUID) (err error)
 	PatchUpdateSensor(s *Sensor) (err error)
@@ -144,6 +155,7 @@ type Site struct {
 	Buildings        []*Building        `json:"buildings"`
 	AccessPointTypes []*AccessPointType `json:"accessPointTypes"`
 	WallTypes        []*WallType        `json:"wallTypes"`
+	SensorTypes      []*SensorType      `json:"sensorTypes"`
 }
 
 type Building struct {
@@ -165,6 +177,7 @@ type Floor struct {
 	Name           *string                `json:"name" db:"name"`
 	Number         *int                   `json:"number" db:"number"`
 	Image          *string                `json:"image" db:"image"`
+	Heatmap        *string                `json:"heatmap" db:"heatmap"`
 	WidthInPixels  *int                   `json:"widthInPixels" db:"width_in_pixels"`
 	HeightInPixels *int                   `json:"heightInPixels" db:"height_in_pixels"`
 	Scale          *float64               `json:"scale" db:"scale"`
@@ -278,7 +291,78 @@ type WallDetailed struct {
 	WallType *WallType `json:"wallType"`
 }
 
+type SensorType struct {
+	ID         uuid.UUID `json:"id" db:"id"`     // "id" INTEGER [pk, increment]
+	Name       *string   `json:"name" db:"name"` //   "sensor_name" VARCHAR(45)
+	Color      *string   `json:"color" db:"color"`
+	Alias      *string   `json:"alias" db:"alias"`            //   "alias" VARCHAR(45)
+	Interface0 *string   `json:"interface0" db:"interface_0"` //   "interface_0" VARCHAR(45) [not null]
+	Interface1 *string   `json:"interface1" db:"interface_1"` //   "interface_1" VARCHAR(45)
+	Interface2 *string   `json:"interface2" db:"interface_2"` //   "interface_2" VARCHAR(45)
+	// TODO "state" sensors_state_enum [not null, default: "DOWN"]
+	// TODO "state_change" DATETIME [not null]
+	// TODO "packets_captured" INTEGER [not null, default: 0]
+	// TODO  "uptime" TIME [not null]
+	// TODO  "logs_path" VARCHAR(45)
+	// TODO  "approved" TINYINT(1) [not null, default: FALSE]
+	// TODO "mode" VARCHAR(45)
+	// TODO "type" TINYINT(1)
+	// TODO  "primary_channel_freq" FLOAT
+	// TODO  "primary_channel_width" VARCHAR(45)
+	// TODO  "primary_interval" FLOAT
+	// TODO  "secondary_interval" FLOAT
+	RxAntGain          *float64           `json:"rxAntGain" db:"rx_ant_gain"`                   //   "rx_ant_gain" FLOAT [not null, default: 0]
+	HorRotationOffset  *int               `json:"horRotationOffset" db:"hor_rotation_offset"`   //   "hor_rotation_offset" INTEGER [not null, default: 0]
+	VertRotationOffset *int               `json:"vertRotationOffset" db:"vert_rotation_offset"` //   "vert_rotation_offset" INTEGER [not null, default: 0]
+	CorrectionFactor24 *float64           `json:"correctionFactor24" db:"correction_factor_24"` //   "correction_factor24" INTEGER [not null, default: 0]  -> FLOAT
+	CorrectionFactor5  *float64           `json:"correctionFactor5" db:"correction_factor_5"`   //   "correction_factor5" INTEGER [not null, default: 0] -> FLOAT
+	CorrectionFactor6  *float64           `json:"correctionFactor6" db:"correction_factor_6"`   //   "correction_factor6" INTEGER [not null, default: 0float64 -> FLOAT
+	Diagram            *json.RawMessage   `json:"diagram" db:"diagram"`                         // Тип JSON
+	CreatedAt          pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	SiteID             uuid.UUID          `json:"siteId" db:"site_id"` //  "map_id" INTEGER
+}
+
 type Sensor struct {
+	ID         uuid.UUID `json:"id" db:"id"`                  // "id" INTEGER [pk, increment]
+	Name       *string   `json:"name" db:"name"`              //   "sensor_name" VARCHAR(45)
+	X          *int      `json:"x" db:"x"`                    //   "x" FLOAT
+	Y          *int      `json:"y" db:"y"`                    //   "y" FLOAT
+	Z          *float64  `json:"z" db:"z"`                    //   "z" FLOAT
+	MAC        *string   `json:"mac" db:"mac"`                //   "sensor_mac" VARCHAR(17) [unique, not null]
+	IP         *string   `json:"ip" db:"ip"`                  //   "sensor_ip" VARCHAR(64) [not null]
+	Alias      *string   `json:"alias" db:"alias"`            //   "alias" VARCHAR(45)
+	Interface0 *string   `json:"interface0" db:"interface_0"` //   "interface_0" VARCHAR(45) [not null]
+	Interface1 *string   `json:"interface1" db:"interface_1"` //   "interface_1" VARCHAR(45)
+	Interface2 *string   `json:"interface2" db:"interface_2"` //   "interface_2" VARCHAR(45)
+	// TODO "state" sensors_state_enum [not null, default: "DOWN"]
+	// TODO "state_change" DATETIME [not null]
+	// TODO "packets_captured" INTEGER [not null, default: 0]
+	// TODO  "uptime" TIME [not null]
+	// TODO  "logs_path" VARCHAR(45)
+	// TODO  "approved" TINYINT(1) [not null, default: FALSE]
+	// TODO "mode" VARCHAR(45)
+	// TODO "type" TINYINT(1)
+	// TODO  "primary_channel_freq" FLOAT
+	// TODO  "primary_channel_width" VARCHAR(45)
+	// TODO  "primary_interval" FLOAT
+	// TODO  "secondary_interval" FLOAT
+	RxAntGain          *float64           `json:"rxAntGain" db:"rx_ant_gain"`                   //   "rx_ant_gain" FLOAT [not null, default: 0]
+	HorRotationOffset  *int               `json:"horRotationOffset" db:"hor_rotation_offset"`   //   "hor_rotation_offset" INTEGER [not null, default: 0]
+	VertRotationOffset *int               `json:"vertRotationOffset" db:"vert_rotation_offset"` //   "vert_rotation_offset" INTEGER [not null, default: 0]
+	CorrectionFactor24 *float64           `json:"correctionFactor24" db:"correction_factor_24"` //   "correction_factor24" INTEGER [not null, default: 0]  -> FLOAT
+	CorrectionFactor5  *float64           `json:"correctionFactor5" db:"correction_factor_5"`   //   "correction_factor5" INTEGER [not null, default: 0] -> FLOAT
+	CorrectionFactor6  *float64           `json:"correctionFactor6" db:"correction_factor_6"`   //   "correction_factor6" INTEGER [not null, default: 0float64 -> FLOAT
+	Diagram            *json.RawMessage   `json:"diagram" db:"diagram"`                         // Тип JSON
+	CreatedAt          pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	FloorID            uuid.UUID          `json:"floorId" db:"floor_id"` //  "map_id" INTEGER
+	SensorTypeID       uuid.UUID          `json:"sensorTypeId" db:"sensor_type_id"`
+}
+
+type SensorDetailed struct {
 	ID         uuid.UUID `json:"id" db:"id"`     // "id" INTEGER [pk, increment]
 	Name       *string   `json:"name" db:"name"` //   "sensor_name" VARCHAR(45)
 	Color      *string   `json:"color" db:"color"`
@@ -314,6 +398,7 @@ type Sensor struct {
 	UpdatedAt          pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
 	DeletedAt          pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 	FloorID            uuid.UUID          `json:"floorId" db:"floor_id"` //  "map_id" INTEGER
+	SensorTypeID       uuid.UUID          `json:"sensorTypeId" db:"sensor_type_id"`
 }
 
 type Diagram struct {

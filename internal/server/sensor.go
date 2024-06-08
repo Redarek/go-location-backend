@@ -42,6 +42,23 @@ func (s *Fiber) GetSensor(c *fiber.Ctx) (err error) {
 	})
 }
 
+// GetSensorDetailed retrieves a sensor detailed
+func (s *Fiber) GetSensorDetailed(c *fiber.Ctx) (err error) {
+	sensorID, err := uuid.Parse(c.Query("id"))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse sensor uuid")
+		return
+	}
+	sensor, err := s.db.GetSensorDetailed(sensorID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get sensor detailed")
+		return
+	}
+	return c.JSON(fiber.Map{
+		"data": sensor,
+	})
+}
+
 // GetSensors retrieves sensors
 func (s *Fiber) GetSensors(c *fiber.Ctx) (err error) {
 	floorUUID, err := uuid.Parse(c.Query("id"))
@@ -52,6 +69,23 @@ func (s *Fiber) GetSensors(c *fiber.Ctx) (err error) {
 	ss, err := s.db.GetSensors(floorUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get sensors")
+		return
+	}
+	return c.JSON(fiber.Map{
+		"data": ss,
+	})
+}
+
+// GetSensorsDetailed retrieves sensors detailed
+func (s *Fiber) GetSensorsDetailed(c *fiber.Ctx) (err error) {
+	floorUUID, err := uuid.Parse(c.Query("id"))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse floor uuid")
+		return
+	}
+	ss, err := s.db.GetSensorsDetailed(floorUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get sensors detailed")
 		return
 	}
 	return c.JSON(fiber.Map{

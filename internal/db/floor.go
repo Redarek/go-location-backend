@@ -29,7 +29,7 @@ func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
 	query := `SELECT * FROM floors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, floorUUID)
 	f = &Floor{}
-	err = row.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
+	err = row.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No floor found with uuid %v", floorUUID)
@@ -74,7 +74,7 @@ func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
 	var f *Floor
 	for rows.Next() {
 		f = new(Floor)
-		err = rows.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
+		err = rows.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan floor")
 			return
@@ -175,5 +175,21 @@ func (p *postgres) PatchUpdateFloor(f *Floor) (err error) {
 		return
 	}
 
+	return
+}
+
+// UpdateFloorHeatmap updates heatmap of floor
+func (p *postgres) UpdateFloorHeatmap(floorUUID uuid.UUID, fileName string) (err error) {
+	query := `UPDATE floors SET heatmap = $1 WHERE id = $2`
+	commandTag, err := p.Pool.Exec(context.Background(), query, fileName, floorUUID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update heatmap of floor")
+		return
+	}
+	if commandTag.RowsAffected() == 0 {
+		log.Error().Msgf("No floor found with the uuid: %v", floorUUID)
+		return
+	}
+	log.Debug().Msg("Floor's heatmap updated successfully")
 	return
 }
