@@ -159,8 +159,6 @@ CREATE TABLE IF NOT EXISTS sensor_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR NOT NULL,
     color VARCHAR NOT NULL,
-    mac VARCHAR UNIQUE NOT NULL,
-    ip VARCHAR NOT NULL,
     alias VARCHAR NOT NULL,
     interface_0 VARCHAR NOT NULL,
     interface_1 VARCHAR NOT NULL,
