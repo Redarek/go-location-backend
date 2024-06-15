@@ -80,14 +80,14 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
 
 				for _, sensor := range sensors {
 					var distance float64 = _getDistance(x, y, client, *sensor, cellSizeMeters)
-					var freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6 = _getFreeSpaceRSSI(x, y, client, *sensor, distance)
+					var freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6 = _getFreeSpaceRSSI(matrixWithPoint.xM, matrixWithPoint.yM, client, *sensor, distance)
 					var wallsLoss24 float64 = 0
 					var wallsLoss5 float64 = 0
 					var wallsLoss6 float64 = 0
 
 					if CALCULATE_WALLS {
 						if freeSpaceRSSI24 >= RSII_CUTOFF || freeSpaceRSSI5 >= RSII_CUTOFF || freeSpaceRSSI6 >= RSII_CUTOFF {
-							wallsLoss24, wallsLoss5, wallsLoss6 = _getWallsAttenuation(x, y, walls, *sensor, client, cellSizeMeters)
+							wallsLoss24, wallsLoss5, wallsLoss6 = _getWallsAttenuation(matrixWithPoint.xM, matrixWithPoint.yM, walls, *sensor, client, cellSizeMeters)
 						}
 					}
 
@@ -144,13 +144,13 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
  * @param Client
  * @returns
  */
-func _getWallsAttenuation(clientX int, clientY int, walls []Wall, sensor db.Sensor, client Client, cellSizeMeters float64) (float64, float64, float64) {
+func _getWallsAttenuation(clientX float64, clientY float64, walls []Wall, sensor db.Sensor, client Client, cellSizeMeters float64) (float64, float64, float64) {
 	var loss24 float64 = 0
 	var loss5 float64 = 0
 	var loss6 float64 = 0
 
 	for _, wall := range walls {
-		var wallPathLengthThrough float64 = getWallPathLengthThrough(XYZcoordinate{x: float64(clientX), y: float64(clientY), z: client.ZM},
+		var wallPathLengthThrough float64 = getWallPathLengthThrough(XYZcoordinate{x: clientX, y: clientY, z: client.ZM},
 			XYZcoordinate{x: float64(*sensor.X), y: float64(*sensor.Y), z: *sensor.Z},
 			XYZcoordinate{x: float64(wall.X1), y: float64(wall.Y1), z: 0},
 			XYZcoordinate{x: float64(wall.X2), y: float64(wall.Y2), z: 0},
@@ -180,8 +180,8 @@ func _getWallsAttenuation(clientX int, clientY int, walls []Wall, sensor db.Sens
  * @param sensor Sensor.
  * @returns Distance between Client and sensor in meters.
  */
-func _getDistance(clientX int, clientY int, client Client, sensor db.Sensor, cellSizeMeters float64) float64 {
-	return Magnitude(Vector{(float64(clientX) - float64(*sensor.X)) * cellSizeMeters, (float64(clientY) - float64(*sensor.Y)) * cellSizeMeters, client.ZM - *sensor.Z})
+func _getDistance(clientX float64, clientY float64, client Client, sensor db.Sensor, cellSizeMeters float64) float64 {
+	return Magnitude(Vector{clientX - float64(*sensor.X), clientY - float64(*sensor.Y), client.ZM - *sensor.Z})
 }
 
 /**
@@ -216,7 +216,7 @@ func _approximateAzimuth(azimuth float64, delta float64) (int, error) {
  * @param Distance Distance between Client and Sensors in meters.
  * @returns Tuple of RSSI for 2.4, 5 and 6 HHz bands.
  */
-func _getFreeSpaceRSSI(clientX int, clientY int, client Client, sensor db.Sensor, distance float64) (float64, float64, float64) {
+func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor db.Sensor, distance float64) (float64, float64, float64) {
 	var fspl24 float64 = _getFSPL(FREQUENCY24, ATTENUATION_FACTOR24, PENETRATION_FACTOR24, distance)
 	var fspl5 float64 = _getFSPL(FREQUENCY5, ATTENUATION_FACTOR5, PENETRATION_FACTOR5, distance)
 	var fspl6 float64 = _getFSPL(FREQUENCY6, ATTENUATION_FACTOR6, PENETRATION_FACTOR6, distance)
@@ -246,7 +246,7 @@ func _getFreeSpaceRSSI(clientX int, clientY int, client Client, sensor db.Sensor
 			horAzimuth, err := _approximateAzimuth(
 				float64(getHorizontalAzimuthDeg(
 					XYZcoordinate{x: float64(*sensor.X), y: float64(*sensor.Y), z: *sensor.Z},
-					XYZcoordinate{float64(clientX), float64(clientY), client.ZM},
+					XYZcoordinate{clientX, clientY, client.ZM},
 					0)),
 				float64(delta))
 			if err != nil {
@@ -256,7 +256,7 @@ func _getFreeSpaceRSSI(clientX int, clientY int, client Client, sensor db.Sensor
 			vertAzimuth, err := _approximateAzimuth(
 				float64(getVerticalAzimuthDeg(
 					XYZcoordinate{x: float64(*sensor.X), y: float64(*sensor.Y), z: *sensor.Z},
-					XYZcoordinate{float64(clientX), float64(clientY), client.ZM},
+					XYZcoordinate{clientX, clientY, client.ZM},
 					0)),
 				float64(delta))
 			if err != nil {

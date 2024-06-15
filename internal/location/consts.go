@@ -22,6 +22,9 @@ const CORRECTION_COEFFICIENT_6 float64 = 0
 // Включение / выключение расчёта стен
 const CALCULATE_WALLS = true
 
+// Вкл / Выкл сложной математики расчёта стен
+const HARD_MATH_FOR_WALLS = false
+
 // Частота для 2.4 ГГц диапазона (по умолчанию 2437 МГц – 6 канал)
 const FREQUENCY24 int = 2437
 
@@ -29,7 +32,7 @@ const FREQUENCY24 int = 2437
 const PENETRATION_FACTOR24 float64 = 1
 
 // Коэффициент затухания для 2.4 ГГц
-const ATTENUATION_FACTOR24 float64 = 2 // 2.5 или 2.71
+const ATTENUATION_FACTOR24 float64 = 2.6 // 2.5 или 2.71
 
 // Частота для 5 ГГц диапазона
 const FREQUENCY5 int = 5250 // 48 - 52 channel
@@ -38,7 +41,7 @@ const FREQUENCY5 int = 5250 // 48 - 52 channel
 const PENETRATION_FACTOR5 float64 = 1 // был 6
 
 // Коэффициент затухания для 5 ГГц
-const ATTENUATION_FACTOR5 float64 = 2 // 3
+const ATTENUATION_FACTOR5 float64 = 2.5 // 3
 
 // Частота для 6 ГГц диапазона
 const FREQUENCY6 int = 5250 // пересчитать
