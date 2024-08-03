@@ -32,7 +32,7 @@ const FREQUENCY24 int = 2437
 const PENETRATION_FACTOR24 float64 = 1
 
 // Коэффициент затухания для 2.4 ГГц
-const ATTENUATION_FACTOR24 float64 = 2.6 // 2.5 или 2.71
+const ATTENUATION_FACTOR24 float64 = 2.7
 
 // Частота для 5 ГГц диапазона
 const FREQUENCY5 int = 5250 // 48 - 52 channel
@@ -82,7 +82,7 @@ const INFO_AGING_TIME int = 30
 // Коэффициенты для дельты RSSI
 
 const C_MIN float64 = 1
-const C_MAX float64 = 10
+const C_MAX float64 = 5
 const EIRP float64 = 18
 
 ////////////

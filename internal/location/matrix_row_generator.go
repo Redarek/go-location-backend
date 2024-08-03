@@ -79,7 +79,7 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
 				}
 
 				for _, sensor := range sensors {
-					var distance float64 = _getDistance(x, y, client, *sensor, cellSizeMeters)
+					var distance float64 = _getDistance(matrixWithPoint.xM, matrixWithPoint.yM, client, *sensor, cellSizeMeters)
 					var freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6 = _getFreeSpaceRSSI(matrixWithPoint.xM, matrixWithPoint.yM, client, *sensor, distance)
 					var wallsLoss24 float64 = 0
 					var wallsLoss5 float64 = 0
