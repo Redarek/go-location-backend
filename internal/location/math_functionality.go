@@ -294,55 +294,59 @@ func getWallPathLengthThrough(
 	cell_size_meters float64) float64 {
 
 	if _areSegmentsIntersect2D(line1Point1, line1Point2, line2Point1, line2Point2) {
-		var vector1 Vector = _getVector(line1Point1, line1Point2)
-		var vector2 Vector = _getVector(line2Point1, line2Point2)
+		if HARD_MATH_FOR_WALLS {
+			var vector1 Vector = _getVector(line1Point1, line1Point2)
+			var vector2 Vector = _getVector(line2Point1, line2Point2)
 
-		//if (vector1.every(el => el === 0) || vector2.every(el => el === 0)) // need to fix later
-		//    return thickness;
+			//if (vector1.every(el => el === 0) || vector2.every(el => el === 0)) // need to fix later
+			//    return thickness;
 
-		var cos_fi float64 = _findVectorCosPhi(vector1, vector2)
-		if cos_fi == 0 || IsNaN(cos_fi) || IsInf(cos_fi, 0) {
-			return thickness
-		}
+			var cos_fi float64 = _findVectorCosPhi(vector1, vector2)
+			if cos_fi == 0 || IsNaN(cos_fi) || IsInf(cos_fi, 0) {
+				return thickness
+			}
 
-		var height_in_cells float64 = line1Point2.z - line1Point1.z
-		var scaled_height_in_cells float64 = 0
-		if height_in_cells != 0 {
-			XY, tmp := _getLinesIntersection2D(line1Point1, line1Point2, line2Point1, line2Point2) // or null
-			if tmp == true {
-				var x float64 = XY.x
-				var small_line_length float64 = Abs(x - line1Point1.x)
-				var big_line_length float64 = Abs(line1Point2.x - line1Point1.x)
-				var scale float64 = small_line_length / big_line_length
-				if !IsNaN(scale) || !IsInf(scale, 0) {
-					scaled_height_in_cells = scale * height_in_cells // здесь было округление до 2
+			var height_in_cells float64 = line1Point2.z - line1Point1.z
+			var scaled_height_in_cells float64 = 0
+			if height_in_cells != 0 {
+				XY, tmp := _getLinesIntersection2D(line1Point1, line1Point2, line2Point1, line2Point2) // or null
+				if tmp == true {
+					var x float64 = XY.x
+					var small_line_length float64 = Abs(x - line1Point1.x)
+					var big_line_length float64 = Abs(line1Point2.x - line1Point1.x)
+					var scale float64 = small_line_length / big_line_length
+					if !IsNaN(scale) || !IsInf(scale, 0) {
+						scaled_height_in_cells = scale * height_in_cells // здесь было округление до 2
+					}
 				}
 			}
-		}
-		var sin_fi float64 = Sqrt(1 - Pow(cos_fi, 2))
-		var wallPathLengthThrough = Hypot(thickness/sin_fi, scaled_height_in_cells*cell_size_meters) // Здесь было округление до 2
+			var sin_fi float64 = Sqrt(1 - Pow(cos_fi, 2))
+			var wallPathLengthThrough = Hypot(thickness/sin_fi, scaled_height_in_cells*cell_size_meters) // Здесь было округление до 2
 
-		// if parallel
-		if Abs(cos_fi) == 1 {
-			var xProjection float64 = _getProjectionsOverlapLength(line1Point1.x, line1Point2.x, line2Point1.x, line2Point2.x)
-			var yProjection float64 = _getProjectionsOverlapLength(line1Point1.y, line1Point2.y, line2Point1.y, line2Point2.y)
-			//if (line1Point2[Y] >= line2Point2[Y])
-			//    yProjection = line2Point2[Y] - line2Point1[Y];
-			//else
-			//    yProjection = line1Point2[Y] - line2Point1[Y];
+			// if parallel
+			if Abs(cos_fi) == 1 {
+				var xProjection float64 = _getProjectionsOverlapLength(line1Point1.x, line1Point2.x, line2Point1.x, line2Point2.x)
+				var yProjection float64 = _getProjectionsOverlapLength(line1Point1.y, line1Point2.y, line2Point1.y, line2Point2.y)
+				//if (line1Point2[Y] >= line2Point2[Y])
+				//    yProjection = line2Point2[Y] - line2Point1[Y];
+				//else
+				//    yProjection = line1Point2[Y] - line2Point1[Y];
 
-			//if (line1Point2[X] >= line2Point2[X])
-			//    xProjection = line2Point2[X] - line2Point1[X];
-			//else
-			//    xProjection = line1Point2[X] - line2Point1[X];
-			var vector Vector = Vector{xProjection, yProjection, scaled_height_in_cells}
-			wallPathLengthThrough = Magnitude(vector) * cell_size_meters // было округление до 2
-			if wallPathLengthThrough == 0 {
-				return Hypot(thickness, scaled_height_in_cells*cell_size_meters) // было округление до 2
+				//if (line1Point2[X] >= line2Point2[X])
+				//    xProjection = line2Point2[X] - line2Point1[X];
+				//else
+				//    xProjection = line1Point2[X] - line2Point1[X];
+				var vector Vector = Vector{xProjection, yProjection, scaled_height_in_cells}
+				wallPathLengthThrough = Magnitude(vector) * cell_size_meters // было округление до 2
+				if wallPathLengthThrough == 0 {
+					return Hypot(thickness, scaled_height_in_cells*cell_size_meters) // было округление до 2
+				}
 			}
-		}
 
-		return wallPathLengthThrough
+			return wallPathLengthThrough
+		} else {
+			return thickness
+		}
 	}
 
 	return 0

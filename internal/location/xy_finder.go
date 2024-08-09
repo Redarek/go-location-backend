@@ -265,15 +265,15 @@ func _findCellsInMatrixAsync(matrix []MatrixRow, deviceDetections []Device, mapI
  * @returns
  */
 func _getBandAccuracyCorrection(channel int) float64 {
-	var bandAccuracyCorrectiont float64 = 0 // Поправка на частоту канала (по умолчанию: канал 6)
+	var bandAccuracyCorrection float64 = 0 // Поправка на частоту канала (по умолчанию: канал 6)
 
 	if 1 <= channel && channel <= 4 {
-		bandAccuracyCorrectiont = -0.1
+		bandAccuracyCorrection = -0.1
 	} else if 9 <= channel && channel <= 14 {
-		bandAccuracyCorrectiont = 0.1
+		bandAccuracyCorrection = 0.1
 	}
 
-	return bandAccuracyCorrectiont
+	return bandAccuracyCorrection
 }
 
 /**
