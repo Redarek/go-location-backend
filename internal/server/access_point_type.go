@@ -1,10 +1,11 @@
 package server
 
 import (
+	"location-backend/internal/db"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"location-backend/internal/db"
 )
 
 // CreateAccessPointType creates an access point type
@@ -31,13 +32,13 @@ func (s *Fiber) GetAccessPointType(c *fiber.Ctx) (err error) {
 		log.Error().Err(err).Msg("Failed to parse access point type uuid")
 		return
 	}
-	w, err := s.db.GetAccessPointType(accessPointTypeID)
+	apt, err := s.db.GetAccessPointType(accessPointTypeID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get access point type")
 		return
 	}
 	return c.JSON(fiber.Map{
-		"data": w,
+		"data": apt,
 	})
 }
 
