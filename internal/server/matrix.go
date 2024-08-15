@@ -50,7 +50,7 @@ func (s *Fiber) CreateMatrix(c *fiber.Ctx) (err error) {
 		},
 		Walls:          s.convertWallsFromDB(walls),
 		Sensors:        sensors,
-		CellSizeMeters: 1.0,
+		CellSizeMeters: *floor.Scale * 1000,
 		MinX:           0,
 		MinY:           0,
 		MaxX:           *floor.WidthInPixels,

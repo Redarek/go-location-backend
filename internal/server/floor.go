@@ -193,10 +193,12 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		height := bounds.Dy() // Height of the image
 		log.Debug().Msgf("Image dimensions: %dx%d", width, height)
 
-		f.WidthInPixels = &width
-		f.HeightInPixels = &height
+		scaledWidth := (1280 / width) * width
+		scaledHeight := (720 / height) * height
+		f.WidthInPixels = &scaledWidth
+		f.HeightInPixels = &scaledHeight
 
-		log.Debug().Msgf("Floor dimensions: %dx%d", *f.WidthInPixels, *f.WidthInPixels)
+		log.Debug().Msgf("Floor dimensions (scaled): %dx%d", *f.WidthInPixels, *f.WidthInPixels)
 
 	}
 
