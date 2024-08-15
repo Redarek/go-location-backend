@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
-	"strings"
 )
 
 // CreateSite creates a site
@@ -135,7 +136,7 @@ func (p *postgres) PatchUpdateSite(site *Site) (err error) {
 		params = append(params, site.Name)
 		paramID++
 	}
-	if site.Description != "" {
+	if site.Description != nil && *site.Description != "" {
 		updates = append(updates, fmt.Sprintf("description = $%d", paramID))
 		params = append(params, site.Description)
 		paramID++

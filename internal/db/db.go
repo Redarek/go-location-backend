@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -60,6 +61,7 @@ type Service interface {
 	GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*AccessPointTypeDetailed, err error)
 	SoftDeleteAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
 	RestoreAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
+	PatchUpdateAccessPointType(apt *AccessPointType) (err error)
 
 	CreateRadioTemplate(r *RadioTemplate) (id uuid.UUID, err error)
 	GetRadioTemplate(radioUUID uuid.UUID) (r RadioTemplate, err error)
@@ -147,7 +149,7 @@ type RefreshToken struct {
 type Site struct {
 	ID               uuid.UUID          `json:"id" db:"id"`
 	Name             string             `json:"name" db:"name"`
-	Description      string             `json:"description" db:"description"`
+	Description      *string            `json:"description" db:"description"`
 	CreatedAt        pgtype.Timestamptz `json:"createdAt" db:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
 	DeletedAt        pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`

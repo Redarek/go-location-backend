@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
@@ -180,6 +183,42 @@ WHERE apt.site_id = $1 AND apt.deleted_at IS NULL
 	}
 
 	log.Debug().Msgf("Retrieved %d unique access point types with detailed info", len(aps))
+	return
+}
+
+// Updates AccessPointType
+func (p *postgres) PatchUpdateAccessPointType(apt *AccessPointType) (err error) {
+	query := "UPDATE access_points SET updated_at = NOW(), "
+	updates := []string{}
+	params := []interface{}{}
+	paramID := 1
+
+	if apt.Name != "" {
+		updates = append(updates, fmt.Sprintf("name = $%d", paramID))
+		params = append(params, apt.Name)
+		paramID++
+	}
+
+	if apt.Color != "" {
+		updates = append(updates, fmt.Sprintf("color = $%d", paramID))
+		params = append(params, apt.Color)
+		paramID++
+	}
+
+	if len(updates) == 0 {
+		log.Error().Msg("No fields provided for update")
+		return fmt.Errorf("no fields provided for update")
+	}
+
+	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
+	params = append(params, apt.ID)
+
+	_, err = p.Pool.Exec(context.Background(), query, params...)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to execute update")
+		return
+	}
+
 	return
 }
 
