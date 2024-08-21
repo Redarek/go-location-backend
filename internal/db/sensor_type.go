@@ -231,6 +231,7 @@ func (p *postgres) PatchUpdateSensorType(s *SensorType) (err error) {
 		params = append(params, s.Diagram)
 		paramID++
 	}
+	// TODO IsVirtual
 
 	if len(updates) == 0 {
 		log.Error().Msg("No fields provided for update")

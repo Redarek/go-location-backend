@@ -1,15 +1,16 @@
 package server
 
 import (
-	"github.com/fogleman/gg"
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 	"image/color"
 	"location-backend/internal/db"
 	"location-backend/internal/location"
 	"os"
 	"path/filepath"
+
+	"github.com/fogleman/gg"
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 )
 
 // CreateMatrix creates a matrix
@@ -44,17 +45,17 @@ func (s *Fiber) CreateMatrix(c *fiber.Ctx) (err error) {
 
 	matrixInputData := location.InputData{
 		Client: location.Client{
-			TrSignalPower: 1,
+			TrSignalPower: 17,
 			TrAntGain:     1,
-			ZM:            0,
+			ZM:            1,
 		},
 		Walls:          s.convertWallsFromDB(walls),
 		Sensors:        sensors,
 		CellSizeMeters: *floor.Scale * 1000,
 		MinX:           0,
 		MinY:           0,
-		MaxX:           *floor.WidthInPixels,
-		MaxY:           *floor.HeightInPixels,
+		MaxX:           *floor.WidthInPixels / 1000,  // !be careful here
+		MaxY:           *floor.HeightInPixels / 1000, // !be careful here
 	}
 	log.Debug().Msgf("Matrix input data: %+v", matrixInputData)
 
