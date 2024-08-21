@@ -9,8 +9,24 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
 )
+
+type AccessPointType struct {
+	ID        uuid.UUID          `json:"id" db:"id"`
+	Name      string             `json:"name" db:"name"`
+	Color     string             `json:"color" db:"color"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	SiteID    uuid.UUID          `json:"siteId" db:"site_id"`
+}
+
+type AccessPointTypeDetailed struct {
+	AccessPointType
+	RadioTemplates []*RadioTemplate `json:"radioTemplates"`
+}
 
 // CreateAccessPointType creates an access point type
 func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error) {
