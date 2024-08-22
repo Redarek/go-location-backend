@@ -1,11 +1,12 @@
 package server
 
 import (
+	"location-backend/internal/db/models"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"location-backend/internal/db"
 )
 
 // CreateSite creates a site
@@ -17,7 +18,7 @@ func (s *Fiber) CreateSite(c *fiber.Ctx) (err error) {
 		log.Error().Err(err).Msg("Failed to parse user uuid")
 		return
 	}
-	siteInput := new(db.Site)
+	siteInput := new(models.Site)
 	err = c.BodyParser(siteInput)
 	if err != nil {
 		return err
@@ -196,7 +197,7 @@ func (s *Fiber) RestoreSite(c *fiber.Ctx) (err error) {
 
 // PatchUpdateSite patch updates a site based on provided fields
 func (s *Fiber) PatchUpdateSite(c *fiber.Ctx) error {
-	var input db.Site
+	var input models.Site
 	if err := c.BodyParser(&input); err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")

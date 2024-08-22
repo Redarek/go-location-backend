@@ -1,15 +1,16 @@
 package server
 
 import (
+	"location-backend/internal/db/models"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"location-backend/internal/db"
 )
 
 // CreateRadioTemplate creates a radio template
 func (s *Fiber) CreateRadioTemplate(c *fiber.Ctx) (err error) {
-	r := new(db.RadioTemplate)
+	r := new(models.RadioTemplate)
 	err = c.BodyParser(r)
 	if err != nil {
 		return err
@@ -108,7 +109,7 @@ func (s *Fiber) RestoreRadioTemplate(c *fiber.Ctx) (err error) {
 
 // PatchUpdateRadioTemplate patch updates a radio template based on provided fields
 func (s *Fiber) PatchUpdateRadioTemplate(c *fiber.Ctx) error {
-	var r db.RadioTemplate
+	var r models.RadioTemplate
 	if err := c.BodyParser(&r); err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")

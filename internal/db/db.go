@@ -2,6 +2,8 @@ package db
 
 import (
 	"github.com/google/uuid"
+
+	. "location-backend/internal/db/models"
 )
 
 type Service interface {

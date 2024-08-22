@@ -1,26 +1,27 @@
 package server
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
-	_ "golang.org/x/image/webp"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
 	_ "image/jpeg"
 	"image/png"
 	_ "image/png"
-	"location-backend/internal/db"
+	"location-backend/internal/db/models"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+	_ "golang.org/x/image/webp"
 )
 
 // CreateFloor creates a floor
 func (s *Fiber) CreateFloor(c *fiber.Ctx) (err error) {
-	f := new(db.Floor)
+	f := new(models.Floor)
 	err = c.BodyParser(f)
 	if err != nil {
 		return err
@@ -126,7 +127,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	f := &db.Floor{}
+	f := &models.Floor{}
 	if id, ok := form.Value["id"]; ok && id[0] != "" {
 		f.ID, err = uuid.Parse(id[0])
 		if err != nil {

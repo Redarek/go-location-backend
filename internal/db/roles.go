@@ -6,17 +6,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
-)
 
-type Role struct {
-	ID        uuid.UUID          `json:"id" db:"id"`
-	Name      string             `json:"name" db:"name"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
-	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
-	DeletedAt pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
-}
+	. "location-backend/internal/db/models"
+)
 
 // Creates a role
 func (p *postgres) CreateRole(name string) (id uuid.UUID, err error) {

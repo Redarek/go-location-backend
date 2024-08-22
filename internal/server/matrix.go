@@ -2,7 +2,7 @@ package server
 
 import (
 	"image/color"
-	"location-backend/internal/db"
+	"location-backend/internal/db/models"
 	"location-backend/internal/location"
 	"os"
 	"path/filepath"
@@ -51,11 +51,11 @@ func (s *Fiber) CreateMatrix(c *fiber.Ctx) (err error) {
 		},
 		Walls:          s.convertWallsFromDB(walls),
 		Sensors:        sensors,
-		CellSizeMeters: *floor.Scale * 1000,
+		CellSizeMeters: 0.25, // TODO fix
 		MinX:           0,
 		MinY:           0,
-		MaxX:           *floor.WidthInPixels / 1000,  // !be careful here
-		MaxY:           *floor.HeightInPixels / 1000, // !be careful here
+		MaxX:           int(float64((float64(*floor.WidthInPixels)**floor.Scale)/1000) / 0.25), // !be careful here
+		MaxY:           int(float64((float64(*floor.WidthInPixels)**floor.Scale)/1000) / 0.25), // !be careful here
 	}
 	log.Debug().Msgf("Matrix input data: %+v", matrixInputData)
 
@@ -150,7 +150,7 @@ func (s *Fiber) GetMatrix(c *fiber.Ctx) (err error) {
 	})
 }
 
-func (s *Fiber) convertWallsFromDB(walls []*db.WallDetailed) []location.Wall {
+func (s *Fiber) convertWallsFromDB(walls []*models.WallDetailed) []location.Wall {
 	convertedWalls := make([]location.Wall, 0, len(walls)) // Initialize a slice to store the converted walls
 	for _, dbw := range walls {
 		// Ensure all required pointer fields are not nil before dereferencing to prevent runtime panics

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"location-backend/internal/db"
+	"location-backend/internal/db/models"
 	. "math"
 
 	"github.com/google/uuid"
@@ -50,7 +51,7 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
 	// var Client, Walls, Sensors, CellSizeMeters, MinX, MinY, MaxX, MaxY int = inputData;
 	var client Client = inputData.Client
 	var walls []Wall = inputData.Walls
-	var sensors []*db.Sensor = inputData.Sensors
+	var sensors []*models.Sensor = inputData.Sensors
 	var minX int = inputData.MinX
 	var minY int = inputData.MinY
 	var maxX int = inputData.MaxX
@@ -144,7 +145,7 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
  * @param Client
  * @returns
  */
-func _getWallsAttenuation(clientX float64, clientY float64, walls []Wall, sensor db.Sensor, client Client, cellSizeMeters float64) (float64, float64, float64) {
+func _getWallsAttenuation(clientX float64, clientY float64, walls []Wall, sensor models.Sensor, client Client, cellSizeMeters float64) (float64, float64, float64) {
 	var loss24 float64 = 0
 	var loss5 float64 = 0
 	var loss6 float64 = 0
@@ -180,7 +181,7 @@ func _getWallsAttenuation(clientX float64, clientY float64, walls []Wall, sensor
  * @param sensor Sensor.
  * @returns Distance between Client and sensor in meters.
  */
-func _getDistance(clientX float64, clientY float64, client Client, sensor db.Sensor, cellSizeMeters float64) float64 {
+func _getDistance(clientX float64, clientY float64, client Client, sensor models.Sensor, cellSizeMeters float64) float64 {
 	return Magnitude(Vector{clientX - float64(*sensor.X), clientY - float64(*sensor.Y), client.ZM - *sensor.Z})
 }
 
@@ -216,7 +217,7 @@ func _approximateAzimuth(azimuth float64, delta float64) (int, error) {
  * @param Distance Distance between Client and Sensors in meters.
  * @returns Tuple of RSSI for 2.4, 5 and 6 HHz bands.
  */
-func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor db.Sensor, distance float64) (float64, float64, float64) {
+func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor models.Sensor, distance float64) (float64, float64, float64) {
 	var fspl24 float64 = _getFSPL(FREQUENCY24, ATTENUATION_FACTOR24, PENETRATION_FACTOR24, distance)
 	var fspl5 float64 = _getFSPL(FREQUENCY5, ATTENUATION_FACTOR5, PENETRATION_FACTOR5, distance)
 	var fspl6 float64 = _getFSPL(FREQUENCY6, ATTENUATION_FACTOR6, PENETRATION_FACTOR6, distance)
