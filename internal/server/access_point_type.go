@@ -59,6 +59,22 @@ func (s *Fiber) GetAccessPointTypes(c *fiber.Ctx) (err error) {
 	})
 }
 
+// PatchUpdateRadioTemplate patch updates a radio template based on provided fields
+func (s *Fiber) PatchUpdateAccessPointType(c *fiber.Ctx) error {
+	var apt model.AccessPointType
+	if err := c.BodyParser(&apt); err != nil {
+		log.Error().Err(err).Msg("Failed to parse request body")
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")
+	}
+
+	if err := s.db.PatchUpdateAccessPointType(&apt); err != nil {
+		log.Error().Err(err).Msg("Failed to update access point type")
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to update access point type")
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
 // SoftDeleteAccessPointType soft delete an access point type
 func (s *Fiber) SoftDeleteAccessPointType(c *fiber.Ctx) (err error) {
 	accessPointTypeID, err := uuid.Parse(c.Query("id"))

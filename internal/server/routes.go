@@ -95,6 +95,7 @@ func (s *Fiber) RegisterFiberRoutes() {
 	accessPointType.Post("/", s.CreateAccessPointType)
 	accessPointType.Get("/", s.GetAccessPointType)
 	accessPointType.Get("/all", s.GetAccessPointTypes)
+	accessPointType.Patch("/", s.PatchUpdateAccessPointType)
 	accessPointType.Patch("/sd", s.SoftDeleteAccessPointType)
 	accessPointType.Patch("/restore", s.RestoreAccessPointType)
 

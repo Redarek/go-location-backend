@@ -15,11 +15,11 @@ import (
 )
 
 // CreateRadioTemplate creates a radio template
-func (p *postgres) CreateRadioTemplate(r *RadioTemplate) (id uuid.UUID, err error) {
+func (p *postgres) CreateRadioTemplate(rt *RadioTemplate) (id uuid.UUID, err error) {
 	query := `INSERT INTO radio_templates (number, channel, wifi, power, bandwidth, guard_interval, access_point_type_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, r.Number, r.Channel, r.WiFi, r.Power, r.Bandwidth, r.GuardInterval, r.AccessPointTypeID)
+	row := p.Pool.QueryRow(context.Background(), query, rt.Number, rt.Channel, rt.WiFi, rt.Power, rt.Bandwidth, rt.GuardInterval, rt.AccessPointTypeID)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create radio template")
@@ -28,10 +28,10 @@ func (p *postgres) CreateRadioTemplate(r *RadioTemplate) (id uuid.UUID, err erro
 }
 
 // GetRadioTemplate retrieves a radio template
-func (p *postgres) GetRadioTemplate(radioUUID uuid.UUID) (r RadioTemplate, err error) {
+func (p *postgres) GetRadioTemplate(radioUUID uuid.UUID) (rt RadioTemplate, err error) {
 	query := `SELECT * FROM radio_templates WHERE id=$1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
-	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
+	err = row.Scan(&rt.ID, &rt.Number, &rt.Channel, &rt.WiFi, &rt.Power, &rt.Bandwidth, &rt.GuardInterval, &rt.CreatedAt, &rt.UpdatedAt, &rt.DeletedAt, &rt.AccessPointTypeID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No radio template found with ID %v", radioUUID)
@@ -40,7 +40,7 @@ func (p *postgres) GetRadioTemplate(radioUUID uuid.UUID) (r RadioTemplate, err e
 		log.Error().Err(err).Msg("Failed to retrieve radio template")
 		return
 	}
-	log.Debug().Msgf("Retrieved radio template: %v", r)
+	log.Debug().Msgf("Retrieved radio template: %v", rt)
 	return
 }
 
