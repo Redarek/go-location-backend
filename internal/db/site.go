@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 
-	. "location-backend/internal/db/models"
+	. "location-backend/internal/db/model"
 )
 
 // CreateSite creates a site

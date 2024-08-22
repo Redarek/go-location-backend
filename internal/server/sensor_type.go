@@ -1,7 +1,7 @@
 package server
 
 import (
-	"location-backend/internal/db/models"
+	"location-backend/internal/db/model"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -10,7 +10,7 @@ import (
 
 // CreateSensorType creates a sensor type
 func (s *Fiber) CreateSensorType(c *fiber.Ctx) (err error) {
-	sensorType := new(models.SensorType)
+	sensorType := new(model.SensorType)
 	err = c.BodyParser(sensorType)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
@@ -110,7 +110,7 @@ func (s *Fiber) RestoreSensorType(c *fiber.Ctx) (err error) {
 
 // PatchUpdateSensorType patch updates a sensor type based on provided fields
 func (s *Fiber) PatchUpdateSensorType(c *fiber.Ctx) error {
-	var sensorType models.SensorType
+	var sensorType model.SensorType
 	if err := c.BodyParser(&sensorType); err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")

@@ -2,7 +2,7 @@ package server
 
 import (
 	"image/color"
-	"location-backend/internal/db/models"
+	"location-backend/internal/db/model"
 	"location-backend/internal/location"
 	"os"
 	"path/filepath"
@@ -150,7 +150,7 @@ func (s *Fiber) GetMatrix(c *fiber.Ctx) (err error) {
 	})
 }
 
-func (s *Fiber) convertWallsFromDB(walls []*models.WallDetailed) []location.Wall {
+func (s *Fiber) convertWallsFromDB(walls []*model.WallDetailed) []location.Wall {
 	convertedWalls := make([]location.Wall, 0, len(walls)) // Initialize a slice to store the converted walls
 	for _, dbw := range walls {
 		// Ensure all required pointer fields are not nil before dereferencing to prevent runtime panics

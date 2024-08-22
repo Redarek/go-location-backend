@@ -1,7 +1,7 @@
 package server
 
 import (
-	"location-backend/internal/db/models"
+	"location-backend/internal/db/model"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -10,7 +10,7 @@ import (
 
 // CreateAccessPointType creates an access point type
 func (s *Fiber) CreateAccessPointType(c *fiber.Ctx) (err error) {
-	apt := new(models.AccessPointType)
+	apt := new(model.AccessPointType)
 	err = c.BodyParser(apt)
 	if err != nil {
 		return err

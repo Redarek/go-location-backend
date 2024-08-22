@@ -99,11 +99,11 @@ func New() Service {
         height_in_pixels INTEGER NOT NULL DEFAULT 0,
         scale FLOAT NOT NULL CHECK (scale > 0),
         building_id UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE ON UPDATE CASCADE,
-        cell_size_meter FLOAT NOT NULL DEFAULT 0.25 CHECK (cell_size_meter > 0)
-        north_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (north_area_indent_meter >= 0)
-        south_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (south_area_indent_meter >= 0)
-        west_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (west_area_indent_meter >= 0)
-        east_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (east_area_indent_meter >= 0)
+        cell_size_meter FLOAT NOT NULL DEFAULT 0.25 CHECK (cell_size_meter > 0),
+        north_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (north_area_indent_meter >= 0),
+        south_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (south_area_indent_meter >= 0),
+        west_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (west_area_indent_meter >= 0),
+        east_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (east_area_indent_meter >= 0),
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         deleted_at TIMESTAMPTZ

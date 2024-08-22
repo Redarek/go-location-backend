@@ -1,7 +1,7 @@
 package server
 
 import (
-	"location-backend/internal/db/models"
+	"location-backend/internal/db/model"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -10,7 +10,7 @@ import (
 
 // CreateWall creates a wall
 func (s *Fiber) CreateWall(c *fiber.Ctx) (err error) {
-	w := new(models.Wall)
+	w := new(model.Wall)
 	err = c.BodyParser(w)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (s *Fiber) RestoreWall(c *fiber.Ctx) (err error) {
 
 // PatchUpdateWall patch updates a wall based on provided fields
 func (s *Fiber) PatchUpdateWall(c *fiber.Ctx) error {
-	var input models.Wall
+	var input model.Wall
 	if err := c.BodyParser(&input); err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")

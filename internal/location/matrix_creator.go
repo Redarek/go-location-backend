@@ -2,7 +2,7 @@ package location
 
 import (
 	"fmt"
-	"location-backend/internal/db/models"
+	"location-backend/internal/db/model"
 	"time"
 
 	"github.com/google/uuid"
@@ -91,7 +91,7 @@ type Wall struct {
 type InputData struct {
 	Client         Client
 	Walls          []Wall
-	Sensors        []*models.Sensor
+	Sensors        []*model.Sensor
 	CellSizeMeters float64
 	MinX           int
 	MinY           int

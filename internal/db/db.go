@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/google/uuid"
 
-	. "location-backend/internal/db/models"
+	. "location-backend/internal/db/model"
 )
 
 type Service interface {
