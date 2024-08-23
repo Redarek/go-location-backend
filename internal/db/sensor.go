@@ -38,10 +38,25 @@ func (p *postgres) CreateSensor(s *Sensor) (id uuid.UUID, err error) {
 
 // GetSensor retrieves a sensor
 func (p *postgres) GetSensor(sensorUUID uuid.UUID) (s *Sensor, err error) {
-	query := `SELECT * FROM sensors WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			name,
+			x, y, z,
+			mac,
+			ip,
+			alias,
+			interface_0, interface_1, interface_2,
+			rx_ant_gain,
+			hor_rotation_offset, vert_rotation_offset,
+			correction_factor_24, correction_factor_5, correction_factor_6,
+			diagram,
+			sensor_type_id,
+			floor_id,
+			created_at, updated_at, deleted_at
+		FROM sensors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, sensorUUID)
 	s = &Sensor{}
-	err = row.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.FloorID, &s.SensorTypeID)
+	err = row.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.SensorTypeID, &s.FloorID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No sensor found with uuid %v", sensorUUID)
@@ -112,7 +127,22 @@ func (p *postgres) IsSensorSoftDeleted(sensorUUID uuid.UUID) (isDeleted bool, er
 
 // GetSensors retrieves sensors
 func (p *postgres) GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error) {
-	query := `SELECT * FROM sensors WHERE floor_id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			name,
+			x, y, z,
+			mac,
+			ip,
+			alias,
+			interface_0, interface_1, interface_2,
+			rx_ant_gain,
+			hor_rotation_offset, vert_rotation_offset,
+			correction_factor_24, correction_factor_5, correction_factor_6,
+			diagram,
+			sensor_type_id,
+			floor_id,
+			created_at, updated_at, deleted_at
+		FROM sensors WHERE floor_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve sensors")
@@ -123,7 +153,7 @@ func (p *postgres) GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error) {
 	var s *Sensor
 	for rows.Next() {
 		s = new(Sensor)
-		err = rows.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.FloorID, &s.SensorTypeID)
+		err = rows.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.FloorID, &s.SensorTypeID, &s.UpdatedAt, &s.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor")
 			return

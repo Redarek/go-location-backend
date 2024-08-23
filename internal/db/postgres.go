@@ -177,10 +177,10 @@ func New() Service {
         correction_factor_5 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         correction_factor_6 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         diagram JSONB,
+        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-        deleted_at TIMESTAMPTZ,
-        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL
+        deleted_at TIMESTAMPTZ
     );
 
     CREATE TABLE IF NOT EXISTS sensors (
@@ -202,11 +202,11 @@ func New() Service {
         correction_factor_5 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         correction_factor_6 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         diagram JSONB,
+        sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE SET NULL,
+        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-        deleted_at TIMESTAMPTZ,
-        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
-        sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE SET NULL
+        deleted_at TIMESTAMPTZ
     );
 
     CREATE TABLE IF NOT EXISTS wall_types (
@@ -217,10 +217,10 @@ func New() Service {
         attenuation_5 FLOAT NOT NULL CHECK (attenuation_5 > 0),
         attenuation_6 FLOAT NOT NULL CHECK (attenuation_6 > 0),
         thickness FLOAT NOT NULL CHECK (thickness > 0),
+        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-        deleted_at TIMESTAMPTZ,
-        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL
+        deleted_at TIMESTAMPTZ
     );
 
     CREATE TABLE IF NOT EXISTS walls (
@@ -229,11 +229,11 @@ func New() Service {
         y1 INTEGER NOT NULL,
         x2 INTEGER NOT NULL,
         y2 INTEGER NOT NULL,
+        wall_type_id UUID NOT NULL REFERENCES wall_types(id) ON DELETE SET NULL,
+        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-        deleted_at TIMESTAMPTZ,
-        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
-        wall_type_id UUID NOT NULL REFERENCES wall_types(id) ON DELETE SET NULL
+        deleted_at TIMESTAMPTZ
     );
 
     -- Relation between walls and wall types

@@ -24,7 +24,11 @@ func (p *postgres) CreateRole(name string) (id uuid.UUID, err error) {
 
 // Retrieves a role
 func (p *postgres) GetRoleByName(name string) (role Role, err error) {
-	query := `SELECT * FROM roles WHERE name = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			name,
+			created_at, updated_at, deleted_at
+		FROM roles WHERE name = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, name)
 	err = row.Scan(&role.ID, &role.Name, &role.CreatedAt, &role.UpdatedAt, &role.DeletedAt)
 	if err != nil {

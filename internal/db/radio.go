@@ -35,9 +35,20 @@ func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
 
 // GetRadio retrieves a radio
 func (p *postgres) GetRadio(radioUUID uuid.UUID) (r Radio, err error) {
-	query := `SELECT * FROM radios WHERE id=$1 AND deleted_at IS NULL`
+	query := `SELECT 
+			id,
+			number,
+			channel,
+			wifi,
+			power,
+			bandwidth,
+			guard_interval,
+			is_active,
+			access_point_id,
+			created_at, updated_at, deleted_at
+		FROM radios WHERE id=$1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
-	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointID)
+	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No radio found with ID %v", radioUUID)
@@ -71,7 +82,18 @@ func (p *postgres) IsRadioSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err 
 
 // GetRadios retrieves radios
 func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
-	query := `SELECT * FROM radios WHERE access_point_id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			number,
+			channel,
+			wifi,
+			power,
+			bandwidth,
+			guard_interval,
+			is_active,
+			access_point_id,
+			created_at, updated_at, deleted_at
+		FROM radios WHERE access_point_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, accessPointID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve radios")
@@ -81,7 +103,7 @@ func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
 
 	for rows.Next() {
 		r := new(Radio)
-		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointID)
+		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan radios")
 			return

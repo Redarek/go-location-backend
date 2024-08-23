@@ -29,10 +29,22 @@ func (p *postgres) CreateSensorType(s *SensorType) (id uuid.UUID, err error) {
 
 // GetSensorType retrieves a sensor
 func (p *postgres) GetSensorType(sensorTypeUUID uuid.UUID) (s *SensorType, err error) {
-	query := `SELECT * FROM sensor_types WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			name,
+			color,
+			alias,
+			interface_0, interface_1, interface_2,
+			rx_ant_gain,
+			hor_rotation_offset, vert_rotation_offset,
+			correction_factor_24, correction_factor_5, correction_factor_6,
+			diagram,
+			site_id,
+			created_at, updated_at, deleted_at
+		FROM sensor_types WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, sensorTypeUUID)
 	s = &SensorType{}
-	err = row.Scan(&s.ID, &s.Name, &s.Color, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.SiteID)
+	err = row.Scan(&s.ID, &s.Name, &s.Color, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.SiteID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No sensor type found with uuid %v", sensorTypeUUID)
@@ -66,7 +78,19 @@ func (p *postgres) IsSensorTypeSoftDeleted(sensorTypeUUID uuid.UUID) (isDeleted 
 
 // GetSensorTypes retrieves sensor types
 func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err error) {
-	query := `SELECT * FROM sensor_types WHERE site_id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			name,
+			color,
+			alias,
+			interface_0, interface_1, interface_2,
+			rx_ant_gain,
+			hor_rotation_offset, vert_rotation_offset,
+			correction_factor_24, correction_factor_5, correction_factor_6,
+			diagram,
+			site_id,
+			created_at, updated_at, deleted_at
+		FROM sensor_types WHERE site_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, siteUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve sensor types")
@@ -77,7 +101,7 @@ func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err err
 	var s *SensorType
 	for rows.Next() {
 		s = new(SensorType)
-		err = rows.Scan(&s.ID, &s.Name, &s.Color, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.SiteID)
+		err = rows.Scan(&s.ID, &s.Name, &s.Color, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.SiteID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor type")
 			return

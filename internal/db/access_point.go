@@ -29,10 +29,17 @@ func (p *postgres) CreateAccessPoint(ap *AccessPoint) (id uuid.UUID, err error) 
 
 // GetAccessPoint retrieves an access point
 func (p *postgres) GetAccessPoint(accessPointUUID uuid.UUID) (ap *AccessPoint, err error) {
-	query := `SELECT * FROM access_points WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT 
+			id, 
+			name,
+			x, y, z,
+			access_point_type_id,
+			floor_id,
+			created_at, updated_at, deleted_at
+		FROM access_points WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, accessPointUUID)
 	ap = &AccessPoint{}
-	err = row.Scan(&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt, &ap.FloorID, &ap.AccessPointTypeID)
+	err = row.Scan(&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.AccessPointTypeID, &ap.FloorID, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No access point found with uuid %v", accessPointUUID)
@@ -109,7 +116,14 @@ func (p *postgres) IsAccessPointSoftDeleted(accessPointUUID uuid.UUID) (isDelete
 
 // GetAccessPoints retrieves access points
 func (p *postgres) GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err error) {
-	query := `SELECT * FROM access_points WHERE floor_id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id, 
+			name,
+			x, y, z,
+			access_point_type_id,
+			floor_id,
+			created_at, updated_at, deleted_at 
+		FROM access_points WHERE floor_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve access points")
@@ -120,7 +134,7 @@ func (p *postgres) GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err
 	var ap *AccessPoint
 	for rows.Next() {
 		ap = new(AccessPoint)
-		err = rows.Scan(&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt, &ap.FloorID, &ap.AccessPointTypeID)
+		err = rows.Scan(&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.AccessPointTypeID, &ap.FloorID, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan access point")
 			return
@@ -138,13 +152,35 @@ func (p *postgres) GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err
 }
 
 func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPointDetailed, err error) {
-	query := `
-	SELECT ap.id, ap.name, ap.x, ap.y, ap.z, ap.created_at, ap.updated_at, ap.deleted_at, ap.floor_id, ap.access_point_type_id, apt.id, apt.name, apt.color, apt.created_at, apt.updated_at, apt.deleted_at, apt.site_id, r.id, r.number, r.channel, r.wifi, r.power, r.bandwidth, r.guard_interval, r.is_active, r.created_at, r.updated_at, r.deleted_at, r.access_point_id
-	FROM access_points ap
-	LEFT JOIN access_point_types apt ON ap.access_point_type_id = apt.id AND apt.deleted_at IS NULL
-	LEFT JOIN radios r ON ap.id = r.access_point_id AND r.deleted_at IS NULL
-	WHERE ap.floor_id = $1 AND ap.deleted_at IS NULL
-	GROUP BY ap.id, ap.name, ap.x, ap.y, ap.z, ap.created_at, ap.updated_at, ap.deleted_at, ap.floor_id, ap.access_point_type_id, apt.id, r.id`
+	query := `SELECT 
+			ap.id, 
+			ap.name, 
+			ap.x, ap.y, ap.z, 
+			ap.created_at, ap.updated_at, ap.deleted_at, 
+			ap.floor_id, 
+			ap.access_point_type_id, 
+			
+			apt.id, 
+			apt.name, 
+			apt.color, 
+			apt.created_at, apt.updated_at, apt.deleted_at, 
+			apt.site_id, 
+			r.id, r.number, 
+			r.channel, 
+			r.wifi, 
+			r.power, 
+			r.bandwidth, 
+			r.guard_interval, 
+			r.is_active, 
+			r.created_at, 
+			r.updated_at, 
+			r.deleted_at, 
+			r.access_point_id
+		FROM access_points ap
+		LEFT JOIN access_point_types apt ON ap.access_point_type_id = apt.id AND apt.deleted_at IS NULL
+		LEFT JOIN radios r ON ap.id = r.access_point_id AND r.deleted_at IS NULL
+		WHERE ap.floor_id = $1 AND ap.deleted_at IS NULL
+		GROUP BY ap.id, ap.name, ap.x, ap.y, ap.z, ap.created_at, ap.updated_at, ap.deleted_at, ap.floor_id, ap.access_point_type_id, apt.id, r.id`
 	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve access points")

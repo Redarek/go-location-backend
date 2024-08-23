@@ -24,7 +24,7 @@ func (p *postgres) CreateUser(username, password string) (id uuid.UUID, err erro
 
 // GetUserByUsername retrieves a user
 func (p *postgres) GetUserByUsername(username string) (user User, err error) {
-	query := `SELECT * FROM users WHERE username = $1 AND deleted_at IS NULL`
+	query := `SELECT id, username, password, created_at, updated_at, deleted_at FROM users WHERE username = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, username)
 	err = row.Scan(&user.ID, &user.Username, &user.Password, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt)
 	if err != nil {

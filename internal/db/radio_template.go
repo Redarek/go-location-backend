@@ -29,9 +29,19 @@ func (p *postgres) CreateRadioTemplate(rt *RadioTemplate) (id uuid.UUID, err err
 
 // GetRadioTemplate retrieves a radio template
 func (p *postgres) GetRadioTemplate(radioUUID uuid.UUID) (rt RadioTemplate, err error) {
-	query := `SELECT * FROM radio_templates WHERE id=$1 AND deleted_at IS NULL`
+	query := `SELECT 
+			id,
+			number,
+			channel,
+			wifi,
+			power,
+			bandwidth,
+			guard_interval,
+			access_point_type_id,
+			created_at, updated_at, deleted_at
+		FROM radio_templates WHERE id=$1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
-	err = row.Scan(&rt.ID, &rt.Number, &rt.Channel, &rt.WiFi, &rt.Power, &rt.Bandwidth, &rt.GuardInterval, &rt.CreatedAt, &rt.UpdatedAt, &rt.DeletedAt, &rt.AccessPointTypeID)
+	err = row.Scan(&rt.ID, &rt.Number, &rt.Channel, &rt.WiFi, &rt.Power, &rt.Bandwidth, &rt.GuardInterval, &rt.AccessPointTypeID, &rt.CreatedAt, &rt.UpdatedAt, &rt.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No radio template found with ID %v", radioUUID)
@@ -65,7 +75,17 @@ func (p *postgres) IsRadioTemplateSoftDeleted(radioUUID uuid.UUID) (isDeleted bo
 
 // GetRadioTemplates retrieves radio templates
 func (p *postgres) GetRadioTemplates(accessPointTypeID uuid.UUID) (rs []*RadioTemplate, err error) {
-	query := `SELECT * FROM radio_templates WHERE access_point_type_id = $1 AND deleted_at IS NULL`
+	query := `SELECT 
+			id,
+			number,
+			channel,
+			wifi,
+			power,
+			bandwidth,
+			guard_interval,
+			access_point_type_id,
+			created_at, updated_at, deleted_at
+		FROM radio_templates WHERE access_point_type_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, accessPointTypeID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve radio templates")
@@ -76,7 +96,7 @@ func (p *postgres) GetRadioTemplates(accessPointTypeID uuid.UUID) (rs []*RadioTe
 	var r *RadioTemplate
 	for rows.Next() {
 		r = new(RadioTemplate)
-		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID)
+		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.AccessPointTypeID, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan radio templates")
 			return

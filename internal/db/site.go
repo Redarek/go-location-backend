@@ -29,10 +29,10 @@ func (p *postgres) CreateSite(userUUID uuid.UUID, s *Site) (id uuid.UUID, err er
 
 // GetSite retrieves a site
 func (p *postgres) GetSite(siteUUID uuid.UUID) (s *Site, err error) {
-	query := `SELECT * FROM sites WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT id, name, description, user_id, created_at, updated_at, deleted_at  FROM sites WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, siteUUID)
 	s = &Site{}
-	err = row.Scan(&s.ID, &s.Name, &s.Description, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.UserID)
+	err = row.Scan(&s.ID, &s.Name, &s.Description, &s.UserID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No site found with uuid %v", siteUUID)
@@ -66,7 +66,7 @@ func (p *postgres) IsSiteSoftDeleted(siteUUID uuid.UUID) (isDeleted bool, err er
 
 // GetSites retrieves sites
 func (p *postgres) GetSites(userUUID uuid.UUID) (sites []*Site, err error) {
-	query := `SELECT * FROM sites WHERE user_id = $1 AND deleted_at IS NULL`
+	query := `SELECT id, name, description, user_id, created_at, updated_at, deleted_at FROM sites WHERE user_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, userUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve sites")
@@ -77,7 +77,7 @@ func (p *postgres) GetSites(userUUID uuid.UUID) (sites []*Site, err error) {
 	var s *Site
 	for rows.Next() {
 		s = new(Site)
-		err = rows.Scan(&s.ID, &s.Name, &s.Description, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.UserID)
+		err = rows.Scan(&s.ID, &s.Name, &s.Description, &s.UserID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan site")
 			return
