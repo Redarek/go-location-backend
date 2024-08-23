@@ -13,8 +13,8 @@ type RadioTemplate struct {
 	Power             *int               `json:"power" db:"power"`
 	Bandwidth         *string            `json:"bandwidth" db:"bandwidth"`
 	GuardInterval     *int               `json:"guardInterval" db:"guard_interval"`
+	AccessPointTypeID uuid.UUID          `json:"accessPointTypeId" db:"access_point_type_id"`
 	CreatedAt         pgtype.Timestamptz `json:"createdAt" db:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
 	DeletedAt         pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
-	AccessPointTypeID uuid.UUID          `json:"accessPointTypeId" db:"access_point_type_id"`
 }

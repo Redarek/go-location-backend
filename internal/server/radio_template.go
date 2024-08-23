@@ -10,13 +10,13 @@ import (
 
 // CreateRadioTemplate creates a radio template
 func (s *Fiber) CreateRadioTemplate(c *fiber.Ctx) (err error) {
-	r := new(model.RadioTemplate)
-	err = c.BodyParser(r)
+	rt := new(model.RadioTemplate)
+	err = c.BodyParser(rt)
 	if err != nil {
 		return err
 	}
 
-	radioTemplateID, err := s.db.CreateRadioTemplate(r)
+	radioTemplateID, err := s.db.CreateRadioTemplate(rt)
 	if err != nil {
 		return err
 	}

@@ -62,7 +62,7 @@ type Service interface {
 	RestoreAccessPointType(accessPointTypeUUID uuid.UUID) (err error)
 	PatchUpdateAccessPointType(apt *AccessPointType) (err error)
 
-	CreateRadioTemplate(r *RadioTemplate) (id uuid.UUID, err error)
+	CreateRadioTemplate(rt *RadioTemplate) (id uuid.UUID, err error)
 	GetRadioTemplate(radioUUID uuid.UUID) (r RadioTemplate, err error)
 	IsRadioTemplateSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err error)
 	GetRadioTemplates(accessPointTypeID uuid.UUID) (rs []*RadioTemplate, err error)
