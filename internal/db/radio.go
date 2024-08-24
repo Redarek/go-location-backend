@@ -201,41 +201,37 @@ func (p *postgres) PatchUpdateRadio(r *Radio) (err error) {
 	params := []interface{}{}
 	paramID := 1
 
-	if r.Number != nil {
-		updates = append(updates, fmt.Sprintf("number = $%d", paramID))
-		params = append(params, r.Number)
-		paramID++
-	}
-	if r.Channel != nil {
-		updates = append(updates, fmt.Sprintf("channel = $%d", paramID))
-		params = append(params, r.Channel)
-		paramID++
-	}
-	if r.WiFi != nil {
+	updates = append(updates, fmt.Sprintf("number = $%d", paramID))
+	params = append(params, r.Number)
+	paramID++
+
+	updates = append(updates, fmt.Sprintf("channel = $%d", paramID))
+	params = append(params, r.Channel)
+	paramID++
+
+	if r.WiFi != "" {
 		updates = append(updates, fmt.Sprintf("wifi = $%d", paramID))
 		params = append(params, r.WiFi)
 		paramID++
 	}
-	if r.Power != nil {
-		updates = append(updates, fmt.Sprintf("power = $%d", paramID))
-		params = append(params, r.Power)
-		paramID++
-	}
-	if r.Bandwidth != nil {
+
+	updates = append(updates, fmt.Sprintf("power = $%d", paramID))
+	params = append(params, r.Power)
+	paramID++
+
+	if r.Bandwidth != "" {
 		updates = append(updates, fmt.Sprintf("bandwidth = $%d", paramID))
 		params = append(params, r.Bandwidth)
 		paramID++
 	}
-	if r.GuardInterval != nil {
-		updates = append(updates, fmt.Sprintf("guard_interval = $%d", paramID))
-		params = append(params, r.GuardInterval)
-		paramID++
-	}
-	if r.IsActive != nil {
-		updates = append(updates, fmt.Sprintf("is_active = $%d", paramID))
-		params = append(params, r.IsActive)
-		paramID++
-	}
+
+	updates = append(updates, fmt.Sprintf("guard_interval = $%d", paramID))
+	params = append(params, r.GuardInterval)
+	paramID++
+
+	updates = append(updates, fmt.Sprintf("is_active = $%d", paramID))
+	params = append(params, r.IsActive)
+	paramID++
 
 	if len(updates) == 0 {
 		log.Error().Msg("No fields provided for update")

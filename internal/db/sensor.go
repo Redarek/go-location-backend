@@ -153,7 +153,7 @@ func (p *postgres) GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error) {
 	var s *Sensor
 	for rows.Next() {
 		s = new(Sensor)
-		err = rows.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.FloorID, &s.SensorTypeID, &s.UpdatedAt, &s.DeletedAt)
+		err = rows.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.FloorID, &s.SensorTypeID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor")
 			return

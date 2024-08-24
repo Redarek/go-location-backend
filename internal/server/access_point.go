@@ -16,7 +16,12 @@ func (s *Fiber) CreateAccessPoint(c *fiber.Ctx) (err error) {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return err
 	}
+
 	apID, err := s.db.CreateAccessPoint(ap)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create access point")
+		return err
+	}
 
 	apt, err := s.db.GetAccessPointTypeDetailed(ap.AccessPointTypeID)
 	for _, rt := range apt.RadioTemplates {
@@ -28,7 +33,7 @@ func (s *Fiber) CreateAccessPoint(c *fiber.Ctx) (err error) {
 			Power:         rt.Power,
 			Bandwidth:     rt.Bandwidth,
 			GuardInterval: rt.GuardInterval,
-			IsActive:      &b,
+			IsActive:      b,
 			AccessPointID: apID,
 		}
 		_, err = s.db.CreateRadio(r)
