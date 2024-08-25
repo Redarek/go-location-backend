@@ -164,7 +164,7 @@ func (p *postgres) PatchUpdateSensorType(s *SensorType) (err error) {
 	}
 	if s.Color != nil {
 		updates = append(updates, fmt.Sprintf("color = $%d", paramID))
-		params = append(params, s.Name)
+		params = append(params, s.Color)
 		paramID++
 	}
 	if s.Alias != nil {
