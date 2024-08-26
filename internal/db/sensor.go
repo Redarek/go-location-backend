@@ -139,8 +139,8 @@ func (p *postgres) GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error) {
 			hor_rotation_offset, vert_rotation_offset,
 			correction_factor_24, correction_factor_5, correction_factor_6,
 			diagram,
-			sensor_type_id,
 			floor_id,
+			sensor_type_id,
 			created_at, updated_at, deleted_at
 		FROM sensors WHERE floor_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
