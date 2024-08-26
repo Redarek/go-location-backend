@@ -44,7 +44,19 @@ func (p *postgres) GetSensorType(sensorTypeUUID uuid.UUID) (s *SensorType, err e
 		FROM sensor_types WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, sensorTypeUUID)
 	s = &SensorType{}
-	err = row.Scan(&s.ID, &s.Name, &s.Color, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.SiteID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+	err = row.Scan(
+		&s.ID,
+		&s.Name,
+		&s.Color,
+		&s.Alias,
+		&s.Interface0, &s.Interface1, &s.Interface2,
+		&s.RxAntGain,
+		&s.HorRotationOffset, &s.VertRotationOffset,
+		&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
+		&s.Diagram,
+		&s.SiteID,
+		&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No sensor type found with uuid %v", sensorTypeUUID)
@@ -101,7 +113,19 @@ func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err err
 	var s *SensorType
 	for rows.Next() {
 		s = new(SensorType)
-		err = rows.Scan(&s.ID, &s.Name, &s.Color, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.SiteID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+		err = rows.Scan(
+			&s.ID,
+			&s.Name,
+			&s.Color,
+			&s.Alias,
+			&s.Interface0, &s.Interface1, &s.Interface2,
+			&s.RxAntGain,
+			&s.HorRotationOffset, &s.VertRotationOffset,
+			&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
+			&s.Diagram,
+			&s.SiteID,
+			&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor type")
 			return
