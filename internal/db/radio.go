@@ -22,10 +22,11 @@ import (
 
 // CreateRadio creates a radio
 func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
-	query := `INSERT INTO radios (number, channel, wifi, power, bandwidth, guard_interval, is_active, access_point_id)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	query := `INSERT INTO radios (number, channel, channel_width, wifi, power, bandwidth, guard_interval, is_active, access_point_id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, r.Number, r.Channel, r.WiFi, r.Power, r.Bandwidth, r.GuardInterval, r.IsActive, r.AccessPointID)
+	row := p.Pool.QueryRow(context.Background(), query, r.Number, r.Channel, r.ChannelWidth, r.WiFi, r.Power,
+		r.Bandwidth, r.GuardInterval, r.IsActive, r.AccessPointID)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create radio")
@@ -39,6 +40,7 @@ func (p *postgres) GetRadio(radioUUID uuid.UUID) (r Radio, err error) {
 			id,
 			number,
 			channel,
+			channel_width,
 			wifi,
 			power,
 			bandwidth,
@@ -48,7 +50,8 @@ func (p *postgres) GetRadio(radioUUID uuid.UUID) (r Radio, err error) {
 			created_at, updated_at, deleted_at
 		FROM radios WHERE id=$1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
-	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
+	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.ChannelWidth, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID,
+		&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No radio found with ID %v", radioUUID)
@@ -86,6 +89,7 @@ func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
 			id,
 			number,
 			channel,
+			channel_width,
 			wifi,
 			power,
 			bandwidth,
@@ -103,7 +107,8 @@ func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
 
 	for rows.Next() {
 		r := new(Radio)
-		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
+		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.ChannelWidth, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID,
+			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan radios")
 			return
@@ -207,6 +212,10 @@ func (p *postgres) PatchUpdateRadio(r *Radio) (err error) {
 
 	updates = append(updates, fmt.Sprintf("channel = $%d", paramID))
 	params = append(params, r.Channel)
+	paramID++
+
+	updates = append(updates, fmt.Sprintf("channel_width = $%d", paramID))
+	params = append(params, r.ChannelWidth)
 	paramID++
 
 	if r.WiFi != "" {

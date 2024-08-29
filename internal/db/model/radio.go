@@ -9,6 +9,7 @@ type Radio struct {
 	ID            uuid.UUID          `json:"id" db:"id"`
 	Number        int                `json:"number" db:"number"`
 	Channel       int                `json:"channel" db:"channel"`
+	ChannelWidth  int                `json:"channelWidth" db:"channel_width"`
 	WiFi          string             `json:"wifi" db:"wifi"`
 	Power         int                `json:"power" db:"power"`
 	Bandwidth     string             `json:"bandwidth" db:"bandwidth"`
