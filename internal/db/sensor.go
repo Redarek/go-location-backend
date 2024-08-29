@@ -25,10 +25,36 @@ type Degree struct {
 
 // CreateSensor creates a sensor
 func (p *postgres) CreateSensor(s *Sensor) (id uuid.UUID, err error) {
-	query := `INSERT INTO sensors (name, x, y, z, mac, ip, alias, interface_0, interface_1, interface_2, rx_ant_gain, hor_rotation_offset, vert_rotation_offset, correction_factor_24, correction_factor_5, correction_factor_6, diagram, floor_id, sensor_type_id)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+	query := `INSERT INTO sensors (
+	name, 
+	x, y, z, 
+	mac, 
+	ip, 
+	alias, 
+	interface_0, interface_1, interface_2, 
+	rx_ant_gain, 
+	hor_rotation_offset, vert_rotation_offset, 
+	correction_factor_24, correction_factor_5, correction_factor_6, 
+	is_virtual,
+	diagram, 
+	floor_id, 
+	sensor_type_id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
 			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, s.Name, s.X, s.Y, s.Z, s.MAC, s.IP, s.Alias, s.Interface0, s.Interface1, s.Interface2, s.RxAntGain, s.HorRotationOffset, s.VertRotationOffset, s.CorrectionFactor24, s.CorrectionFactor5, s.CorrectionFactor6, s.Diagram, s.FloorID, s.SensorTypeID)
+	row := p.Pool.QueryRow(context.Background(), query,
+		s.Name,
+		s.X, s.Y, s.Z,
+		s.MAC,
+		s.IP,
+		s.Alias,
+		s.Interface0, s.Interface1, s.Interface2,
+		s.RxAntGain,
+		s.HorRotationOffset, s.VertRotationOffset,
+		s.CorrectionFactor24, s.CorrectionFactor5, s.CorrectionFactor6,
+		s.IsVirtual,
+		s.Diagram,
+		s.FloorID,
+		s.SensorTypeID)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create sensor")
@@ -49,6 +75,7 @@ func (p *postgres) GetSensor(sensorUUID uuid.UUID) (s *Sensor, err error) {
 			rx_ant_gain,
 			hor_rotation_offset, vert_rotation_offset,
 			correction_factor_24, correction_factor_5, correction_factor_6,
+			is_virtual,
 			diagram,
 			sensor_type_id,
 			floor_id,
@@ -56,7 +83,21 @@ func (p *postgres) GetSensor(sensorUUID uuid.UUID) (s *Sensor, err error) {
 		FROM sensors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, sensorUUID)
 	s = &Sensor{}
-	err = row.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.SensorTypeID, &s.FloorID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+	err = row.Scan(&s.ID,
+		&s.Name,
+		&s.X, &s.Y, &s.Z,
+		&s.MAC,
+		&s.IP,
+		&s.Alias,
+		&s.Interface0, &s.Interface1, &s.Interface2,
+		&s.RxAntGain,
+		&s.HorRotationOffset, &s.VertRotationOffset,
+		&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
+		&s.IsVirtual,
+		&s.Diagram,
+		&s.SensorTypeID,
+		&s.FloorID,
+		&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No sensor found with uuid %v", sensorUUID)
@@ -71,8 +112,25 @@ func (p *postgres) GetSensor(sensorUUID uuid.UUID) (s *Sensor, err error) {
 
 // GetSensorDetailed retrieves a sensor detailed
 func (p *postgres) GetSensorDetailed(sensorUUID uuid.UUID) (s *SensorDetailed, err error) {
-	query := `
-	SELECT s.id, s.name, st.color, s.x, s.y, s.z, s.mac, s.ip, s.alias, s.interface_0, s.interface_1, s.interface_2, s.rx_ant_gain, s.hor_rotation_offset, s.vert_rotation_offset, s.correction_factor_24, s.correction_factor_5, s.correction_factor_6, s.diagram, s.created_at, s.updated_at, s.deleted_at, s.floor_id, s.sensor_type_id
+	query := `SELECT 
+		s.id, 
+		s.name, 
+
+		st.color, 
+
+		s.x, s.y, s.z, 
+		s.mac, 
+		s.ip, 
+		s.alias, 
+		s.interface_0, s.interface_1, s.interface_2, 
+		s.rx_ant_gain, 
+		s.hor_rotation_offset, s.vert_rotation_offset, 
+		s.correction_factor_24, s.correction_factor_5, s.correction_factor_6,
+		s.is_virtual,
+		s.diagram, 
+		s.created_at, s.updated_at, s.deleted_at, 
+		s.floor_id, 
+		s.sensor_type_id
 	FROM sensors s
 	LEFT JOIN sensor_types st ON s.sensor_type_id = st.id AND st.deleted_at IS NULL
 	WHERE s.id = $1 AND s.deleted_at IS NULL`
@@ -88,7 +146,24 @@ func (p *postgres) GetSensorDetailed(sensorUUID uuid.UUID) (s *SensorDetailed, e
 
 	for rows.Next() {
 		err = rows.Scan(
-			&s.ID, &s.Name, &st.Color, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.FloorID, &s.SensorTypeID,
+			&s.ID,
+			&s.Name,
+
+			&st.Color,
+
+			&s.X, &s.Y, &s.Z,
+			&s.MAC,
+			&s.IP,
+			&s.Alias,
+			&s.Interface0, &s.Interface1, &s.Interface2,
+			&s.RxAntGain,
+			&s.HorRotationOffset, &s.VertRotationOffset,
+			&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
+			&s.IsVirtual,
+			&s.Diagram,
+			&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+			&s.FloorID,
+			&s.SensorTypeID,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor detailed information")
@@ -138,6 +213,7 @@ func (p *postgres) GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error) {
 			rx_ant_gain,
 			hor_rotation_offset, vert_rotation_offset,
 			correction_factor_24, correction_factor_5, correction_factor_6,
+			is_virtual,
 			diagram,
 			floor_id,
 			sensor_type_id,
@@ -153,7 +229,23 @@ func (p *postgres) GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error) {
 	var s *Sensor
 	for rows.Next() {
 		s = new(Sensor)
-		err = rows.Scan(&s.ID, &s.Name, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.FloorID, &s.SensorTypeID, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt)
+		err = rows.Scan(
+			&s.ID,
+			&s.Name,
+			&s.X, &s.Y, &s.Z,
+			&s.MAC,
+			&s.IP,
+			&s.Alias,
+			&s.Interface0, &s.Interface1, &s.Interface2,
+			&s.RxAntGain,
+			&s.HorRotationOffset, &s.VertRotationOffset,
+			&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
+			&s.IsVirtual,
+			&s.Diagram,
+			&s.FloorID,
+			&s.SensorTypeID,
+			&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor")
 			return
@@ -172,8 +264,25 @@ func (p *postgres) GetSensors(floorUUID uuid.UUID) (ss []*Sensor, err error) {
 
 // GetSensorsDetailed retrieves sensors detailed
 func (p *postgres) GetSensorsDetailed(floorUUID uuid.UUID) (ss []*SensorDetailed, err error) {
-	query := `
-	SELECT s.id, s.name, st.color, s.x, s.y, s.z, s.mac, s.ip, s.alias, s.interface_0, s.interface_1, s.interface_2, s.rx_ant_gain, s.hor_rotation_offset, s.vert_rotation_offset, s.correction_factor_24, s.correction_factor_5, s.correction_factor_6, s.diagram, s.created_at, s.updated_at, s.deleted_at, s.floor_id, s.sensor_type_id
+	query := `SELECT 
+		s.id, 
+		s.name, 
+		
+		st.color, 
+		
+		s.x, s.y, s.z, 
+		s.mac, 
+		s.ip, 
+		s.alias, 
+		s.interface_0, s.interface_1, s.interface_2, 
+		s.rx_ant_gain, 
+		s.hor_rotation_offset, s.vert_rotation_offset, 
+		s.correction_factor_24, s.correction_factor_5, s.correction_factor_6, 
+		s.is_virtual,
+		s.diagram, 
+		s.created_at, s.updated_at, s.deleted_at, 
+		s.floor_id, 
+		s.sensor_type_id
 	FROM sensors s
 	LEFT JOIN sensor_types st ON s.sensor_type_id = st.id AND st.deleted_at IS NULL
 	WHERE s.floor_id = $1 AND s.deleted_at IS NULL
@@ -190,7 +299,24 @@ func (p *postgres) GetSensorsDetailed(floorUUID uuid.UUID) (ss []*SensorDetailed
 		s := new(SensorDetailed)
 		st := new(SensorType)
 		err = rows.Scan(
-			&s.ID, &s.Name, &st.Color, &s.X, &s.Y, &s.Z, &s.MAC, &s.IP, &s.Alias, &s.Interface0, &s.Interface1, &s.Interface2, &s.RxAntGain, &s.HorRotationOffset, &s.VertRotationOffset, &s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6, &s.Diagram, &s.CreatedAt, &s.UpdatedAt, &s.DeletedAt, &s.FloorID, &s.SensorTypeID,
+			&s.ID,
+			&s.Name,
+
+			&st.Color,
+
+			&s.X, &s.Y, &s.Z,
+			&s.MAC,
+			&s.IP,
+			&s.Alias,
+			&s.Interface0, &s.Interface1, &s.Interface2,
+			&s.RxAntGain,
+			&s.HorRotationOffset, &s.VertRotationOffset,
+			&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
+			&s.IsVirtual,
+			&s.Diagram,
+			&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+			&s.FloorID,
+			&s.SensorTypeID,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor detailed information")
@@ -327,6 +453,11 @@ func (p *postgres) PatchUpdateSensor(s *Sensor) (err error) {
 	if s.CorrectionFactor6 != nil {
 		updates = append(updates, fmt.Sprintf("correction_factor_6 = $%d", paramID))
 		params = append(params, s.CorrectionFactor6)
+		paramID++
+	}
+	if s.Diagram != nil {
+		updates = append(updates, fmt.Sprintf("is_virtual = $%d", paramID))
+		params = append(params, s.IsVirtual)
 		paramID++
 	}
 	if s.Diagram != nil {

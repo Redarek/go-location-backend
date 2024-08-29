@@ -123,6 +123,7 @@ func New() Service {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
         wifi VARCHAR(64) NOT NULL, -- TODO fix
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
@@ -141,7 +142,7 @@ func New() Service {
         z FLOAT,
         floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE CASCADE ON UPDATE CASCADE,
         access_point_type_id UUID NOT NULL REFERENCES access_point_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-        is_virtual BOOLEAN NOT NULL, -- it is new!
+        is_virtual BOOLEAN NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         deleted_at TIMESTAMPTZ
@@ -151,6 +152,7 @@ func New() Service {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
         wifi VARCHAR(64) NOT NULL, -- TODO fix
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
@@ -201,6 +203,7 @@ func New() Service {
         correction_factor_24 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         correction_factor_5 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         correction_factor_6 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+        is_virtual BOOLEAN NOT NULL,
         diagram JSONB,
         sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE SET NULL,
         floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,

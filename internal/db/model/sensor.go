@@ -37,7 +37,8 @@ type Sensor struct {
 	CorrectionFactor24 *float64           `json:"correctionFactor24" db:"correction_factor_24"` //   "correction_factor24" INTEGER [not null, default: 0]  -> FLOAT
 	CorrectionFactor5  *float64           `json:"correctionFactor5" db:"correction_factor_5"`   //   "correction_factor5" INTEGER [not null, default: 0] -> FLOAT
 	CorrectionFactor6  *float64           `json:"correctionFactor6" db:"correction_factor_6"`   //   "correction_factor6" INTEGER [not null, default: 0float64 -> FLOAT
-	Diagram            *json.RawMessage   `json:"diagram" db:"diagram"`                         // Тип JSON
+	IsVirtual          bool               `json:"isVirtual" db:"is_virtual"`
+	Diagram            *json.RawMessage   `json:"diagram" db:"diagram"` // Тип JSON
 	CreatedAt          pgtype.Timestamptz `json:"createdAt" db:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
 	DeletedAt          pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
