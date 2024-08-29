@@ -8,14 +8,14 @@ import (
 )
 
 type Sensor struct {
-	ID         uuid.UUID `json:"id" db:"id"`                  // "id" INTEGER [pk, increment]
-	Name       *string   `json:"name" db:"name"`              //   "sensor_name" VARCHAR(45)
-	X          *int      `json:"x" db:"x"`                    //   "x" FLOAT
-	Y          *int      `json:"y" db:"y"`                    //   "y" FLOAT
-	Z          *float64  `json:"z" db:"z"`                    //   "z" FLOAT
-	MAC        *string   `json:"mac" db:"mac"`                //   "sensor_mac" VARCHAR(17) [unique, not null]
-	IP         *string   `json:"ip" db:"ip"`                  //   "sensor_ip" VARCHAR(64) [not null]
-	Alias      *string   `json:"alias" db:"alias"`            //   "alias" VARCHAR(45)
+	ID         uuid.UUID `json:"id" db:"id"`
+	Name       string    `json:"name" db:"name"`
+	X          *int      `json:"x" db:"x"`
+	Y          *int      `json:"y" db:"y"`
+	Z          *float64  `json:"z" db:"z"`
+	MAC        string    `json:"mac" db:"mac"` //   "sensor_mac" VARCHAR(17) [unique, not null]
+	IP         string    `json:"ip" db:"ip"`   //   "sensor_ip" VARCHAR(64) [not null]
+	Alias      string    `json:"alias" db:"alias"`
 	Interface0 *string   `json:"interface0" db:"interface_0"` //   "interface_0" VARCHAR(45) [not null]
 	Interface1 *string   `json:"interface1" db:"interface_1"` //   "interface_1" VARCHAR(45)
 	Interface2 *string   `json:"interface2" db:"interface_2"` //   "interface_2" VARCHAR(45)

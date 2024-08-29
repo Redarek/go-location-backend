@@ -188,15 +188,15 @@ func New() Service {
     CREATE TABLE IF NOT EXISTS sensors (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR NOT NULL,
-        x INTEGER NOT NULL,
-        y INTEGER NOT NULL,
-        z FLOAT NOT NULL,
+        x INTEGER,
+        y INTEGER,
+        z FLOAT,
         mac VARCHAR UNIQUE NOT NULL,
         ip VARCHAR NOT NULL,
         alias VARCHAR NOT NULL,
         interface_0 VARCHAR NOT NULL,
-        interface_1 VARCHAR NOT NULL,
-        interface_2 VARCHAR NOT NULL,
+        interface_1 VARCHAR,
+        interface_2 VARCHAR,
         rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
         vert_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check

@@ -375,7 +375,7 @@ func (p *postgres) PatchUpdateSensor(s *Sensor) (err error) {
 	params := []interface{}{}
 	paramID := 1
 
-	if s.Name != nil {
+	if s.Name != "" {
 		updates = append(updates, fmt.Sprintf("name = $%d", paramID))
 		params = append(params, s.Name)
 		paramID++
@@ -395,17 +395,17 @@ func (p *postgres) PatchUpdateSensor(s *Sensor) (err error) {
 		params = append(params, s.Z)
 		paramID++
 	}
-	if s.MAC != nil {
+	if s.MAC != "" {
 		updates = append(updates, fmt.Sprintf("mac = $%d", paramID))
 		params = append(params, s.MAC)
 		paramID++
 	}
-	if s.IP != nil {
+	if s.IP != "" {
 		updates = append(updates, fmt.Sprintf("ip = $%d", paramID))
 		params = append(params, s.IP)
 		paramID++
 	}
-	if s.Alias != nil {
+	if s.Alias != "" {
 		updates = append(updates, fmt.Sprintf("alias = $%d", paramID))
 		params = append(params, s.Alias)
 		paramID++
