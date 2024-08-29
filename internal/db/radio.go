@@ -5,11 +5,20 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
-	"strings"
+
+	. "location-backend/internal/db/model"
 )
+
+//type RadioState struct {
+//	AccessPointID uuid.UUID `json:"accessPointId" db:"access_point_id"`
+//	RadioID       uuid.UUID `json:"radioId" db:"radio_id"`
+//	IsActive      bool      `json:"isActive" db:"is_active"`
+//}
 
 // CreateRadio creates a radio
 func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
@@ -26,9 +35,20 @@ func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
 
 // GetRadio retrieves a radio
 func (p *postgres) GetRadio(radioUUID uuid.UUID) (r Radio, err error) {
-	query := `SELECT * FROM radios WHERE id=$1 AND deleted_at IS NULL`
+	query := `SELECT 
+			id,
+			number,
+			channel,
+			wifi,
+			power,
+			bandwidth,
+			guard_interval,
+			is_active,
+			access_point_id,
+			created_at, updated_at, deleted_at
+		FROM radios WHERE id=$1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, radioUUID)
-	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointID)
+	err = row.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No radio found with ID %v", radioUUID)
@@ -62,7 +82,18 @@ func (p *postgres) IsRadioSoftDeleted(radioUUID uuid.UUID) (isDeleted bool, err 
 
 // GetRadios retrieves radios
 func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
-	query := `SELECT * FROM radios WHERE access_point_id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			number,
+			channel,
+			wifi,
+			power,
+			bandwidth,
+			guard_interval,
+			is_active,
+			access_point_id,
+			created_at, updated_at, deleted_at
+		FROM radios WHERE access_point_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, accessPointID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve radios")
@@ -72,7 +103,7 @@ func (p *postgres) GetRadios(accessPointID uuid.UUID) (rs []*Radio, err error) {
 
 	for rows.Next() {
 		r := new(Radio)
-		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointID)
+		err = rows.Scan(&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan radios")
 			return
@@ -170,41 +201,37 @@ func (p *postgres) PatchUpdateRadio(r *Radio) (err error) {
 	params := []interface{}{}
 	paramID := 1
 
-	if r.Number != nil {
-		updates = append(updates, fmt.Sprintf("number = $%d", paramID))
-		params = append(params, r.Number)
-		paramID++
-	}
-	if r.Channel != nil {
-		updates = append(updates, fmt.Sprintf("channel = $%d", paramID))
-		params = append(params, r.Channel)
-		paramID++
-	}
-	if r.WiFi != nil {
+	updates = append(updates, fmt.Sprintf("number = $%d", paramID))
+	params = append(params, r.Number)
+	paramID++
+
+	updates = append(updates, fmt.Sprintf("channel = $%d", paramID))
+	params = append(params, r.Channel)
+	paramID++
+
+	if r.WiFi != "" {
 		updates = append(updates, fmt.Sprintf("wifi = $%d", paramID))
 		params = append(params, r.WiFi)
 		paramID++
 	}
-	if r.Power != nil {
-		updates = append(updates, fmt.Sprintf("power = $%d", paramID))
-		params = append(params, r.Power)
-		paramID++
-	}
-	if r.Bandwidth != nil {
+
+	updates = append(updates, fmt.Sprintf("power = $%d", paramID))
+	params = append(params, r.Power)
+	paramID++
+
+	if r.Bandwidth != "" {
 		updates = append(updates, fmt.Sprintf("bandwidth = $%d", paramID))
 		params = append(params, r.Bandwidth)
 		paramID++
 	}
-	if r.GuardInterval != nil {
-		updates = append(updates, fmt.Sprintf("guard_interval = $%d", paramID))
-		params = append(params, r.GuardInterval)
-		paramID++
-	}
-	if r.IsActive != nil {
-		updates = append(updates, fmt.Sprintf("is_active = $%d", paramID))
-		params = append(params, r.IsActive)
-		paramID++
-	}
+
+	updates = append(updates, fmt.Sprintf("guard_interval = $%d", paramID))
+	params = append(params, r.GuardInterval)
+	paramID++
+
+	updates = append(updates, fmt.Sprintf("is_active = $%d", paramID))
+	params = append(params, r.IsActive)
+	paramID++
 
 	if len(updates) == 0 {
 		log.Error().Msg("No fields provided for update")

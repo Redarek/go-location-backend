@@ -5,10 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
-	"strings"
+
+	. "location-backend/internal/db/model"
 )
 
 // CreateFloor creates a floor
@@ -26,10 +29,21 @@ func (p *postgres) CreateFloor(f *Floor) (id uuid.UUID, err error) {
 
 // GetFloor retrieves a floor
 func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
-	query := `SELECT * FROM floors WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			name,
+			number,
+			image,
+			heatmap,
+			width_in_pixels,
+			height_in_pixels,
+			scale,
+			building_id,
+			created_at, updated_at, deleted_at
+		FROM floors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, floorUUID)
 	f = &Floor{}
-	err = row.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
+	err = row.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.BuildingID, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No floor found with uuid %v", floorUUID)
@@ -63,7 +77,18 @@ func (p *postgres) IsFloorSoftDeleted(floorUUID uuid.UUID) (isDeleted bool, err 
 
 // GetFloors retrieves floors
 func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
-	query := `SELECT * FROM floors WHERE building_id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id,
+			name,
+			number,
+			image,
+			heatmap,
+			width_in_pixels,
+			height_in_pixels,
+			scale,
+			building_id,
+			created_at, updated_at, deleted_at 
+		FROM floors WHERE building_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, buildingUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve floors")
@@ -74,7 +99,7 @@ func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
 	var f *Floor
 	for rows.Next() {
 		f = new(Floor)
-		err = rows.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt, &f.BuildingID)
+		err = rows.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.BuildingID, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan floor")
 			return

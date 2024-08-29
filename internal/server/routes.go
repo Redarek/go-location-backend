@@ -1,12 +1,13 @@
 package server
 
 import (
+	"location-backend/internal/config"
+
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
-	"location-backend/internal/config"
 )
 
 func (s *Fiber) RegisterFiberRoutes() {
@@ -43,9 +44,9 @@ func (s *Fiber) RegisterFiberRoutes() {
 	api := s.App.Group("/api")
 	v1 := api.Group("/v1")
 
-	u := v1.Group("/user")
-	u.Post("/register", s.Register)
-	u.Post("/login", s.Login)
+	user := v1.Group("/user")
+	user.Post("/register", s.Register)
+	user.Post("/login", s.Login)
 
 	v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 
@@ -58,70 +59,71 @@ func (s *Fiber) RegisterFiberRoutes() {
 	site.Patch("/sd", s.SoftDeleteSite)
 	site.Patch("/restore", s.RestoreSite)
 
-	b := v1.Group("/building")
-	b.Post("/", s.CreateBuilding)
-	b.Get("/", s.GetBuilding)
-	b.Get("/all", s.GetBuildings)
-	b.Patch("/", s.PatchUpdateBuilding)
-	b.Patch("/sd", s.SoftDeleteBuilding)
-	b.Patch("/restore", s.RestoreBuilding)
+	building := v1.Group("/building")
+	building.Post("/", s.CreateBuilding)
+	building.Get("/", s.GetBuilding)
+	building.Get("/all", s.GetBuildings)
+	building.Patch("/", s.PatchUpdateBuilding)
+	building.Patch("/sd", s.SoftDeleteBuilding)
+	building.Patch("/restore", s.RestoreBuilding)
 
-	f := v1.Group("/floor")
-	f.Post("/", s.CreateFloor)
-	f.Get("/", s.GetFloor)
-	f.Get("/all", s.GetFloors)
-	f.Patch("/", s.PatchUpdateFloor)
-	f.Patch("/sd", s.SoftDeleteFloor)
-	f.Patch("/restore", s.RestoreFloor)
+	floor := v1.Group("/floor")
+	floor.Post("/", s.CreateFloor)
+	floor.Get("/", s.GetFloor)
+	floor.Get("/all", s.GetFloors)
+	floor.Patch("/", s.PatchUpdateFloor)
+	floor.Patch("/sd", s.SoftDeleteFloor)
+	floor.Patch("/restore", s.RestoreFloor)
 
-	wt := v1.Group("/wallType")
-	wt.Post("/", s.CreateWallType)
-	wt.Get("/", s.GetWallType)
-	wt.Get("/all", s.GetWallTypes)
-	wt.Patch("/", s.PatchUpdateWallType)
-	wt.Patch("/sd", s.SoftDeleteWallType)
-	wt.Patch("/restore", s.RestoreWallType)
+	wallType := v1.Group("/wallType")
+	wallType.Post("/", s.CreateWallType)
+	wallType.Get("/", s.GetWallType)
+	wallType.Get("/all", s.GetWallTypes)
+	wallType.Patch("/", s.PatchUpdateWallType)
+	wallType.Patch("/sd", s.SoftDeleteWallType)
+	wallType.Patch("/restore", s.RestoreWallType)
 
-	w := v1.Group("/wall")
-	w.Post("/", s.CreateWall)
-	w.Get("/", s.GetWall)
-	w.Get("/all", s.GetWalls)
-	w.Patch("/", s.PatchUpdateWall)
-	w.Patch("/sd", s.SoftDeleteWall)
-	w.Patch("/restore", s.RestoreWall)
+	wall := v1.Group("/wall")
+	wall.Post("/", s.CreateWall)
+	wall.Get("/", s.GetWall)
+	wall.Get("/all", s.GetWalls)
+	wall.Patch("/", s.PatchUpdateWall)
+	wall.Patch("/sd", s.SoftDeleteWall)
+	wall.Patch("/restore", s.RestoreWall)
 
-	apt := v1.Group("/apt")
-	apt.Post("/", s.CreateAccessPointType)
-	apt.Get("/", s.GetAccessPointType)
-	apt.Get("/all", s.GetAccessPointTypes)
-	apt.Patch("/sd", s.SoftDeleteAccessPointType)
-	apt.Patch("/restore", s.RestoreAccessPointType)
+	accessPointType := v1.Group("/apt")
+	accessPointType.Post("/", s.CreateAccessPointType)
+	accessPointType.Get("/", s.GetAccessPointType)
+	accessPointType.Get("/all", s.GetAccessPointTypes)
+	accessPointType.Patch("/", s.PatchUpdateAccessPointType)
+	accessPointType.Patch("/sd", s.SoftDeleteAccessPointType)
+	accessPointType.Patch("/restore", s.RestoreAccessPointType)
 
-	rt := v1.Group("/radioTemplate")
-	rt.Post("/", s.CreateRadioTemplate)
-	rt.Get("/", s.GetRadioTemplate)
-	rt.Get("/all", s.GetRadioTemplates)
-	rt.Patch("/", s.PatchUpdateRadioTemplate)
-	rt.Patch("/sd", s.SoftDeleteRadioTemplate)
-	rt.Patch("/restore", s.RestoreRadioTemplate)
+	radioTemplate := v1.Group("/radioTemplate")
+	radioTemplate.Post("/", s.CreateRadioTemplate)
+	radioTemplate.Get("/", s.GetRadioTemplate)
+	radioTemplate.Get("/all", s.GetRadioTemplates)
+	radioTemplate.Patch("/", s.PatchUpdateRadioTemplate)
+	radioTemplate.Patch("/sd", s.SoftDeleteRadioTemplate)
+	radioTemplate.Patch("/restore", s.RestoreRadioTemplate)
 
-	ap := v1.Group("/ap")
-	ap.Post("/", s.CreateAccessPoint)
-	ap.Get("/", s.GetAccessPoint)
-	ap.Get("/detailed", s.GetAccessPointDetailed)
-	ap.Get("/all", s.GetAccessPoints)
-	ap.Get("/all/detailed", s.GetAccessPointsDetailed)
-	ap.Patch("/", s.PatchUpdateAccessPoint)
-	ap.Patch("/sd", s.SoftDeleteAccessPoint)
-	ap.Patch("/restore", s.RestoreAccessPoint)
+	accessPoint := v1.Group("/ap")
+	accessPoint.Post("/", s.CreateAccessPoint)
+	accessPoint.Get("/", s.GetAccessPoint)
+	accessPoint.Get("/detailed", s.GetAccessPointDetailed)
+	accessPoint.Get("/all", s.GetAccessPoints)
+	accessPoint.Get("/all/detailed", s.GetAccessPointsDetailed)
+	accessPoint.Patch("/", s.PatchUpdateAccessPoint)
+	accessPoint.Patch("/sd", s.SoftDeleteAccessPoint)
+	accessPoint.Patch("/restore", s.RestoreAccessPoint)
 
-	r := v1.Group("/radio")
-	r.Post("/", s.CreateRadio)
-	r.Get("/", s.GetRadio)
-	r.Get("/all", s.GetRadios)
-	r.Patch("/", s.PatchUpdateRadio)
-	r.Patch("/sd", s.SoftDeleteRadio)
-	r.Patch("/restore", s.RestoreRadio)
+	radio := v1.Group("/radio")
+	radio.Post("/", s.CreateRadio)
+	radio.Get("/", s.GetRadio)
+	radio.Get("/all", s.GetRadios)
+	radio.Patch("/", s.PatchUpdateRadio)
+	radio.Patch("/sd", s.SoftDeleteRadio)
+	radio.Patch("/restore", s.RestoreRadio)
 
 	sensorType := v1.Group("/sensorType")
 	sensorType.Post("/", s.CreateSensorType)
@@ -141,8 +143,8 @@ func (s *Fiber) RegisterFiberRoutes() {
 	sensor.Patch("/sd", s.SoftDeleteSensor)
 	sensor.Patch("/restore", s.RestoreSensor)
 
-	mx := v1.Group("/matrix")
-	mx.Post("/", s.CreateMatrix)
+	matrix := v1.Group("/matrix")
+	matrix.Post("/", s.CreateMatrix)
 
 }
 

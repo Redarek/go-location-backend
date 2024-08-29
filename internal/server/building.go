@@ -1,15 +1,16 @@
 package server
 
 import (
+	"location-backend/internal/db/model"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"location-backend/internal/db"
 )
 
 // CreateBuilding creates a building
 func (s *Fiber) CreateBuilding(c *fiber.Ctx) (err error) {
-	b := new(db.Building)
+	b := new(model.Building)
 	err = c.BodyParser(b)
 	if err != nil {
 		return err
@@ -108,7 +109,7 @@ func (s *Fiber) RestoreBuilding(c *fiber.Ctx) (err error) {
 
 // PatchUpdateBuilding patch updates a building based on provided fields
 func (s *Fiber) PatchUpdateBuilding(c *fiber.Ctx) error {
-	var input db.Building
+	var input model.Building
 	if err := c.BodyParser(&input); err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")

@@ -3,16 +3,17 @@ package db
 import (
 	"context"
 	"errors"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
+
+	. "location-backend/internal/db/model"
 )
 
 // CreateUser creates a user
 func (p *postgres) CreateUser(username, password string) (id uuid.UUID, err error) {
-	query := `INSERT INTO users (username, password)
-			VALUES ($1, $2)
-			RETURNING id`
+	query := `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`
 	row := p.Pool.QueryRow(context.Background(), query, username, password)
 	err = row.Scan(&id)
 	if err != nil {
@@ -22,10 +23,10 @@ func (p *postgres) CreateUser(username, password string) (id uuid.UUID, err erro
 }
 
 // GetUserByUsername retrieves a user
-func (p *postgres) GetUserByUsername(username string) (u User, err error) {
-	query := `SELECT * FROM users WHERE username = $1 AND deleted_at IS NULL`
+func (p *postgres) GetUserByUsername(username string) (user User, err error) {
+	query := `SELECT id, username, password, created_at, updated_at, deleted_at FROM users WHERE username = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, username)
-	err = row.Scan(&u.ID, &u.Username, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
+	err = row.Scan(&user.ID, &user.Username, &user.Password, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No user found with username %v", username)
@@ -34,19 +35,17 @@ func (p *postgres) GetUserByUsername(username string) (u User, err error) {
 		log.Error().Err(err).Msg("Failed to retrieve user")
 		return
 	}
-	log.Debug().Msgf("Retrieved user: %v", u)
+	log.Debug().Msgf("Retrieved user: %v", user)
 	return
 }
 
 // CreateRefreshToken creates a refresh token
 func (p *postgres) CreateRefreshToken(rt RefreshToken) (id uuid.UUID, err error) {
-	query := `INSERT INTO refresh_tokens (token, user_id)
-			VALUES ($1, $2)
-			RETURNING id`
+	query := `INSERT INTO refresh_tokens (token, user_id) VALUES ($1, $2) RETURNING id`
 	row := p.Pool.QueryRow(context.Background(), query, rt.Token, rt.UserID)
 	err = row.Scan(&id)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to create user")
+		log.Error().Err(err).Msg("Failed to create token")
 	}
 	return
 }

@@ -1,15 +1,16 @@
 package server
 
 import (
+	"image/color"
+	"location-backend/internal/db/model"
+	"location-backend/internal/location"
+	"os"
+	"path/filepath"
+
 	"github.com/fogleman/gg"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"image/color"
-	"location-backend/internal/db"
-	"location-backend/internal/location"
-	"os"
-	"path/filepath"
 )
 
 // CreateMatrix creates a matrix
@@ -44,17 +45,17 @@ func (s *Fiber) CreateMatrix(c *fiber.Ctx) (err error) {
 
 	matrixInputData := location.InputData{
 		Client: location.Client{
-			TrSignalPower: 1,
+			TrSignalPower: 17,
 			TrAntGain:     1,
-			ZM:            0,
+			ZM:            1,
 		},
 		Walls:          s.convertWallsFromDB(walls),
 		Sensors:        sensors,
-		CellSizeMeters: 1.0,
+		CellSizeMeters: 0.25, // TODO fix
 		MinX:           0,
 		MinY:           0,
-		MaxX:           *floor.WidthInPixels,
-		MaxY:           *floor.HeightInPixels,
+		MaxX:           int(float64((float64(*floor.WidthInPixels)**floor.Scale)/1000) / 0.25), // !be careful here
+		MaxY:           int(float64((float64(*floor.WidthInPixels)**floor.Scale)/1000) / 0.25), // !be careful here
 	}
 	log.Debug().Msgf("Matrix input data: %+v", matrixInputData)
 
@@ -149,7 +150,7 @@ func (s *Fiber) GetMatrix(c *fiber.Ctx) (err error) {
 	})
 }
 
-func (s *Fiber) convertWallsFromDB(walls []*db.WallDetailed) []location.Wall {
+func (s *Fiber) convertWallsFromDB(walls []*model.WallDetailed) []location.Wall {
 	convertedWalls := make([]location.Wall, 0, len(walls)) // Initialize a slice to store the converted walls
 	for _, dbw := range walls {
 		// Ensure all required pointer fields are not nil before dereferencing to prevent runtime panics

@@ -5,10 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
-	"strings"
+
+	. "location-backend/internal/db/model"
 )
 
 // CreateBuilding creates a building
@@ -26,10 +29,19 @@ func (p *postgres) CreateBuilding(b *Building) (id uuid.UUID, err error) {
 
 // GetBuilding retrieves a building
 func (p *postgres) GetBuilding(buildingUUID uuid.UUID) (b *Building, err error) {
-	query := `SELECT * FROM buildings WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT 
+			id, 
+			name, 
+			description, 
+			country,
+			city,
+			address,
+			site_id,
+			created_at, updated_at, deleted_at
+		FROM buildings WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, buildingUUID)
 	b = &Building{}
-	err = row.Scan(&b.ID, &b.Name, &b.Description, &b.Country, &b.City, &b.Address, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt, &b.SiteID)
+	err = row.Scan(&b.ID, &b.Name, &b.Description, &b.Country, &b.City, &b.Address, &b.SiteID, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No building found with uuid %v", buildingUUID)
@@ -63,7 +75,16 @@ func (p *postgres) IsBuildingSoftDeleted(buildingUUID uuid.UUID) (isDeleted bool
 
 // GetBuildings retrieves buildings
 func (p *postgres) GetBuildings(siteUUID uuid.UUID) (bs []*Building, err error) {
-	query := `SELECT * FROM buildings WHERE site_id = $1 AND deleted_at IS NULL`
+	query := `SELECT
+			id, 
+			name, 
+			description, 
+			country,
+			city,
+			address,
+			site_id,
+			created_at, updated_at, deleted_at
+		FROM buildings WHERE site_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, siteUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve buildings")
@@ -74,7 +95,7 @@ func (p *postgres) GetBuildings(siteUUID uuid.UUID) (bs []*Building, err error) 
 	var b *Building
 	for rows.Next() {
 		b = new(Building)
-		err = rows.Scan(&b.ID, &b.Name, &b.Description, &b.Country, &b.City, &b.Address, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt, &b.SiteID)
+		err = rows.Scan(&b.ID, &b.Name, &b.Description, &b.Country, &b.City, &b.Address, &b.SiteID, &b.CreatedAt, &b.UpdatedAt, &b.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan building")
 			return

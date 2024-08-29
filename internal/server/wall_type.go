@@ -1,15 +1,16 @@
 package server
 
 import (
+	"location-backend/internal/db/model"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"location-backend/internal/db"
 )
 
 // CreateWallType creates a wall type
 func (s *Fiber) CreateWallType(c *fiber.Ctx) (err error) {
-	wt := new(db.WallType)
+	wt := new(model.WallType)
 	err = c.BodyParser(wt)
 	if err != nil {
 		return err
@@ -108,7 +109,7 @@ func (s *Fiber) RestoreWallType(c *fiber.Ctx) (err error) {
 
 // PatchUpdateWallType patch updates a wall type based on provided fields
 func (s *Fiber) PatchUpdateWallType(c *fiber.Ctx) error {
-	var input db.WallType
+	var input model.WallType
 	if err := c.BodyParser(&input); err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")

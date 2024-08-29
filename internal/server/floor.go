@@ -1,26 +1,27 @@
 package server
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
-	_ "golang.org/x/image/webp"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
 	_ "image/jpeg"
 	"image/png"
 	_ "image/png"
-	"location-backend/internal/db"
+	"location-backend/internal/db/model"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+	_ "golang.org/x/image/webp"
 )
 
 // CreateFloor creates a floor
 func (s *Fiber) CreateFloor(c *fiber.Ctx) (err error) {
-	f := new(db.Floor)
+	f := new(model.Floor)
 	err = c.BodyParser(f)
 	if err != nil {
 		return err
@@ -126,7 +127,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	f := &db.Floor{}
+	f := &model.Floor{}
 	if id, ok := form.Value["id"]; ok && id[0] != "" {
 		f.ID, err = uuid.Parse(id[0])
 		if err != nil {
@@ -193,10 +194,12 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		height := bounds.Dy() // Height of the image
 		log.Debug().Msgf("Image dimensions: %dx%d", width, height)
 
-		f.WidthInPixels = &width
-		f.HeightInPixels = &height
+		scaledWidth := (1280 / width) * width
+		scaledHeight := (720 / height) * height
+		f.WidthInPixels = &scaledWidth
+		f.HeightInPixels = &scaledHeight
 
-		log.Debug().Msgf("Floor dimensions: %dx%d", *f.WidthInPixels, *f.WidthInPixels)
+		log.Debug().Msgf("Floor dimensions (scaled): %dx%d", *f.WidthInPixels, *f.WidthInPixels)
 
 	}
 

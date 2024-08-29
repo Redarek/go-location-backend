@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
+
+	. "location-backend/internal/db/model"
 )
 
 // CreateWall creates a wall
@@ -26,10 +28,17 @@ func (p *postgres) CreateWall(w *Wall) (id uuid.UUID, err error) {
 
 // GetWall retrieves a wall
 func (p *postgres) GetWall(wallUUID uuid.UUID) (w *Wall, err error) {
-	query := `SELECT * FROM walls WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT 
+		id, 
+		x1, y1, 
+		x2, y2, 
+		wall_type_id, 
+		floor_id,
+		created_at, updated_at, deleted_at 
+	FROM walls WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, wallUUID)
 	w = &Wall{}
-	err = row.Scan(&w.ID, &w.X1, &w.Y1, &w.X2, &w.Y2, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt, &w.FloorID, &w.WallTypeID)
+	err = row.Scan(&w.ID, &w.X1, &w.Y1, &w.X2, &w.Y2, &w.WallTypeID, &w.FloorID, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			log.Error().Err(err).Msgf("No wall found with uuid %v", wallUUID)
@@ -63,7 +72,14 @@ func (p *postgres) IsWallSoftDeleted(wallUUID uuid.UUID) (isDeleted bool, err er
 
 // GetWalls retrieves walls
 func (p *postgres) GetWalls(floorUUID uuid.UUID) (ws []*Wall, err error) {
-	query := `SELECT * FROM walls WHERE floor_id = $1 AND deleted_at IS NULL`
+	query := `SELECT 
+		id, 
+		x1, y1,
+		x2, y2, 
+		wall_type_id, 
+		floor_id,
+		created_at, updated_at, deleted_at
+	FROM walls WHERE floor_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve walls")
@@ -74,7 +90,7 @@ func (p *postgres) GetWalls(floorUUID uuid.UUID) (ws []*Wall, err error) {
 	var w *Wall
 	for rows.Next() {
 		w = new(Wall)
-		err = rows.Scan(&w.ID, &w.X1, &w.Y1, &w.X2, &w.Y2, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt, &w.FloorID, &w.WallTypeID)
+		err = rows.Scan(&w.ID, &w.X1, &w.Y1, &w.X2, &w.Y2, &w.WallTypeID, &w.FloorID, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan walls")
 			return
@@ -93,11 +109,22 @@ func (p *postgres) GetWalls(floorUUID uuid.UUID) (ws []*Wall, err error) {
 
 func (p *postgres) GetWallsDetailed(floorUUID uuid.UUID) (walls []*WallDetailed, err error) {
 	query := `
-SELECT w.id, w.x1, w.y1, w.x2, w.y2, w.created_at, w.updated_at, w.deleted_at, w.floor_id, w.wall_type_id, wt.id, wt.name, wt.color, wt.attenuation_24, wt.attenuation_5, wt.attenuation_6, wt.thickness, wt.created_at, wt.updated_at, wt.deleted_at, wt.site_id
-FROM walls w
-LEFT JOIN wall_types wt ON w.wall_type_id = wt.id
-WHERE w.floor_id = $1 AND w.deleted_at IS NULL AND wt.deleted_at IS NULL
-`
+	SELECT 
+		w.id, 
+		w.x1, w.y1, 
+		w.x2, w.y2, 
+		w.created_at, w.updated_at, w.deleted_at, 
+		w.floor_id, w.wall_type_id, 
+
+		wt.id, 
+		wt.name, 
+		wt.color, 
+		wt.attenuation_24, wt.attenuation_5, wt.attenuation_6, 
+		wt.thickness, 
+		wt.created_at, wt.updated_at, wt.deleted_at, wt.site_id
+	FROM walls w
+	LEFT JOIN wall_types wt ON w.wall_type_id = wt.id
+	WHERE w.floor_id = $1 AND w.deleted_at IS NULL AND wt.deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve walls detailed")

@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
+
+	. "location-backend/internal/db/model"
 )
 
 // CreateWallType creates a wall type
@@ -26,10 +28,23 @@ func (p *postgres) CreateWallType(wt *WallType) (id uuid.UUID, err error) {
 
 // GetWallType retrieves a wall type
 func (p *postgres) GetWallType(wallTypeUUID uuid.UUID) (wt *WallType, err error) {
-	sql := `SELECT * FROM wall_types WHERE id = $1 AND deleted_at IS NULL`
+	sql := `SELECT 
+		id, 
+		name, 
+		color, 
+		attenuation_24, 
+		attenuation_5, 
+		attenuation_6, 
+		thickness, 
+		site_id,
+		created_at, 
+		updated_at, 
+		deleted_at
+	FROM wall_types 
+	WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), sql, wallTypeUUID)
 	wt = &WallType{}
-	err = row.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation24, &wt.Attenuation5, &wt.Attenuation6, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID)
+	err = row.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation24, &wt.Attenuation5, &wt.Attenuation6, &wt.Thickness, &wt.SiteID, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			log.Error().Err(err).Msgf("No wall type found with uuid %v", wallTypeUUID)
@@ -63,7 +78,19 @@ func (p *postgres) IsWallTypeSoftDeleted(wallTypeUUID uuid.UUID) (isDeleted bool
 
 // GetWallTypes retrieves wall types
 func (p *postgres) GetWallTypes(siteUUID uuid.UUID) (wts []*WallType, err error) {
-	sql := `SELECT * FROM wall_types WHERE site_id = $1 AND deleted_at IS NULL`
+	sql := `SELECT 
+		id, 
+		name, 
+		color, 
+		attenuation_24, 
+		attenuation_5, 
+		attenuation_6, 
+		thickness, 
+		site_id,
+		created_at, 
+		updated_at, 
+		deleted_at 
+	FROM wall_types WHERE site_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), sql, siteUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve wall types")
@@ -74,7 +101,7 @@ func (p *postgres) GetWallTypes(siteUUID uuid.UUID) (wts []*WallType, err error)
 	var wt *WallType
 	for rows.Next() {
 		wt = new(WallType)
-		err = rows.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation24, &wt.Attenuation5, &wt.Attenuation6, &wt.Thickness, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt, &wt.SiteID)
+		err = rows.Scan(&wt.ID, &wt.Name, &wt.Color, &wt.Attenuation24, &wt.Attenuation5, &wt.Attenuation6, &wt.Thickness, &wt.SiteID, &wt.CreatedAt, &wt.UpdatedAt, &wt.DeletedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan wall type")
 			return

@@ -1,33 +1,39 @@
 package server
 
 import (
+	"location-backend/internal/db/model"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"location-backend/internal/db"
 )
 
 // CreateAccessPoint creates an access point
 func (s *Fiber) CreateAccessPoint(c *fiber.Ctx) (err error) {
-	ap := new(db.AccessPoint)
+	ap := new(model.AccessPoint)
 	err = c.BodyParser(ap)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return err
 	}
+
 	apID, err := s.db.CreateAccessPoint(ap)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create access point")
+		return err
+	}
 
 	apt, err := s.db.GetAccessPointTypeDetailed(ap.AccessPointTypeID)
 	for _, rt := range apt.RadioTemplates {
 		b := false
-		r := &db.Radio{
+		r := &model.Radio{
 			Number:        rt.Number,
 			Channel:       rt.Channel,
 			WiFi:          rt.WiFi,
 			Power:         rt.Power,
 			Bandwidth:     rt.Bandwidth,
 			GuardInterval: rt.GuardInterval,
-			IsActive:      &b,
+			IsActive:      b,
 			AccessPointID: apID,
 		}
 		_, err = s.db.CreateRadio(r)
@@ -162,7 +168,7 @@ func (s *Fiber) RestoreAccessPoint(c *fiber.Ctx) (err error) {
 
 // PatchUpdateAccessPoint patch updates an access point based on provided fields
 func (s *Fiber) PatchUpdateAccessPoint(c *fiber.Ctx) error {
-	var ap db.AccessPoint
+	var ap model.AccessPoint
 	if err := c.BodyParser(&ap); err != nil {
 		log.Error().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")
