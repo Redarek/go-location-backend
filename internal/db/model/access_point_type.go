@@ -9,6 +9,7 @@ type AccessPointType struct {
 	ID        uuid.UUID          `json:"id" db:"id"`
 	Name      string             `json:"name" db:"name"`
 	Color     string             `json:"color" db:"color"`
+	Z         int                `json:"z" db:"z"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
 	DeletedAt pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`

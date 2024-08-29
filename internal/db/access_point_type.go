@@ -16,10 +16,20 @@ import (
 
 // CreateAccessPointType creates an access point type
 func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error) {
-	query := `INSERT INTO access_point_types (name, color, site_id)
-			VALUES ($1, $2, $3)
-			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, apt.Name, apt.Color, apt.SiteID)
+	query := `INSERT INTO access_point_types (
+			name, 
+			color, 
+			z,
+			site_id
+		)
+		VALUES ($1, $2, $3)
+		RETURNING id`
+	row := p.Pool.QueryRow(context.Background(), query,
+		apt.Name,
+		apt.Color,
+		apt.Z,
+		apt.SiteID,
+	)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create access point type")
@@ -33,12 +43,20 @@ func (p *postgres) GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *Acces
 			id, 
 			name,
 			color,
+			z,
 			site_id,
 			created_at, updated_at, deleted_at
 		FROM access_point_types WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, accessPointTypeUUID)
 	apt = &AccessPointType{}
-	err = row.Scan(&apt.ID, &apt.Name, &apt.Color, &apt.SiteID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt)
+	err = row.Scan(
+		&apt.ID,
+		&apt.Name,
+		&apt.Color,
+		&apt.Z,
+		&apt.SiteID,
+		&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No access point type found with uuid %v", accessPointTypeUUID)
@@ -57,18 +75,20 @@ func (p *postgres) GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (ap
 			apt.id, 
 			apt.name,
 			apt.color, 
-			apt.created_at, apt.updated_at, apt.deleted_at, 
+			apt.z,
 			apt.site_id,
+			apt.created_at, apt.updated_at, apt.deleted_at, 
 			
 			rt.id, 
 			rt.number, 
 			rt.channel,
+			rt.channel_width,
 			rt.wifi, 
 			rt.power, 
 			rt.bandwidth, 
 			rt.guard_interval, 
-			rt.created_at, rt.updated_at, rt.deleted_at, 
-			rt.access_point_type_id
+			rt.access_point_type_id,
+			rt.created_at, rt.updated_at, rt.deleted_at
 		FROM access_point_types apt
 		LEFT JOIN radio_templates rt ON rt.access_point_type_id = apt.id AND rt.deleted_at IS NULL
 		WHERE apt.id = $1 AND apt.deleted_at IS NULL`
@@ -85,8 +105,23 @@ func (p *postgres) GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (ap
 		rt := new(RadioTemplate)
 
 		err = rows.Scan(
-			&apt.ID, &apt.Name, &apt.Color, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID,
-			&rt.ID, &rt.Number, &rt.Channel, &rt.WiFi, &rt.Power, &rt.Bandwidth, &rt.GuardInterval, &rt.CreatedAt, &rt.UpdatedAt, &rt.DeletedAt, &rt.AccessPointTypeID,
+			&apt.ID,
+			&apt.Name,
+			&apt.Color,
+			&apt.Z,
+			&apt.SiteID,
+			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+
+			&rt.ID,
+			&rt.Number,
+			&rt.Channel,
+			&rt.ChannelWidth,
+			&rt.WiFi,
+			&rt.Power,
+			&rt.Bandwidth,
+			&rt.GuardInterval,
+			&rt.AccessPointTypeID,
+			&rt.CreatedAt, &rt.UpdatedAt, &rt.DeletedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan access point type and related data")
@@ -130,6 +165,7 @@ func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointT
 	query := `SELECT id, 
 			name,
 			color,
+			z,
 			site_id,
 			created_at, updated_at, deleted_at
 		FROM access_point_types WHERE site_id = $1 AND deleted_at IS NULL`
@@ -143,7 +179,14 @@ func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointT
 	var apt *AccessPointType
 	for rows.Next() {
 		apt = new(AccessPointType)
-		err = rows.Scan(&apt.ID, &apt.Name, &apt.Color, &apt.SiteID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt)
+		err = rows.Scan(
+			&apt.ID,
+			&apt.Name,
+			&apt.Color,
+			&apt.Z,
+			&apt.SiteID,
+			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan access point types")
 			return
@@ -165,18 +208,20 @@ func (p *postgres) GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*Acces
 			apt.id, 
 			apt.name, 
 			apt.color, 
-			apt.created_at, apt.updated_at, apt.deleted_at, 
+			apt.z,
 			apt.site_id, 
+			apt.created_at, apt.updated_at, apt.deleted_at, 
 			
 			r.id, 
 			r.number, 
 			r.channel, 
+			r.channel_width,
 			r.wifi, 
 			r.power, 
 			r.bandwidth, 
 			r.guard_interval, 
-			r.created_at, r.updated_at, r.deleted_at, 
-			r.access_point_type_id
+			r.access_point_type_id,
+			r.created_at, r.updated_at, r.deleted_at
 		FROM access_point_types apt
 		LEFT JOIN radio_templates r ON apt.id = r.access_point_type_id AND r.deleted_at IS NULL
 		WHERE apt.site_id = $1 AND apt.deleted_at IS NULL`
@@ -194,8 +239,23 @@ func (p *postgres) GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*Acces
 		r := new(RadioTemplate)
 
 		err = rows.Scan(
-			&apt.ID, &apt.Name, &apt.Color, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt, &apt.SiteID,
-			&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.AccessPointTypeID,
+			&apt.ID,
+			&apt.Name,
+			&apt.Color,
+			&apt.Z,
+			&apt.SiteID,
+			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+
+			&r.ID,
+			&r.Number,
+			&r.Channel,
+			&r.ChannelWidth,
+			&r.WiFi,
+			&r.Power,
+			&r.Bandwidth,
+			&r.GuardInterval,
+			&r.AccessPointTypeID,
+			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan access points and related data")
@@ -242,6 +302,11 @@ func (p *postgres) PatchUpdateAccessPointType(apt *AccessPointType) (err error) 
 	if apt.Color != "" {
 		updates = append(updates, fmt.Sprintf("color = $%d", paramID))
 		params = append(params, apt.Color)
+		paramID++
+	}
+	if apt.Z != 0 {
+		updates = append(updates, fmt.Sprintf("z = $%d", paramID))
+		params = append(params, apt.Z)
 		paramID++
 	}
 

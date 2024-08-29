@@ -67,12 +67,14 @@ func (p *postgres) GetAccessPointDetailed(accessPointUUID uuid.UUID) (ap *Access
 	apt.id, 
 	apt.name, 
 	apt.color, 
+	apt.z,
 	apt.site_id, 
 	apt.created_at, apt.updated_at, apt.deleted_at, 
 	
 	r.id, 
 	r.number, 
 	r.channel, 
+	r.channel_width,
 	r.wifi, 
 	r.power, 
 	r.bandwidth, 
@@ -99,11 +101,33 @@ func (p *postgres) GetAccessPointDetailed(accessPointUUID uuid.UUID) (ap *Access
 		r := new(Radio)
 
 		err = rows.Scan(
-			&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.FloorID, &ap.AccessPointTypeID, &ap.IsVirtual, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt,
+			&ap.ID,
+			&ap.Name,
+			&ap.X, &ap.Y, &ap.Z,
+			&ap.FloorID,
+			&ap.AccessPointTypeID,
+			&ap.IsVirtual,
+			&ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt,
 
-			&apt.ID, &apt.Name, &apt.Color, &apt.SiteID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+			&apt.ID,
+			&apt.Name,
+			&apt.Color,
+			&apt.Z,
+			&apt.SiteID,
+			&apt.CreatedAt,
+			&apt.UpdatedAt,
+			&apt.DeletedAt,
 
-			&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID,
+			&r.ID,
+			&r.Number,
+			&r.Channel,
+			&r.ChannelWidth,
+			&r.WiFi,
+			&r.Power,
+			&r.Bandwidth,
+			&r.GuardInterval,
+			&r.IsActive,
+			&r.AccessPointID,
 			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
 		)
 		if err != nil {
@@ -193,12 +217,14 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 			apt.id, 
 			apt.name, 
 			apt.color, 
+			apt.z,
 			apt.site_id, 
 			apt.created_at, apt.updated_at, apt.deleted_at, 
 			
 			r.id, 
 			r.number, 
 			r.channel, 
+			r.channel_width,
 			r.wifi, 
 			r.power, 
 			r.bandwidth, 
@@ -226,11 +252,31 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 		r := new(Radio)
 
 		err = rows.Scan(
-			&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.FloorID, &ap.AccessPointTypeID, &ap.IsVirtual, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt,
+			&ap.ID,
+			&ap.Name,
+			&ap.X, &ap.Y, &ap.Z,
+			&ap.FloorID,
+			&ap.AccessPointTypeID,
+			&ap.IsVirtual,
+			&ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt,
 
-			&apt.ID, &apt.Name, &apt.Color, &apt.SiteID, &apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+			&apt.ID,
+			&apt.Name,
+			&apt.Color,
+			&apt.Z,
+			&apt.SiteID,
+			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 
-			&r.ID, &r.Number, &r.Channel, &r.WiFi, &r.Power, &r.Bandwidth, &r.GuardInterval, &r.IsActive, &r.AccessPointID,
+			&r.ID,
+			&r.Number,
+			&r.Channel,
+			&r.ChannelWidth,
+			&r.WiFi,
+			&r.Power,
+			&r.Bandwidth,
+			&r.GuardInterval,
+			&r.IsActive,
+			&r.AccessPointID,
 			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
 		)
 		if err != nil {
