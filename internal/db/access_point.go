@@ -395,6 +395,10 @@ func (p *postgres) PatchUpdateAccessPoint(ap *AccessPoint) (err error) {
 	params = append(params, ap.IsVirtual)
 	paramID++
 
+	updates = append(updates, fmt.Sprintf("access_point_type_id = $%d", paramID))
+	params = append(params, ap.AccessPointTypeID)
+	paramID++
+
 	if len(updates) == 0 {
 		log.Error().Msg("No fields provided for update")
 		return fmt.Errorf("no fields provided for update")

@@ -466,6 +466,10 @@ func (p *postgres) PatchUpdateSensor(s *Sensor) (err error) {
 		paramID++
 	}
 
+	updates = append(updates, fmt.Sprintf("sensor_type_id = $%d", paramID))
+	params = append(params, s.SensorTypeID)
+	paramID++
+
 	if len(updates) == 0 {
 		log.Error().Msg("No fields provided for update")
 		return fmt.Errorf("no fields provided for update")
