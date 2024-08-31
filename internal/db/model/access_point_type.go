@@ -10,7 +10,7 @@ type AccessPointType struct {
 	Name      string             `json:"name" db:"name"`
 	Model     string             `json:"model" db:"model"`
 	Color     string             `json:"color" db:"color"`
-	Z         int                `json:"z" db:"z"`
+	Z         float64            `json:"z" db:"z"`
 	IsVirtual bool               `json:"isVirtual" db:"is_virtual"`
 	SiteID    uuid.UUID          `json:"siteId" db:"site_id"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`

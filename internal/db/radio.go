@@ -22,9 +22,19 @@ import (
 
 // CreateRadio creates a radio
 func (p *postgres) CreateRadio(r *Radio) (id uuid.UUID, err error) {
-	query := `INSERT INTO radios (number, channel, channel_width, wifi, power, bandwidth, guard_interval, is_active, access_point_id)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-			RETURNING id`
+	query := `INSERT INTO radios (
+			number, 
+			channel, 
+			channel_width, 
+			wifi, 
+			power, 
+			bandwidth, 
+			guard_interval, 
+			is_active, 
+			access_point_id
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		RETURNING id`
 	row := p.Pool.QueryRow(context.Background(), query, r.Number, r.Channel, r.ChannelWidth, r.WiFi, r.Power,
 		r.Bandwidth, r.GuardInterval, r.IsActive, r.AccessPointID)
 	err = row.Scan(&id)

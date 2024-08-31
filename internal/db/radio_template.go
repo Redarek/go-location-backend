@@ -16,11 +16,28 @@ import (
 
 // CreateRadioTemplate creates a radio template
 func (p *postgres) CreateRadioTemplate(rt *RadioTemplate) (id uuid.UUID, err error) {
-	query := `INSERT INTO radio_templates (number, channel, wifi, power, bandwidth, guard_interval, access_point_type_id)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, rt.Number, rt.Channel, rt.ChannelWidth, rt.WiFi, rt.Power, rt.Bandwidth,
-		rt.GuardInterval, rt.AccessPointTypeID)
+	query := `INSERT INTO radio_templates (
+			number, 
+			channel, 
+			channel_width,
+			wifi, 
+			power, 
+			bandwidth, 
+			guard_interval, 
+			access_point_type_id
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id`
+	row := p.Pool.QueryRow(context.Background(), query,
+		rt.Number,
+		rt.Channel,
+		rt.ChannelWidth,
+		rt.WiFi,
+		rt.Power,
+		rt.Bandwidth,
+		rt.GuardInterval,
+		rt.AccessPointTypeID,
+	)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create radio template")

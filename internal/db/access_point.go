@@ -16,10 +16,22 @@ import (
 
 // CreateAccessPoint creates an access point
 func (p *postgres) CreateAccessPoint(ap *AccessPoint) (id uuid.UUID, err error) {
-	query := `INSERT INTO access_points (name, x, y, z, floor_id, access_point_type_id, is_virtual)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
-			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, ap.Name, ap.X, ap.Y, ap.Z, ap.FloorID, ap.AccessPointTypeID, ap.IsVirtual)
+	query := `INSERT INTO access_points (
+			name, 
+			x, y, z, 
+			floor_id, 
+			access_point_type_id, 
+			is_virtual
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id`
+	row := p.Pool.QueryRow(context.Background(), query,
+		ap.Name,
+		ap.X, ap.Y, ap.Z,
+		ap.FloorID,
+		ap.AccessPointTypeID,
+		ap.IsVirtual,
+	)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create access point")
@@ -252,9 +264,10 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 			ap.id, 
 			ap.name, 
 			ap.x, ap.y, ap.z, 
-			ap.created_at, ap.updated_at, ap.deleted_at, 
 			ap.floor_id, 
 			ap.access_point_type_id, 
+			ap.is_virtual,
+			ap.created_at, ap.updated_at, ap.deleted_at, 
 			
 			apt.id, 
 			

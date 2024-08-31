@@ -29,6 +29,7 @@ func (s *Fiber) CreateAccessPoint(c *fiber.Ctx) (err error) {
 		r := &model.Radio{
 			Number:        rt.Number,
 			Channel:       rt.Channel,
+			ChannelWidth:  rt.ChannelWidth,
 			WiFi:          rt.WiFi,
 			Power:         rt.Power,
 			Bandwidth:     rt.Bandwidth,
