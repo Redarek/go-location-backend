@@ -69,6 +69,7 @@ func (p *postgres) GetAccessPointDetailed(accessPointUUID uuid.UUID) (ap *Access
 	apt.model,
 	apt.color, 
 	apt.z,
+	apt.is_virtual,
 	apt.site_id, 
 	apt.created_at, apt.updated_at, apt.deleted_at, 
 	
@@ -115,10 +116,9 @@ func (p *postgres) GetAccessPointDetailed(accessPointUUID uuid.UUID) (ap *Access
 			&apt.Model,
 			&apt.Color,
 			&apt.Z,
+			&apt.IsVirtual,
 			&apt.SiteID,
-			&apt.CreatedAt,
-			&apt.UpdatedAt,
-			&apt.DeletedAt,
+			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 
 			&r.ID,
 			&r.Number,
@@ -229,6 +229,7 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 			apt.model,
 			apt.color, 
 			apt.z,
+			apt.is_virtual,
 			apt.site_id, 
 			apt.created_at, apt.updated_at, apt.deleted_at, 
 			
@@ -286,6 +287,7 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 			&apt.Model,
 			&apt.Color,
 			&apt.Z,
+			&apt.IsVirtual,
 			&apt.SiteID,
 			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 

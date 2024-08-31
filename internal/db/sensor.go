@@ -455,11 +455,11 @@ func (p *postgres) PatchUpdateSensor(s *Sensor) (err error) {
 		params = append(params, s.CorrectionFactor6)
 		paramID++
 	}
-	if s.Diagram != nil {
-		updates = append(updates, fmt.Sprintf("is_virtual = $%d", paramID))
-		params = append(params, s.IsVirtual)
-		paramID++
-	}
+
+	updates = append(updates, fmt.Sprintf("is_virtual = $%d", paramID))
+	params = append(params, s.IsVirtual)
+	paramID++
+
 	if s.Diagram != nil {
 		updates = append(updates, fmt.Sprintf("diagram = $%d", paramID))
 		params = append(params, s.Diagram)

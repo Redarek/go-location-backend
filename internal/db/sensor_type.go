@@ -15,11 +15,33 @@ import (
 )
 
 // CreateSensorType creates a sensor type
-func (p *postgres) CreateSensorType(s *SensorType) (id uuid.UUID, err error) {
-	query := `INSERT INTO sensor_types (name, color, alias, interface_0, interface_1, interface_2, rx_ant_gain, hor_rotation_offset, vert_rotation_offset, correction_factor_24, correction_factor_5, correction_factor_6, diagram, site_id)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, s.Name, s.Color, s.Alias, s.Interface0, s.Interface1, s.Interface2, s.RxAntGain, s.HorRotationOffset, s.VertRotationOffset, s.CorrectionFactor24, s.CorrectionFactor5, s.CorrectionFactor6, s.Diagram, s.SiteID)
+func (p *postgres) CreateSensorType(st *SensorType) (id uuid.UUID, err error) {
+	query := `INSERT INTO sensor_types (
+			name, 
+			color, 
+			alias, 
+			interface_0, interface_1, interface_2, 
+			rx_ant_gain, 
+			hor_rotation_offset, vert_rotation_offset, 
+			correction_factor_24, correction_factor_5, correction_factor_6, 
+			diagram, 
+			is_virtual,
+			site_id
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+		RETURNING id`
+	row := p.Pool.QueryRow(context.Background(), query,
+		st.Name,
+		st.Color,
+		st.Alias,
+		st.Interface0, st.Interface1, st.Interface2,
+		st.RxAntGain,
+		st.HorRotationOffset, st.VertRotationOffset,
+		st.CorrectionFactor24, st.CorrectionFactor5, st.CorrectionFactor6,
+		st.Diagram,
+		st.IsVirtual,
+		st.SiteID,
+	)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create sensor type")
@@ -28,7 +50,7 @@ func (p *postgres) CreateSensorType(s *SensorType) (id uuid.UUID, err error) {
 }
 
 // GetSensorType retrieves a sensor
-func (p *postgres) GetSensorType(sensorTypeUUID uuid.UUID) (s *SensorType, err error) {
+func (p *postgres) GetSensorType(sensorTypeUUID uuid.UUID) (st *SensorType, err error) {
 	query := `SELECT
 			id,
 			name,
@@ -39,23 +61,25 @@ func (p *postgres) GetSensorType(sensorTypeUUID uuid.UUID) (s *SensorType, err e
 			hor_rotation_offset, vert_rotation_offset,
 			correction_factor_24, correction_factor_5, correction_factor_6,
 			diagram,
+			is_virtual,
 			site_id,
 			created_at, updated_at, deleted_at
 		FROM sensor_types WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, sensorTypeUUID)
-	s = &SensorType{}
+	st = &SensorType{}
 	err = row.Scan(
-		&s.ID,
-		&s.Name,
-		&s.Color,
-		&s.Alias,
-		&s.Interface0, &s.Interface1, &s.Interface2,
-		&s.RxAntGain,
-		&s.HorRotationOffset, &s.VertRotationOffset,
-		&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
-		&s.Diagram,
-		&s.SiteID,
-		&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+		&st.ID,
+		&st.Name,
+		&st.Color,
+		&st.Alias,
+		&st.Interface0, &st.Interface1, &st.Interface2,
+		&st.RxAntGain,
+		&st.HorRotationOffset, &st.VertRotationOffset,
+		&st.CorrectionFactor24, &st.CorrectionFactor5, &st.CorrectionFactor6,
+		&st.Diagram,
+		&st.IsVirtual,
+		&st.SiteID,
+		&st.CreatedAt, &st.UpdatedAt, &st.DeletedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -65,7 +89,7 @@ func (p *postgres) GetSensorType(sensorTypeUUID uuid.UUID) (s *SensorType, err e
 		log.Error().Err(err).Msg("Failed to retrieve sensor type")
 		return
 	}
-	log.Debug().Msgf("Retrieved sensor type: %v", s)
+	log.Debug().Msgf("Retrieved sensor type: %v", st)
 	return
 }
 
@@ -89,7 +113,7 @@ func (p *postgres) IsSensorTypeSoftDeleted(sensorTypeUUID uuid.UUID) (isDeleted 
 }
 
 // GetSensorTypes retrieves sensor types
-func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err error) {
+func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (sts []*SensorType, err error) {
 	query := `SELECT
 			id,
 			name,
@@ -100,6 +124,7 @@ func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err err
 			hor_rotation_offset, vert_rotation_offset,
 			correction_factor_24, correction_factor_5, correction_factor_6,
 			diagram,
+			is_virtual,
 			site_id,
 			created_at, updated_at, deleted_at
 		FROM sensor_types WHERE site_id = $1 AND deleted_at IS NULL`
@@ -110,27 +135,28 @@ func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err err
 	}
 	defer rows.Close()
 
-	var s *SensorType
+	var st *SensorType
 	for rows.Next() {
-		s = new(SensorType)
+		st = new(SensorType)
 		err = rows.Scan(
-			&s.ID,
-			&s.Name,
-			&s.Color,
-			&s.Alias,
-			&s.Interface0, &s.Interface1, &s.Interface2,
-			&s.RxAntGain,
-			&s.HorRotationOffset, &s.VertRotationOffset,
-			&s.CorrectionFactor24, &s.CorrectionFactor5, &s.CorrectionFactor6,
-			&s.Diagram,
-			&s.SiteID,
-			&s.CreatedAt, &s.UpdatedAt, &s.DeletedAt,
+			&st.ID,
+			&st.Name,
+			&st.Color,
+			&st.Alias,
+			&st.Interface0, &st.Interface1, &st.Interface2,
+			&st.RxAntGain,
+			&st.HorRotationOffset, &st.VertRotationOffset,
+			&st.CorrectionFactor24, &st.CorrectionFactor5, &st.CorrectionFactor6,
+			&st.Diagram,
+			&st.IsVirtual,
+			&st.SiteID,
+			&st.CreatedAt, &st.UpdatedAt, &st.DeletedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan sensor type")
 			return
 		}
-		ss = append(ss, s)
+		sts = append(sts, st)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -138,7 +164,7 @@ func (p *postgres) GetSensorTypes(siteUUID uuid.UUID) (ss []*SensorType, err err
 		return
 	}
 
-	log.Debug().Msgf("Retrieved %d sensor types", len(ss))
+	log.Debug().Msgf("Retrieved %d sensor types", len(sts))
 	return
 }
 
@@ -175,78 +201,81 @@ func (p *postgres) RestoreSensorType(sensorTypeUUID uuid.UUID) (err error) {
 }
 
 // PatchUpdateSensorType updates only the specified fields of a sensor type
-func (p *postgres) PatchUpdateSensorType(s *SensorType) (err error) {
+func (p *postgres) PatchUpdateSensorType(st *SensorType) (err error) {
 	query := "UPDATE sensor_types SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
 	paramID := 1
 
-	if s.Name != nil {
+	if st.Name != nil {
 		updates = append(updates, fmt.Sprintf("name = $%d", paramID))
-		params = append(params, s.Name)
+		params = append(params, st.Name)
 		paramID++
 	}
-	if s.Color != nil {
+	if st.Color != nil {
 		updates = append(updates, fmt.Sprintf("color = $%d", paramID))
-		params = append(params, s.Color)
+		params = append(params, st.Color)
 		paramID++
 	}
-	if s.Alias != nil {
+	if st.Alias != nil {
 		updates = append(updates, fmt.Sprintf("alias = $%d", paramID))
-		params = append(params, s.Alias)
+		params = append(params, st.Alias)
 		paramID++
 	}
-	if s.Interface0 != nil {
+	if st.Interface0 != nil {
 		updates = append(updates, fmt.Sprintf("interface_0 = $%d", paramID))
-		params = append(params, s.Interface0)
+		params = append(params, st.Interface0)
 		paramID++
 	}
-	if s.Interface1 != nil {
+	if st.Interface1 != nil {
 		updates = append(updates, fmt.Sprintf("interface_1 = $%d", paramID))
-		params = append(params, s.Interface1)
+		params = append(params, st.Interface1)
 		paramID++
 	}
-	if s.Interface2 != nil {
+	if st.Interface2 != nil {
 		updates = append(updates, fmt.Sprintf("interface_2 = $%d", paramID))
-		params = append(params, s.Interface2)
+		params = append(params, st.Interface2)
 		paramID++
 	}
-	if s.RxAntGain != nil {
+	if st.RxAntGain != nil {
 		updates = append(updates, fmt.Sprintf("rx_ant_gain = $%d", paramID))
-		params = append(params, s.RxAntGain)
+		params = append(params, st.RxAntGain)
 		paramID++
 	}
-	if s.HorRotationOffset != nil {
+	if st.HorRotationOffset != nil {
 		updates = append(updates, fmt.Sprintf("hor_rotation_offset = $%d", paramID))
-		params = append(params, s.HorRotationOffset)
+		params = append(params, st.HorRotationOffset)
 		paramID++
 	}
-	if s.VertRotationOffset != nil {
+	if st.VertRotationOffset != nil {
 		updates = append(updates, fmt.Sprintf("vert_rotation_offset = $%d", paramID))
-		params = append(params, s.VertRotationOffset)
+		params = append(params, st.VertRotationOffset)
 		paramID++
 	}
-	if s.CorrectionFactor24 != nil {
+	if st.CorrectionFactor24 != nil {
 		updates = append(updates, fmt.Sprintf("correction_factor_24 = $%d", paramID))
-		params = append(params, s.CorrectionFactor24)
+		params = append(params, st.CorrectionFactor24)
 		paramID++
 	}
-	if s.CorrectionFactor5 != nil {
+	if st.CorrectionFactor5 != nil {
 		updates = append(updates, fmt.Sprintf("correction_factor_5 = $%d", paramID))
-		params = append(params, s.CorrectionFactor5)
+		params = append(params, st.CorrectionFactor5)
 		paramID++
 	}
-	if s.CorrectionFactor6 != nil {
+	if st.CorrectionFactor6 != nil {
 		updates = append(updates, fmt.Sprintf("correction_factor_6 = $%d", paramID))
-		params = append(params, s.CorrectionFactor6)
+		params = append(params, st.CorrectionFactor6)
 		paramID++
 	}
-	if s.Diagram != nil {
+	if st.Diagram != nil {
 		updates = append(updates, fmt.Sprintf("diagram = $%d", paramID))
-		params = append(params, s.Diagram)
+		params = append(params, st.Diagram)
 		paramID++
 	}
-	// TODO IsVirtual
+
+	updates = append(updates, fmt.Sprintf("is_virtual = $%d", paramID))
+	params = append(params, st.IsVirtual)
+	paramID++
 
 	if len(updates) == 0 {
 		log.Error().Msg("No fields provided for update")
@@ -254,7 +283,7 @@ func (p *postgres) PatchUpdateSensorType(s *SensorType) (err error) {
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
-	params = append(params, s.ID)
+	params = append(params, st.ID)
 
 	_, err = p.Pool.Exec(context.Background(), query, params...)
 	if err != nil {

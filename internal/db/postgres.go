@@ -115,6 +115,7 @@ func New() Service {
         model VARCHAR(128) NOT NULL,
         color CHAR(6) NOT NULL,
         z FLOAT NOT NULL,
+        is_virtual BOOLEAN NOT NULL,
         site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE ON UPDATE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
@@ -181,6 +182,7 @@ func New() Service {
         correction_factor_5 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         correction_factor_6 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         diagram JSONB,
+        is_virtual BOOLEAN NOT NULL,
         site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,

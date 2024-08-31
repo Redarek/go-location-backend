@@ -21,15 +21,17 @@ func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, er
 			model,
 			color, 
 			z,
+			is_virtual,
 			site_id
 		)
-		VALUES ($1, $2, $3)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id`
 	row := p.Pool.QueryRow(context.Background(), query,
 		apt.Name,
 		apt.Model,
 		apt.Color,
 		apt.Z,
+		apt.IsVirtual,
 		apt.SiteID,
 	)
 	err = row.Scan(&id)
@@ -47,6 +49,7 @@ func (p *postgres) GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *Acces
 			model,
 			color,
 			z,
+			is_virtual,
 			site_id,
 			created_at, updated_at, deleted_at
 		FROM access_point_types WHERE id = $1 AND deleted_at IS NULL`
@@ -58,6 +61,7 @@ func (p *postgres) GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *Acces
 		&apt.Model,
 		&apt.Color,
 		&apt.Z,
+		&apt.IsVirtual,
 		&apt.SiteID,
 		&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 	)
@@ -81,6 +85,7 @@ func (p *postgres) GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (ap
 			apt.model,
 			apt.color, 
 			apt.z,
+			apt.is_virtual,
 			apt.site_id,
 			apt.created_at, apt.updated_at, apt.deleted_at, 
 			
@@ -115,6 +120,7 @@ func (p *postgres) GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (ap
 			&apt.Model,
 			&apt.Color,
 			&apt.Z,
+			&apt.IsVirtual,
 			&apt.SiteID,
 			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 
@@ -174,6 +180,7 @@ func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointT
 			model,
 			color,
 			z,
+			is_virtual,
 			site_id,
 			created_at, updated_at, deleted_at
 		FROM access_point_types WHERE site_id = $1 AND deleted_at IS NULL`
@@ -193,6 +200,7 @@ func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointT
 			&apt.Model,
 			&apt.Color,
 			&apt.Z,
+			&apt.IsVirtual,
 			&apt.SiteID,
 			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 		)
@@ -219,6 +227,7 @@ func (p *postgres) GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*Acces
 			apt.model,
 			apt.color, 
 			apt.z,
+			apt.is_virtual,
 			apt.site_id, 
 			apt.created_at, apt.updated_at, apt.deleted_at, 
 			
@@ -254,6 +263,7 @@ func (p *postgres) GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*Acces
 			&apt.Model,
 			&apt.Color,
 			&apt.Z,
+			&apt.IsVirtual,
 			&apt.SiteID,
 			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 
@@ -325,6 +335,10 @@ func (p *postgres) PatchUpdateAccessPointType(apt *AccessPointType) (err error) 
 		params = append(params, apt.Z)
 		paramID++
 	}
+
+	updates = append(updates, fmt.Sprintf("is_virtual = $%d", paramID))
+	params = append(params, apt.IsVirtual)
+	paramID++
 
 	if len(updates) == 0 {
 		log.Error().Msg("No fields provided for update")
