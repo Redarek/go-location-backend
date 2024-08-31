@@ -18,6 +18,7 @@ import (
 func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, err error) {
 	query := `INSERT INTO access_point_types (
 			name, 
+			model,
 			color, 
 			z,
 			site_id
@@ -26,6 +27,7 @@ func (p *postgres) CreateAccessPointType(apt *AccessPointType) (id uuid.UUID, er
 		RETURNING id`
 	row := p.Pool.QueryRow(context.Background(), query,
 		apt.Name,
+		apt.Model,
 		apt.Color,
 		apt.Z,
 		apt.SiteID,
@@ -42,6 +44,7 @@ func (p *postgres) GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *Acces
 	query := `SELECT 
 			id, 
 			name,
+			model,
 			color,
 			z,
 			site_id,
@@ -52,6 +55,7 @@ func (p *postgres) GetAccessPointType(accessPointTypeUUID uuid.UUID) (apt *Acces
 	err = row.Scan(
 		&apt.ID,
 		&apt.Name,
+		&apt.Model,
 		&apt.Color,
 		&apt.Z,
 		&apt.SiteID,
@@ -74,6 +78,7 @@ func (p *postgres) GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (ap
 	query := `SELECT 
 			apt.id, 
 			apt.name,
+			apt.model,
 			apt.color, 
 			apt.z,
 			apt.site_id,
@@ -107,6 +112,7 @@ func (p *postgres) GetAccessPointTypeDetailed(accessPointTypeUUID uuid.UUID) (ap
 		err = rows.Scan(
 			&apt.ID,
 			&apt.Name,
+			&apt.Model,
 			&apt.Color,
 			&apt.Z,
 			&apt.SiteID,
@@ -162,8 +168,10 @@ func (p *postgres) IsAccessPointTypeSoftDeleted(accessPointTypeUUID uuid.UUID) (
 // TODO maybe fix type and types
 // GetAccessPointTypes retrieves access point types
 func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointType, err error) {
-	query := `SELECT id, 
+	query := `SELECT 
+			id, 
 			name,
+			model,
 			color,
 			z,
 			site_id,
@@ -182,6 +190,7 @@ func (p *postgres) GetAccessPointTypes(siteUUID uuid.UUID) (apts []*AccessPointT
 		err = rows.Scan(
 			&apt.ID,
 			&apt.Name,
+			&apt.Model,
 			&apt.Color,
 			&apt.Z,
 			&apt.SiteID,
@@ -207,6 +216,7 @@ func (p *postgres) GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*Acces
 	query := `SELECT 
 			apt.id, 
 			apt.name, 
+			apt.model,
 			apt.color, 
 			apt.z,
 			apt.site_id, 
@@ -241,6 +251,7 @@ func (p *postgres) GetAccessPointTypesDetailed(siteUUID uuid.UUID) (aps []*Acces
 		err = rows.Scan(
 			&apt.ID,
 			&apt.Name,
+			&apt.Model,
 			&apt.Color,
 			&apt.Z,
 			&apt.SiteID,
@@ -296,6 +307,11 @@ func (p *postgres) PatchUpdateAccessPointType(apt *AccessPointType) (err error) 
 	if apt.Name != "" {
 		updates = append(updates, fmt.Sprintf("name = $%d", paramID))
 		params = append(params, apt.Name)
+		paramID++
+	}
+	if apt.Model != "" {
+		updates = append(updates, fmt.Sprintf("model = $%d", paramID))
+		params = append(params, apt.Model)
 		paramID++
 	}
 

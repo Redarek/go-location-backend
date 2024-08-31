@@ -112,6 +112,7 @@ func New() Service {
     CREATE TABLE IF NOT EXISTS access_point_types (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR(128) NOT NULL,
+        model VARCHAR(128) NOT NULL,
         color CHAR(6) NOT NULL,
         z FLOAT NOT NULL,
         site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE ON UPDATE CASCADE,

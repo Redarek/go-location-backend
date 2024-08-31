@@ -66,6 +66,7 @@ func (p *postgres) GetAccessPointDetailed(accessPointUUID uuid.UUID) (ap *Access
 	
 	apt.id, 
 	apt.name, 
+	apt.model,
 	apt.color, 
 	apt.z,
 	apt.site_id, 
@@ -111,6 +112,7 @@ func (p *postgres) GetAccessPointDetailed(accessPointUUID uuid.UUID) (ap *Access
 
 			&apt.ID,
 			&apt.Name,
+			&apt.Model,
 			&apt.Color,
 			&apt.Z,
 			&apt.SiteID,
@@ -187,7 +189,15 @@ func (p *postgres) GetAccessPoints(floorUUID uuid.UUID) (aps []*AccessPoint, err
 	var ap *AccessPoint
 	for rows.Next() {
 		ap = new(AccessPoint)
-		err = rows.Scan(&ap.ID, &ap.Name, &ap.X, &ap.Y, &ap.Z, &ap.AccessPointTypeID, &ap.FloorID, &ap.IsVirtual, &ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt)
+		err = rows.Scan(
+			&ap.ID,
+			&ap.Name,
+			&ap.X, &ap.Y, &ap.Z,
+			&ap.AccessPointTypeID,
+			&ap.FloorID,
+			&ap.IsVirtual,
+			&ap.CreatedAt, &ap.UpdatedAt, &ap.DeletedAt,
+		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan access point")
 			return
@@ -216,6 +226,7 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 			
 			apt.id, 
 			apt.name, 
+			apt.model,
 			apt.color, 
 			apt.z,
 			apt.site_id, 
@@ -236,7 +247,17 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 		LEFT JOIN access_point_types apt ON ap.access_point_type_id = apt.id AND apt.deleted_at IS NULL
 		LEFT JOIN radios r ON ap.id = r.access_point_id AND r.deleted_at IS NULL
 		WHERE ap.floor_id = $1 AND ap.deleted_at IS NULL
-		GROUP BY ap.id, ap.name, ap.x, ap.y, ap.z, ap.created_at, ap.updated_at, ap.deleted_at, ap.floor_id, ap.access_point_type_id, apt.id, r.id`
+		GROUP BY 
+			ap.id, 
+			ap.name, 
+			ap.x, ap.y, ap.z, 
+			ap.created_at, ap.updated_at, ap.deleted_at, 
+			ap.floor_id, 
+			ap.access_point_type_id, 
+			
+			apt.id, 
+			
+			r.id`
 	rows, err := p.Pool.Query(context.Background(), query, floorUUID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to retrieve access points")
@@ -262,6 +283,7 @@ func (p *postgres) GetAccessPointsDetailed(floorUUID uuid.UUID) (aps []*AccessPo
 
 			&apt.ID,
 			&apt.Name,
+			&apt.Model,
 			&apt.Color,
 			&apt.Z,
 			&apt.SiteID,

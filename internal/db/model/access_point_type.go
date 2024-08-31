@@ -8,6 +8,7 @@ import (
 type AccessPointType struct {
 	ID        uuid.UUID          `json:"id" db:"id"`
 	Name      string             `json:"name" db:"name"`
+	Model     string             `json:"model" db:"model"`
 	Color     string             `json:"color" db:"color"`
 	Z         int                `json:"z" db:"z"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
