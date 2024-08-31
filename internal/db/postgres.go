@@ -173,8 +173,8 @@ func New() Service {
         color VARCHAR NOT NULL,
         alias VARCHAR NOT NULL,
         interface_0 VARCHAR NOT NULL,
-        interface_1 VARCHAR NOT NULL,
-        interface_2 VARCHAR NOT NULL,
+        interface_1 VARCHAR,
+        interface_2 VARCHAR,
         rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
         vert_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
