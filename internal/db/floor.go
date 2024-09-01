@@ -49,6 +49,8 @@ func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
 			height_in_pixels,
 			scale,
 			building_id,
+			cell_size_meter,
+			north_area_indent_meter, south_area_indent_meter, west_area_indent_meter, east_area_indent_meter,
 			created_at, updated_at, deleted_at
 		FROM floors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, floorUUID)
@@ -62,6 +64,8 @@ func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
 		&f.WidthInPixels, &f.HeightInPixels,
 		&f.Scale,
 		&f.BuildingID,
+		&f.CellSizeMeter,
+		&f.NorthAreaIndentMeter, &f.SouthAreaIndentMeter, &f.WestAreaIndentMeter, &f.EastAreaIndentMeter,
 		&f.CreatedAt, &f.UpdatedAt, &f.DeletedAt,
 	)
 	if err != nil {
@@ -107,6 +111,8 @@ func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
 			height_in_pixels,
 			scale,
 			building_id,
+			cell_size_meter,
+			north_area_indent_meter, south_area_indent_meter, west_area_indent_meter, east_area_indent_meter,
 			created_at, updated_at, deleted_at 
 		FROM floors WHERE building_id = $1 AND deleted_at IS NULL`
 	rows, err := p.Pool.Query(context.Background(), query, buildingUUID)
@@ -128,6 +134,8 @@ func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
 			&f.WidthInPixels, &f.HeightInPixels,
 			&f.Scale,
 			&f.BuildingID,
+			&f.CellSizeMeter,
+			&f.NorthAreaIndentMeter, &f.SouthAreaIndentMeter, &f.WestAreaIndentMeter, &f.EastAreaIndentMeter,
 			&f.CreatedAt, &f.UpdatedAt, &f.DeletedAt,
 		)
 		if err != nil {
@@ -179,7 +187,7 @@ func (p *postgres) RestoreFloor(floorUUID uuid.UUID) (err error) {
 }
 
 // PatchUpdateFloor updates only the specified fields of a floor
-func (p *postgres) PatchUpdateFloor(f *FloorDetailed) (err error) {
+func (p *postgres) PatchUpdateFloor(f *Floor) (err error) {
 	query := "UPDATE floors SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
@@ -213,6 +221,32 @@ func (p *postgres) PatchUpdateFloor(f *FloorDetailed) (err error) {
 	if f.Scale != nil {
 		updates = append(updates, fmt.Sprintf("scale = $%d", paramID))
 		params = append(params, f.Scale)
+		paramID++
+	}
+
+	if f.CellSizeMeter != nil {
+		updates = append(updates, fmt.Sprintf("cell_size_meter = $%d", paramID))
+		params = append(params, f.CellSizeMeter)
+		paramID++
+	}
+	if f.NorthAreaIndentMeter != nil {
+		updates = append(updates, fmt.Sprintf("north_area_indent_meter = $%d", paramID))
+		params = append(params, f.NorthAreaIndentMeter)
+		paramID++
+	}
+	if f.SouthAreaIndentMeter != nil {
+		updates = append(updates, fmt.Sprintf("south_area_indent_meter = $%d", paramID))
+		params = append(params, f.SouthAreaIndentMeter)
+		paramID++
+	}
+	if f.WestAreaIndentMeter != nil {
+		updates = append(updates, fmt.Sprintf("west_area_indent_meter = $%d", paramID))
+		params = append(params, f.WestAreaIndentMeter)
+		paramID++
+	}
+	if f.EastAreaIndentMeter != nil {
+		updates = append(updates, fmt.Sprintf("east_area_indent_meter = $%d", paramID))
+		params = append(params, f.EastAreaIndentMeter)
 		paramID++
 	}
 
