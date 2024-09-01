@@ -26,13 +26,13 @@ type Service interface {
 	RestoreBuilding(buildingUUID uuid.UUID) (err error)
 	PatchUpdateBuilding(b *Building) (err error)
 
-	CreateFloor(f *Floor) (id uuid.UUID, err error)
-	GetFloor(floorUUID uuid.UUID) (f *Floor, err error)
+	CreateFloor(f *FloorDetailed) (id uuid.UUID, err error)
+	GetFloor(floorUUID uuid.UUID) (f *FloorDetailed, err error)
 	IsFloorSoftDeleted(floorUUID uuid.UUID) (isDeleted bool, err error)
-	GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error)
+	GetFloors(buildingUUID uuid.UUID) (fs []*FloorDetailed, err error)
 	SoftDeleteFloor(floorUUID uuid.UUID) (err error)
 	RestoreFloor(floorUUID uuid.UUID) (err error)
-	PatchUpdateFloor(f *Floor) (err error)
+	PatchUpdateFloor(f *FloorDetailed) (err error)
 	UpdateFloorHeatmap(floorUUID uuid.UUID, fileName string) (err error)
 
 	CreateWallType(wt *WallType) (id uuid.UUID, err error)

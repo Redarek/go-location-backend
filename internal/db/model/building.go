@@ -16,5 +16,5 @@ type Building struct {
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
 	DeletedAt   pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 	SiteID      uuid.UUID          `json:"siteId" db:"site_id"`
-	Floors      []*Floor           `json:"floors"`
+	Floors      []*FloorDetailed   `json:"floors"`
 }

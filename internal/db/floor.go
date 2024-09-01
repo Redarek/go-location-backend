@@ -15,11 +15,21 @@ import (
 )
 
 // CreateFloor creates a floor
-func (p *postgres) CreateFloor(f *Floor) (id uuid.UUID, err error) {
-	query := `INSERT INTO floors (name, number, scale, building_id)
-			VALUES ($1, $2, $3, $4)
-			RETURNING id`
-	row := p.Pool.QueryRow(context.Background(), query, f.Name, f.Number, f.Scale, f.BuildingID)
+func (p *postgres) CreateFloor(f *FloorDetailed) (id uuid.UUID, err error) {
+	query := `INSERT INTO floors (
+			name, 
+			number, 
+			scale, 
+			building_id
+		)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id`
+	row := p.Pool.QueryRow(context.Background(), query,
+		f.Name,
+		f.Number,
+		f.Scale,
+		f.BuildingID,
+	)
 	err = row.Scan(&id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create floor")
@@ -28,7 +38,7 @@ func (p *postgres) CreateFloor(f *Floor) (id uuid.UUID, err error) {
 }
 
 // GetFloor retrieves a floor
-func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
+func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *FloorDetailed, err error) {
 	query := `SELECT
 			id,
 			name,
@@ -42,8 +52,18 @@ func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
 			created_at, updated_at, deleted_at
 		FROM floors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, floorUUID)
-	f = &Floor{}
-	err = row.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.BuildingID, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt)
+	f = &FloorDetailed{}
+	err = row.Scan(
+		&f.ID,
+		&f.Name,
+		&f.Number,
+		&f.Image,
+		&f.Heatmap,
+		&f.WidthInPixels, &f.HeightInPixels,
+		&f.Scale,
+		&f.BuildingID,
+		&f.CreatedAt, &f.UpdatedAt, &f.DeletedAt,
+	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("No floor found with uuid %v", floorUUID)
@@ -76,7 +96,7 @@ func (p *postgres) IsFloorSoftDeleted(floorUUID uuid.UUID) (isDeleted bool, err 
 }
 
 // GetFloors retrieves floors
-func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
+func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*FloorDetailed, err error) {
 	query := `SELECT
 			id,
 			name,
@@ -96,10 +116,20 @@ func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
 	}
 	defer rows.Close()
 
-	var f *Floor
+	var f *FloorDetailed
 	for rows.Next() {
-		f = new(Floor)
-		err = rows.Scan(&f.ID, &f.Name, &f.Number, &f.Image, &f.Heatmap, &f.WidthInPixels, &f.HeightInPixels, &f.Scale, &f.BuildingID, &f.CreatedAt, &f.UpdatedAt, &f.DeletedAt)
+		f = new(FloorDetailed)
+		err = rows.Scan(
+			&f.ID,
+			&f.Name,
+			&f.Number,
+			&f.Image,
+			&f.Heatmap,
+			&f.WidthInPixels, &f.HeightInPixels,
+			&f.Scale,
+			&f.BuildingID,
+			&f.CreatedAt, &f.UpdatedAt, &f.DeletedAt,
+		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to scan floor")
 			return
@@ -149,7 +179,7 @@ func (p *postgres) RestoreFloor(floorUUID uuid.UUID) (err error) {
 }
 
 // PatchUpdateFloor updates only the specified fields of a floor
-func (p *postgres) PatchUpdateFloor(f *Floor) (err error) {
+func (p *postgres) PatchUpdateFloor(f *FloorDetailed) (err error) {
 	query := "UPDATE floors SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
