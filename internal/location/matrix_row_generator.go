@@ -230,7 +230,7 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor m
 
 	var diagram db.Diagram
 	err := json.Unmarshal(*sensor.Diagram, &diagram)
-	if err != nil {
+	if err == nil {
 		var delta int = 0
 		if _, ok := diagram.Degree["10"]; ok {
 			delta = 10
@@ -281,4 +281,8 @@ errorHandling:
 	freeSpaceRSSI5 += antGain
 	freeSpaceRSSI6 += antGain
 	return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
+}
+
+func getDiagram(sensor model.Sensor) {
+
 }
