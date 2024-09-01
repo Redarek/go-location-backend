@@ -32,7 +32,7 @@ type Service interface {
 	GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error)
 	SoftDeleteFloor(floorUUID uuid.UUID) (err error)
 	RestoreFloor(floorUUID uuid.UUID) (err error)
-	PatchUpdateFloor(f *FloorDetailed) (err error)
+	PatchUpdateFloor(f *Floor) (err error)
 	UpdateFloorHeatmap(floorUUID uuid.UUID, fileName string) (err error)
 
 	CreateWallType(wt *WallType) (id uuid.UUID, err error)

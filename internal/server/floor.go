@@ -126,7 +126,7 @@ func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	f := &model.FloorDetailed{}
+	f := &model.Floor{}
 	if id, ok := form.Value["id"]; ok && id[0] != "" {
 		f.ID, err = uuid.Parse(id[0])
 		if err != nil {
