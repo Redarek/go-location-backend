@@ -14,7 +14,7 @@ import (
 
 // // import { generateMatrixRow, MatrixPoint } from "./matrix_row_generator";
 
-func _getMatrix(matrixRowGenerator chan MatrixPoint, mapID uuid.UUID) ([]PointRow, []MatrixRow) {
+func _getMatrix(matrixRowGenerator chan MatrixPoint, floorID uuid.UUID) ([]PointRow, []MatrixRow) {
 	var pointRowsToInsert []PointRow
 	var matrixRowsToInsert []MatrixRow
 	var lastID = -1
@@ -30,7 +30,7 @@ func _getMatrix(matrixRowGenerator chan MatrixPoint, mapID uuid.UUID) ([]PointRo
 
 		if lastID != id {
 			// pointRowsToInsert.push({ ID: ID, MapID: MapID, X: xM, Y: yM });
-			pointRowsToInsert = append(pointRowsToInsert, PointRow{ID: id, MapID: mapID, X: xM, Y: yM})
+			pointRowsToInsert = append(pointRowsToInsert, PointRow{ID: id, FloorID: floorID, X: xM, Y: yM})
 			lastID = id
 		}
 
@@ -41,8 +41,8 @@ func _getMatrix(matrixRowGenerator chan MatrixPoint, mapID uuid.UUID) ([]PointRo
 	return pointRowsToInsert, matrixRowsToInsert
 }
 
-func CreateMatrix(mapID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow) {
-	log.Info().Msg(fmt.Sprintf("Creating matrix for MapID = %s...", mapID))
+func CreateMatrix(floorID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow) {
+	log.Info().Msg(fmt.Sprintf("Creating matrix for FloorID = %s...", floorID))
 	var startTestTime time.Time = time.Now()
 
 	// var pointRowsToInsert []PointRow
@@ -53,7 +53,7 @@ func CreateMatrix(mapID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow
 
 	var matrixRowGenerator chan MatrixPoint = GenerateMatrixRow(inputData)
 	//const [pointSize, matrixSize]: [number, number] = await _insertIntoMatrixAsync(pointRepository, matrixRepository, matrixRowGenerator, MapID);
-	pointRowsToInsert, matrixRowsToInsert := _getMatrix(matrixRowGenerator, mapID)
+	pointRowsToInsert, matrixRowsToInsert := _getMatrix(matrixRowGenerator, floorID)
 
 	//logger.info(`Created ${pointSize} points (${matrixSize} matrix points) in ${((performance.now() - startTestTime) / 1000).toFixed(2)} sec `
 	//    + `(Del: ${deleteTime} sec, Fill: ${((performance.now() - startFillTime) / 1000).toFixed(2)} sec)`);
@@ -100,10 +100,10 @@ type InputData struct {
 }
 
 type PointRow struct {
-	ID    int       `json:"ID"`
-	MapID uuid.UUID `json:"mapId"`
-	X     float64   `json:"X"`
-	Y     float64   `json:"Y"`
+	ID      int       `json:"ID"`
+	FloorID uuid.UUID `json:"floorId"`
+	X       float64   `json:"X"`
+	Y       float64   `json:"Y"`
 }
 
 type MatrixRow struct {
