@@ -101,24 +101,25 @@ func (s *Fiber) GetSitesDetailed(c *fiber.Ctx) (err error) {
 
 			for _, floor := range floors {
 				log.Debug().Msgf("Floor: %s", floor)
-				aps, err := s.db.GetAccessPointsDetailed(floor.ID)
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to get access point detailed")
-					continue
-				}
-				walls, err := s.db.GetWallsDetailed(floor.ID)
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to get walls detailed")
-					continue
-				}
-				sensors, err := s.db.GetSensors(floor.ID)
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to get sensors")
-					continue
-				}
-				floor.AccessPoints = aps
-				floor.Walls = walls
-				floor.Sensors = sensors
+				// TODO fix
+				// aps, err := s.db.GetAccessPointsDetailed(floor.ID)
+				// if err != nil {
+				// 	log.Error().Err(err).Msg("Failed to get access point detailed")
+				// 	continue
+				// }
+				// walls, err := s.db.GetWallsDetailed(floor.ID)
+				// if err != nil {
+				// 	log.Error().Err(err).Msg("Failed to get walls detailed")
+				// 	continue
+				// }
+				// sensors, err := s.db.GetSensors(floor.ID)
+				// if err != nil {
+				// 	log.Error().Err(err).Msg("Failed to get sensors")
+				// 	continue
+				// }
+				// floor.AccessPoints = aps
+				// floor.Walls = walls
+				// floor.Sensors = sensors
 			}
 			building.Floors = floors
 		}

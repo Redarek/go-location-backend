@@ -21,7 +21,7 @@ import (
 
 // CreateFloor creates a floor
 func (s *Fiber) CreateFloor(c *fiber.Ctx) (err error) {
-	f := new(model.FloorDetailed)
+	f := new(model.Floor)
 	err = c.BodyParser(f)
 	if err != nil {
 		return err

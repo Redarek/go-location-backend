@@ -15,7 +15,7 @@ import (
 )
 
 // CreateFloor creates a floor
-func (p *postgres) CreateFloor(f *FloorDetailed) (id uuid.UUID, err error) {
+func (p *postgres) CreateFloor(f *Floor) (id uuid.UUID, err error) {
 	query := `INSERT INTO floors (
 			name, 
 			number, 
@@ -38,7 +38,7 @@ func (p *postgres) CreateFloor(f *FloorDetailed) (id uuid.UUID, err error) {
 }
 
 // GetFloor retrieves a floor
-func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *FloorDetailed, err error) {
+func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *Floor, err error) {
 	query := `SELECT
 			id,
 			name,
@@ -52,7 +52,7 @@ func (p *postgres) GetFloor(floorUUID uuid.UUID) (f *FloorDetailed, err error) {
 			created_at, updated_at, deleted_at
 		FROM floors WHERE id = $1 AND deleted_at IS NULL`
 	row := p.Pool.QueryRow(context.Background(), query, floorUUID)
-	f = &FloorDetailed{}
+	f = &Floor{}
 	err = row.Scan(
 		&f.ID,
 		&f.Name,
@@ -96,7 +96,7 @@ func (p *postgres) IsFloorSoftDeleted(floorUUID uuid.UUID) (isDeleted bool, err 
 }
 
 // GetFloors retrieves floors
-func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*FloorDetailed, err error) {
+func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*Floor, err error) {
 	query := `SELECT
 			id,
 			name,
@@ -116,9 +116,9 @@ func (p *postgres) GetFloors(buildingUUID uuid.UUID) (fs []*FloorDetailed, err e
 	}
 	defer rows.Close()
 
-	var f *FloorDetailed
+	var f *Floor
 	for rows.Next() {
-		f = new(FloorDetailed)
+		f = new(Floor)
 		err = rows.Scan(
 			&f.ID,
 			&f.Name,
