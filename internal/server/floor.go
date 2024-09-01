@@ -21,7 +21,7 @@ import (
 
 // CreateFloor creates a floor
 func (s *Fiber) CreateFloor(c *fiber.Ctx) (err error) {
-	f := new(model.Floor)
+	f := new(model.FloorDetailed)
 	err = c.BodyParser(f)
 	if err != nil {
 		return err
@@ -120,14 +120,13 @@ func (s *Fiber) RestoreFloor(c *fiber.Ctx) (err error) {
 
 // PatchUpdateFloor updates floor
 func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
-
 	form, err := c.MultipartForm()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to parse multipart form")
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	f := &model.Floor{}
+	f := &model.FloorDetailed{}
 	if id, ok := form.Value["id"]; ok && id[0] != "" {
 		f.ID, err = uuid.Parse(id[0])
 		if err != nil {
