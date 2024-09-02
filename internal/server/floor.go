@@ -10,6 +10,7 @@ import (
 	"location-backend/internal/db/model"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -119,99 +120,91 @@ func (s *Fiber) RestoreFloor(c *fiber.Ctx) (err error) {
 
 // PatchUpdateFloor updates floor
 func (s *Fiber) PatchUpdateFloor(c *fiber.Ctx) error {
-	// form, err := c.MultipartForm()
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to parse multipart form")
-	// 	return c.SendStatus(fiber.StatusInternalServerError)
-	// }
+	form, err := c.MultipartForm()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse multipart form")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
 
 	f := &model.Floor{}
-
-	if err := c.BodyParser(&f); err != nil {
-		log.Error().Err(err).Msg("Failed to parse request body")
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid input")
+	if id, ok := form.Value["id"]; ok && id[0] != "" {
+		f.ID, err = uuid.Parse(id[0])
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse floor uuid")
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid floor UUID")
+		}
+	} else {
+		return c.Status(fiber.StatusBadRequest).SendString("id is required")
 	}
-	// ? parse id
-	// _, err := uuid.Parse(c.Query("id"))
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to parse floor uuid")
-	// 	return c.Status(fiber.StatusBadRequest).SendString("Invalid floor UUID")
-	// }
+	if name, ok := form.Value["name"]; ok && name[0] != "" {
+		f.Name = &name[0]
+	} else {
+		f.Name = nil
+	}
 
-	// if f.ID == "" {
-	// 	return c.Status(fiber.StatusBadRequest).SendString("id is required")
-	// }
+	if number, ok := form.Value["number"]; ok && number[0] != "" {
+		parsedNumber, err := strconv.Atoi(strings.TrimSpace(number[0]))
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid number")
+		}
+		f.Number = &parsedNumber
+	} else {
+		f.Number = nil
+	}
 
-	// if name, ok := form.Value["name"]; ok && name[0] != "" {
-	// 	f.Name = &name[0]
-	// } else {
-	// 	f.Name = nil
-	// }
+	if scale, ok := form.Value["scale"]; ok && scale[0] != "" {
+		parsedScale, err := strconv.ParseFloat(strings.TrimSpace(scale[0]), 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid Scale")
+		}
+		f.Scale = &parsedScale
+	} else {
+		f.Scale = nil
+	}
 
-	// if number, ok := form.Value["number"]; ok && number[0] != "" {
-	// 	parsedNumber, err := strconv.Atoi(strings.TrimSpace(number[0]))
-	// 	if err != nil {
-	// 		return c.Status(fiber.StatusBadRequest).SendString("Invalid number")
-	// 	}
-	// 	f.Number = &parsedNumber
-	// } else {
-	// 	f.Number = nil
-	// }
+	files := form.File["image"]
+	if len(files) > 0 {
+		file, err := files[0].Open()
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to open file")
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		defer file.Close()
 
-	// if scale, ok := form.Value["scale"]; ok && scale[0] != "" {
-	// 	parsedScale, err := strconv.ParseFloat(strings.TrimSpace(scale[0]), 64)
-	// 	if err != nil {
-	// 		return c.Status(fiber.StatusBadRequest).SendString("Invalid Scale")
-	// 	}
-	// 	f.Scale = &parsedScale
-	// } else {
-	// 	f.Scale = nil
-	// }
+		fileExtension := filepath.Ext(files[0].Filename)
+		newFileName := uuid.NewString() + fileExtension // Using UUID and original file extension
+		filePath := filepath.Join("static", newFileName)
 
-	// TODO do
-	// files := form.File["image"]
-	// if len(files) > 0 {
-	// 	file, err := files[0].Open()
-	// 	if err != nil {
-	// 		log.Error().Err(err).Msg("Failed to open file")
-	// 		return c.SendStatus(fiber.StatusInternalServerError)
-	// 	}
-	// 	defer file.Close()
+		img, _, err := image.Decode(file) // We no longer use format here, only for decoding
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to decode image")
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		if err := saveImage(filePath, img); err != nil {
+			log.Error().Err(err).Msg("Failed to save image")
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		f.Image = &newFileName
+		log.Debug().Msgf("Image saved: %v", filePath)
 
-	// 	fileExtension := filepath.Ext(files[0].Filename)
-	// 	newFileName := uuid.NewString() + fileExtension // Using UUID and original file extension
-	// 	filePath := filepath.Join("static", newFileName)
+		// Get image dimensions
+		bounds := img.Bounds()
+		width := bounds.Dx()  // Width of the image
+		height := bounds.Dy() // Height of the image
+		log.Debug().Msgf("Image dimensions: %dx%d", width, height)
 
-	// 	img, _, err := image.Decode(file) // We no longer use format here, only for decoding
-	// 	if err != nil {
-	// 		log.Error().Err(err).Msg("Failed to decode image")
-	// 		return c.SendStatus(fiber.StatusInternalServerError)
-	// 	}
-	// 	if err := saveImage(filePath, img); err != nil {
-	// 		log.Error().Err(err).Msg("Failed to save image")
-	// 		return c.SendStatus(fiber.StatusInternalServerError)
-	// 	}
-	// 	f.Image = &newFileName
-	// 	log.Debug().Msgf("Image saved: %v", filePath)
+		scaledWidth := (1280 / width) * width
+		scaledHeight := (720 / height) * height
+		f.WidthInPixels = &scaledWidth
+		f.HeightInPixels = &scaledHeight
 
-	// 	// Get image dimensions
-	// 	bounds := img.Bounds()
-	// 	width := bounds.Dx()  // Width of the image
-	// 	height := bounds.Dy() // Height of the image
-	// 	log.Debug().Msgf("Image dimensions: %dx%d", width, height)
+		log.Debug().Msgf("Floor dimensions (scaled): %dx%d", *f.WidthInPixels, *f.WidthInPixels)
 
-	// 	scaledWidth := (1280 / width) * width
-	// 	scaledHeight := (720 / height) * height
-	// 	f.WidthInPixels = &scaledWidth
-	// 	f.HeightInPixels = &scaledHeight
-
-	// 	log.Debug().Msgf("Floor dimensions (scaled): %dx%d", *f.WidthInPixels, *f.WidthInPixels)
-
-	// }
+	}
 
 	log.Debug().Msgf("Floor info: %+v", *f)
 
-	err := s.db.PatchUpdateFloor(f)
+	err = s.db.PatchUpdateFloor(f)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to patch update floor")
 		return c.SendStatus(fiber.StatusInternalServerError)
