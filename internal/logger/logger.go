@@ -2,6 +2,7 @@ package logger
 
 import (
 	"flag"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -19,7 +20,7 @@ func Setup() {
 	}
 
 	log.Debug().Msg("Log level set to Debug")
-	log.Info().Msg("Log level set to Debug or Info")
+	log.Info().Msg("Log level set to Info")
 
 	if e := log.Debug(); e.Enabled() {
 		// Compute log output only if enabled.
