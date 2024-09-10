@@ -1,7 +1,6 @@
 package postgresql
 
 import (
-	"restapi-lesson/pkg/logging"
 	"sync"
 
 	"github.com/ilyakaznacheev/cleanenv"
