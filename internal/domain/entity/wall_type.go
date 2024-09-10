@@ -1,0 +1,20 @@
+package entity
+
+import (
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+type WallType struct {
+	ID            uuid.UUID          `json:"id" db:"id"`
+	Name          string             `json:"name" db:"name"`
+	Color         string             `json:"color" db:"color"`
+	Attenuation24 float64            `json:"attenuation24" db:"attenuation_24"`
+	Attenuation5  float64            `json:"attenuation5" db:"attenuation_5"`
+	Attenuation6  float64            `json:"attenuation6" db:"attenuation_6"`
+	Thickness     float64            `json:"thickness" db:"thickness"`
+	SiteID        uuid.UUID          `json:"siteId" db:"site_id"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+}
