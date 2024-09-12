@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
@@ -18,36 +19,34 @@ type Client interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-func ConnectPostgres(cfg *config.PostgresConfig) (*pgx.Conn, error) {
+func ConnectPostgres(cfg *config.PostgresConfig) (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?connect_timeout=10&pool_max_conns=20&client_encoding=UTF8", // TODO move to .env
 		cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database,
 	)
 
-	conn, err := pgx.Connect(context.Background(), dsn)
+	// Create a connection pool
+	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
-		log.Fatal().Err(err).Msg("unable to connect to database")
+		log.Fatal().Err(err).Msg("unable to create connection pool")
 		return nil, err
 	}
 
-	// Optional: Check the connection
+	// Optional: Check the connection pool
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // TODO move 5 to conf var
 	defer cancel()
 
-	if err := conn.Ping(ctx); err != nil {
-		log.Fatal().Err(err).Msg("unable to ping the database")
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatal().Err(err).Msg("unable to ping the connection pool")
 		return nil, err
 	}
 
-	// It's not recommended to defer conn.Close() here because this will close the connection immediately after New() finishes
-	// Instead, ensure that the connection is closed outside of this function when it's no longer needed
-
-	log.Info().Msg("Successfully connected to the PostgreSQL database!")
-	return conn, nil
+	log.Info().Msg("Successfully connected to the PostgreSQL database via connection pool!")
+	return pool, nil
 }
 
 // SyncTables synchronize database tables.
-func SyncTables(conn *pgx.Conn) (err error) {
+func SyncTables(pool *pgxpool.Pool) (err error) {
 	query := `
     CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -284,7 +283,7 @@ func SyncTables(conn *pgx.Conn) (err error) {
     -- Активация расширения для генерации UUID
     CREATE EXTENSION IF NOT EXISTS pgcrypto;`
 
-	_, err = conn.Exec(context.Background(), query)
+	_, err = pool.Exec(context.Background(), query)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error syncing tables")
 		return err

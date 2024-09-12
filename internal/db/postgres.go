@@ -16,7 +16,7 @@ type postgres struct {
 // New initializes a new postgres connection.
 func New() Service {
 
-	pool, err := pgxpool.New(context.Background(), config.Postgres.URL)
+	pool, err := pgxpool.New(context.Background(), config.Postgres.Host) // было URL/ намеренная ошибка
 	if err != nil {
 		log.Fatal().Err(err).Msg("Unable to connect to postgres")
 	}
