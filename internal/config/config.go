@@ -11,18 +11,26 @@ var (
 	App      AppConfig
 )
 
-func Init() {
-	if err := godotenv.Load(); err != nil {
-		log.Error().Err(err).Msg("Error loading .env file")
+// TODO
+type Config struct {
+	IsDebug bool `env:"IS_DEBUG" env-default:"false"`
+}
+
+func LoadConfig() {
+	// Load from .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error loading .env file")
+	}
+
+	// Parse environment variables
+	if err := env.Parse(&Postgres); err != nil {
+		log.Fatal().Err(err).Msg("Failed to parse PostgreSQL config")
 	}
 
 	if err := env.Parse(&App); err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err).Msg("Failed to parse App config")
 	}
-	log.Debug().Msgf("%+v\n", App)
 
-	if err := env.Parse(&Postgres); err != nil {
-		log.Error().Err(err)
-	}
-	log.Debug().Msgf("%+v\n", Postgres)
+	log.Info().Msg("Configuration loaded successfully")
 }

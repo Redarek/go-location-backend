@@ -8,7 +8,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
@@ -19,19 +18,15 @@ type Client interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-type postgres struct {
-	*pgxpool.Pool
-}
-
 func ConnectPostgres(cfg *config.PostgresConfig) (*pgx.Conn, error) {
 	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?connect_timeout=10&pool_max_conns=20&client_encoding=UTF8", // TODO move to .env
+		"postgres://%s:%s@%s:%d/%s?connect_timeout=10&pool_max_conns=20&client_encoding=UTF8", // TODO move to .env
 		cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database,
 	)
 
 	conn, err := pgx.Connect(context.Background(), dsn)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("unable to connect to database: %w", err)
+		log.Fatal().Err(err).Msg("unable to connect to database")
 		return nil, err
 	}
 
@@ -40,7 +35,7 @@ func ConnectPostgres(cfg *config.PostgresConfig) (*pgx.Conn, error) {
 	defer cancel()
 
 	if err := conn.Ping(ctx); err != nil {
-		log.Fatal().Err(err).Msgf("unable to ping the database: %w", err)
+		log.Fatal().Err(err).Msg("unable to ping the database")
 		return nil, err
 	}
 
@@ -289,10 +284,9 @@ func SyncTables(conn *pgx.Conn) (err error) {
     -- Активация расширения для генерации UUID
     CREATE EXTENSION IF NOT EXISTS pgcrypto;`
 
-	ctx := context.Background()
-	_, err := conn.Exec(ctx, query)
+	_, err = conn.Exec(context.Background(), query)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Error syncing tables: %v", err)
+		log.Fatal().Err(err).Msg("error syncing tables")
 		return err
 	}
 
