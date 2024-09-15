@@ -1,14 +1,14 @@
 package service
 
 import (
-	"context"
+	// "context"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
+	// "github.com/google/uuid"
 
 	"location-backend/internal/adapters/db/repository"
 	"location-backend/internal/controller/http/dto"
-	"location-backend/internal/domain/entity"
+	// "location-backend/internal/domain/entity"
 )
 
 //? Здесь был интерфейсы репозитория UserRepo (перенесён в репозиторий)
@@ -17,7 +17,7 @@ type UserService interface {
 	// GetAllForList(ctx context.Context) []entity.BookView
 	// GetByID(ctx context.Context, id uuid.UUID) entity.User
 	// GetByUsername(ctx context.Context, username string) entity.User
-	CreateUser(ctx *fiber.Ctx, dto dto.CreateUserDTO) (userID uuid.UUID, err error)
+	CreateUser(ctx *fiber.Ctx, dto dto.CreateUserDTO) (err error)
 }
 
 type userService struct {
@@ -28,13 +28,14 @@ func NewUserService(repository repository.UserRepo) *userService {
 	return &userService{repository: repository}
 }
 
-func (s userService) Create(ctx context.Context) entity.User {
-	return entity.User{}
+func (s userService) CreateUser(ctx *fiber.Ctx, dto dto.CreateUserDTO) (err error) {
+	// return entity.User{}
+	return nil
 }
 
-func (s userService) GetByID(ctx context.Context, id uuid.UUID) entity.User {
-	return s.repository.GetOne(id)
-}
+// func (s userService) GetByID(ctx context.Context, id uuid.UUID) entity.User {
+// 	return s.repository.GetOne(id)
+// }
 
 // func (s userService) GetByUsername(ctx context.Context, username string) entity.User {
 // 	return s.repository.GetOneByName(username)

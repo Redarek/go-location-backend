@@ -1,4 +1,4 @@
-package user_usecase
+package usecase
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +11,7 @@ import (
 //? Здесь был интерфейс сервиса (Перенесён в в сервисы)
 
 type UserUsecase interface {
-	CreateUser(ctx *fiber.Ctx, dto CreateUserDTO) (userID uuid.UUID, err error)
+	CreateUser(ctx *fiber.Ctx, dto dto.CreateUserDTO) (userID uuid.UUID, err error)
 	// ListAllBooks(ctx context.Context) []entity.BookView
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
@@ -28,6 +28,11 @@ type userUsecase struct {
 	userService service.UserService
 	// authorService UserService
 	// genreService  GenreService
+}
+
+// ? TEST. Изначально этого не было
+func NewUserUsecase(userService service.UserService) *userUsecase {
+	return &userUsecase{userService: userService}
 }
 
 func (u userUsecase) CreateUser(ctx *fiber.Ctx, dto dto.CreateUserDTO) (userID uuid.UUID, err error) {

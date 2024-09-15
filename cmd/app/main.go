@@ -7,12 +7,9 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	// "location-backend/internal/adapters/db/repository"
+	"location-backend/internal/composites"
 	"location-backend/internal/config"
-	// "location-backend/internal/controller/http/v1"
-	// "location-backend/internal/domain/service"
-	"location-backend/internal/server"
-	"location-backend/pkg/client/postgres"
+	"location-backend/internal/router"
 	"location-backend/pkg/logger"
 )
 
@@ -23,32 +20,40 @@ func main() {
 	config.LoadConfig()
 
 	// Connect to PostgreSQL
-	pool, err := postgres.ConnectPostgres(&config.Postgres)
+	postgresComposite, err := composites.NewPostgresComposite()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to PostgreSQL")
+		log.Fatal().Err(err).Msg("Failed to create composite")
 	}
-	defer pool.Close()
 
-	// Sync tables
-	err = postgres.SyncTables(pool)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to sync tables")
-	}
+	// ? Перенесено в композиты
+	// // Connect to PostgreSQL
+	// pool, err := postgres.ConnectPostgres(&config.Postgres)
+	// if err != nil {
+	// 	log.Fatal().Err(err).Msg("Failed to connect to PostgreSQL")
+	// }
+	// defer pool.Close()
+
+	// // Sync tables
+	// err = postgres.SyncTables(pool)
+	// if err != nil {
+	// 	log.Fatal().Err(err).Msg("Failed to sync tables")
+	// }
 
 	// log.Info().Msg("PostgreSQL connection and table sync completed successfully")
 
-	// Initialize your services and handlers
-	// userRepo := repository.NewUserRepo(pool)
-	// userService := service.NewUserService(userRepo)
-	// userHandler := v1.NewUserHandler(userUsecase)
+	// TODO композиты
 
 	// Initialize and start the Fiber server
-	router := server.New()
+	router := router.New()
 	go func() {
 		if err := router.App.Listen(":" + config.App.Port); err != nil {
 			log.Fatal().Err(err).Msg("Failed to start Fiber server")
 		}
 	}()
+
+	// TODO err
+	userComposite, err := composites.NewUserComposite(postgresComposite)
+	userComposite.Handler.Register(router)
 
 	// Wait for interrupt signal to gracefully shutdown the application
 	sig := make(chan os.Signal, 1)

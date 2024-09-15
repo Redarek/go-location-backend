@@ -1,9 +1,9 @@
-package server
+package router
 
 import (
-	"location-backend/internal/config"
-
 	"github.com/gofiber/fiber/v2/middleware/cors"
+
+	"location-backend/internal/config"
 )
 
 // import (
