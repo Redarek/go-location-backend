@@ -3,24 +3,28 @@ package service
 import (
 	"context"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 
+	"location-backend/internal/adapters/db/repository"
+	"location-backend/internal/controller/http/dto"
 	"location-backend/internal/domain/entity"
 )
 
-type UserRepo interface {
-	GetOne(id uuid.UUID) entity.User
-	GetOneByName(username string) entity.User
-	GetAll(limit, offset int) []entity.User
-	Create(book entity.User) entity.User
-	// Delete(book entity.Book) error
+//? Здесь был интерфейсы репозитория UserRepo (перенесён в репозиторий)
+
+type UserService interface {
+	// GetAllForList(ctx context.Context) []entity.BookView
+	// GetByID(ctx context.Context, id uuid.UUID) entity.User
+	// GetByUsername(ctx context.Context, username string) entity.User
+	CreateUser(ctx *fiber.Ctx, dto dto.CreateUserDTO) (userID uuid.UUID, err error)
 }
 
 type userService struct {
-	repository UserRepo
+	repository repository.UserRepo
 }
 
-func NewUserService(repository UserRepo) *userService {
+func NewUserService(repository repository.UserRepo) *userService {
 	return &userService{repository: repository}
 }
 
@@ -32,9 +36,9 @@ func (s userService) GetByID(ctx context.Context, id uuid.UUID) entity.User {
 	return s.repository.GetOne(id)
 }
 
-func (s userService) GetByUsername(ctx context.Context, username string) entity.User {
-	return s.repository.GetOneByName(username)
-}
+// func (s userService) GetByUsername(ctx context.Context, username string) entity.User {
+// 	return s.repository.GetOneByName(username)
+// }
 
 // func (s userService) GetAll(ctx context.Context, limit, offset int) []entity.Book {
 // 	return s.repository.GetAll(limit, offset)

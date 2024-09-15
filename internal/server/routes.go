@@ -1,14 +1,34 @@
 package server
 
+import (
+	"location-backend/internal/config"
+
+	"github.com/gofiber/fiber/v2/middleware/cors"
+)
+
 // import (
 // 	"location-backend/internal/config"
 
 // 	jwtware "github.com/gofiber/contrib/jwt"
 // 	"github.com/gofiber/fiber/v2"
-// 	"github.com/gofiber/fiber/v2/middleware/cors"
 // 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 // 	"github.com/gofiber/fiber/v2/middleware/monitor"
 // )
+
+func (f *Router) registerRoutes() {
+	f.App.Use(cors.New(cors.Config{
+		AllowHeaders:     "Origin, Content-Type, Accept, Content-Length, Accept-Language, Accept-Encoding, Connection, Access-Control-Allow-Origin",
+		AllowOrigins:     config.App.ClientURL,
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+	}))
+
+	// userHandler := v1.NewUserHandler()
+
+	// Example of setting up routes
+	// f.App.Get("/users", handlers.GetUsers(f.db))
+	// f.App.Post("/users", handlers.CreateUser(f.db))
+}
 
 // func (s *Fiber) RegisterFiberRoutes() {
 // 	s.App.Use(cors.New(cors.Config{

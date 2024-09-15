@@ -1,18 +1,19 @@
 package user_usecase
 
 import (
-	"context"
-
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 
 	"location-backend/internal/controller/http/dto"
-	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
-type Service interface {
-	// GetAllForList(ctx context.Context) []entity.BookView
-	GetByID(ctx context.Context, id uuid.UUID) entity.User
-	GetByUsername(ctx context.Context, username string) entity.User
+//? Здесь был интерфейс сервиса (Перенесён в в сервисы)
+
+type UserUsecase interface {
+	CreateUser(ctx *fiber.Ctx, dto CreateUserDTO) (userID uuid.UUID, err error)
+	// ListAllBooks(ctx context.Context) []entity.BookView
+	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
 
 // type AuthorService interface {
@@ -24,13 +25,13 @@ type Service interface {
 // }
 
 type userUsecase struct {
-	userService Service
+	userService service.UserService
 	// authorService UserService
 	// genreService  GenreService
 }
 
-func (u userUsecase) CreateBook(ctx context.Context, dto dto.CreateUserDTO) (string, error) {
-	return "", nil
+func (u userUsecase) CreateUser(ctx *fiber.Ctx, dto dto.CreateUserDTO) (userID uuid.UUID, err error) {
+	return userID, nil
 }
 
 // func (u userUsecase) ListAllBooks(ctx context.Context) []entity.BookView {

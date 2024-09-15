@@ -5,28 +5,28 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	// "location-backend/internal/handlers" // Import your handlers package
+	// "location-backend/internal/adapters/db/repository"
+	// "location-backend/internal/controller/http/v1"
 )
 
-type Fiber struct {
+type Router struct {
 	App *fiber.App
 	// db  db.Service
 }
 
-func New() *Fiber {
-	server := &Fiber{
+// type Handlers struct {
+//     UserHandler *v1.UserHandler
+//     // Add other handlers here
+// }
+
+func New() *Router {
+	router := &Router{
 		App: fiber.New(),
 		// db:  db,
 	}
 
-	// Initialize routes
+	// userRepo := repository.NewUserRepo()
 	// server.registerRoutes()
 
-	return server
+	return router
 }
-
-// func (f *Fiber) registerRoutes() {
-//     // Example of setting up routes
-//     f.App.Get("/users", handlers.GetUsers(f.db))
-//     f.App.Post("/users", handlers.CreateUser(f.db))
-//     // Add more routes as needed
-// }

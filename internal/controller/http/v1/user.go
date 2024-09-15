@@ -2,13 +2,12 @@ package v1
 
 import (
 	// "encoding/json"
-
-	user_usecase "location-backend/internal/domain/usecase/user"
-	// "location-backend/internal/controller/http/dto"
-	"location-backend/internal/server"
-
 	"github.com/gofiber/fiber/v2"
-	// "github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog/log"
+
+	"location-backend/internal/controller/http/dto"
+	user_usecase "location-backend/internal/domain/usecase/user"
+	"location-backend/internal/server"
 )
 
 const (
@@ -18,22 +17,18 @@ const (
 	loginURL    = "/login"
 )
 
-type UserUsecase interface {
-	CreateBook(ctx *fiber.Ctx, dto user_usecase.CreateUserDTO) (string, error)
-	// ListAllBooks(ctx context.Context) []entity.BookView
-	// GetFullBook(ctx context.Context, id string) entity.FullBook
-}
+//? Здесь был интерфейс UserUsercase из бизнес логики
 
 type userHandler struct {
-	userUsecase UserUsecase
+	userUsecase user_usecase.UserUsecase
 }
 
-func NewUserHandler(userUsecase UserUsecase) *userHandler {
+func NewUserHandler(userUsecase user_usecase.UserUsecase) *userHandler {
 	return &userHandler{userUsecase: userUsecase}
 }
 
-func (h *userHandler) Register(router *server.Fiber) {
-	// router.GET(booksURL, h.GetAllBooks)
+func (h *userHandler) Register(router *server.Router) {
+	router.App.Post(registerURL, h.CreateUser)
 }
 
 // func (h *bookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -42,28 +37,37 @@ func (h *userHandler) Register(router *server.Fiber) {
 // 	w.WriteHeader(http.StatusOK)
 // }
 
-// func (h *userHandler) CreateBook(ctx *fiber.Ctx, dto user_usecase.CreateUserDTO) {
+func (h *userHandler) CreateUser(ctx *fiber.Ctx) error {
+	// DTO from client (HTTP/JSON)
+	var d dto.CreateUserDTO
+	err := ctx.BodyParser(&d)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse user request body")
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
 
-// 	var d dto.CreateUserDTO
-// 	defer r.Body.Close()
-// 	if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
-// 		return // error
-// 	}
+	// TODO validate
 
-// 	// validate
+	// Mapping dto.CreateUserDTO --> user_usecase.CreateUserDTO
+	usecaseDTO := user_usecase.CreateUserDTO{
+		Username: d.Username,
+		Password: d.Password,
+	}
 
-// 	// MAPPING dto.CreateBookDTO --> book_usecase.CreateBookDTO
-// 	usecaseDTO := book_usecase.CreateBookDTO{
-// 		Name:       "",
-// 		Year:       0,
-// 		AuthorUUID: "",
-// 		GenreUUID:  "",
-// 	}
-// 	book, err := h.userUsecase.CreateBook(r.Context(), usecaseDTO)
-// 	if err != nil {
-// 		// JSON RPC: TRANSPORT: 200, error: {msg, ..., dev_msg}
-// 		return
-// 	}
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write([]byte(book))
-// }
+	// Call the use case to create the user
+	userID, err := h.userUsecase.CreateUser(ctx, usecaseDTO)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create user")
+		//? JSON RPC: TRANSPORT: 200, error: {msg, ..., dev_msg}
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create user",
+		})
+	}
+	// w.WriteHeader(http.StatusOK)
+	// w.Write([]byte(user))
+
+	return ctx.Status(fiber.StatusOK).JSON(userID)
+	// return nil
+}

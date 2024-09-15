@@ -41,7 +41,7 @@ func ConnectPostgres(cfg *config.PostgresConfig) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	log.Info().Msg("Successfully connected to the PostgreSQL database via connection pool!")
+	log.Info().Msg("Successfully connected to the PostgreSQL database")
 	return pool, nil
 }
 
