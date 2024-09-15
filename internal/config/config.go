@@ -4,10 +4,12 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
+
+	"location-backend/pkg/client/postgres"
 )
 
 var (
-	Postgres PostgresConfig
+	Postgres postgres.PostgresConfig
 	App      AppConfig
 )
 

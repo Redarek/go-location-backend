@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"location-backend/internal/config"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -19,7 +18,7 @@ type Client interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-func ConnectPostgres(cfg *config.PostgresConfig) (*pgxpool.Pool, error) {
+func ConnectPostgres(cfg *PostgresConfig) (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?connect_timeout=10&pool_max_conns=20&client_encoding=UTF8", // TODO move to .env
 		cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database,
