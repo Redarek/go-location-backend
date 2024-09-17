@@ -1,7 +1,7 @@
 package composites
 
 import (
-	"location-backend/internal/adapters/db/repository"
+	repository "location-backend/internal/adapters/db/postgres"
 	handler "location-backend/internal/controller/http/v1"
 	"location-backend/internal/domain/service"
 	"location-backend/internal/domain/usecase"

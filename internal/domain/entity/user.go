@@ -6,10 +6,19 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID
-	Username  string
-	Password  string
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-	DeletedAt pgtype.Timestamptz
+	ID           uuid.UUID           `db:"id"`
+	Username     string              `db:"username"`
+	PasswordHash string              `db:"password"`
+	CreatedAt    pgtype.Timestamptz  `db:"created_at"`
+	UpdatedAt    pgtype.Timestamptz  `db:"updated_at"`
+	DeletedAt    *pgtype.Timestamptz `db:"deleted_at"`
 }
+
+type UserCreate struct {
+	Username     string `db:"username"`
+	PasswordHash string `db:"password"`
+}
+
+// type UserView struct {
+
+// }
