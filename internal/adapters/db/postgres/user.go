@@ -37,7 +37,7 @@ func (r *userRepo) Create(userCreate entity.UserCreate) (userID uuid.UUID, err e
 	var user entity.User
 	err = row.Scan(&user.ID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to scan user")
+		log.Error().Err(err).Msg("failed to scan user")
 		return uuid.UUID{}, err
 	}
 
@@ -68,10 +68,10 @@ func (r *userRepo) GetOneByName(username string) (user entity.User, err error) {
 			log.Info().Msgf("user %v not found", username)
 			return user, ErrNotFound
 		}
-		log.Error().Err(err).Msg("Failed when scanning user")
+		log.Error().Err(err).Msg("failed to scan user")
 		return
 	}
-	log.Debug().Msgf("Retrieved user: %v", user)
+	log.Debug().Msgf("retrieved user: %v", user)
 	return
 }
 

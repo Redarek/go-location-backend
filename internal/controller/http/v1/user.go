@@ -13,10 +13,10 @@ import (
 )
 
 const (
-	// bookURL  = "/users/:user_id"
-	// booksURL = "/users"
-	registerURL = "/api/v1/user/register"
-	loginURL    = "/api/v1/user/login"
+	// userURL  = "/users/:user_id"
+	userGroup   = "/user"
+	registerURL = "/register"
+	loginURL    = "/login"
 )
 
 //? Здесь был интерфейс UserUsercase из бизнес логики
@@ -35,7 +35,8 @@ func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
 }
 
 func (h *userHandler) Register(router *router.Router) {
-	router.App.Post(registerURL, h.RegisterUser)
+	userGruop := router.V1.Group(userGroup)
+	userGruop.Post(registerURL, h.RegisterUser)
 }
 
 // func (h *bookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
