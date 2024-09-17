@@ -2,23 +2,33 @@ package usecase
 
 import (
 	"errors"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
+	"location-backend/internal/config"
 	"location-backend/internal/controller/http/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
 
-// ErrAlreadyRegistered occurs when register the already registered user
-var ErrAlreadyRegistered = errors.New("user is already registered")
+var (
+	// ErrAlreadyRegistered occurs when register the already registered user
+	ErrAlreadyRegistered = errors.New("user is already registered")
+
+	// ErrAlreadyRegistered occurs when login with wrong login or password,
+	// or if user does not exist
+	ErrBadLogin = errors.New("incorrect login or password, or no such user")
+)
 
 //? Здесь был интерфейс сервиса (Перенесён в в сервисы)
 
 type UserUsecase interface {
-	Register(dto dto.CreateUserDTO) (userID uuid.UUID, err error)
+	Register(dto dto.RegisterUserDTO) (userID uuid.UUID, err error)
+	Login(dto dto.LoginUserDTO) (signedString string, err error)
 	// ListAllBooks(ctx context.Context) []entity.BookView
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
@@ -47,20 +57,13 @@ func NewUserUsecase(userService service.UserService) *userUsecase {
 	return &userUsecase{userService: userService}
 }
 
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	// log.Debug().Msgf("Password: %v", password)
-	// log.Debug().Msgf("HashPassword: %v", bytes)
-	return string(bytes), err
-}
-
 // ? Нужен ли ctx *fiber.Ctx
-func (u userUsecase) Register(dto dto.CreateUserDTO) (userID uuid.UUID, err error) {
+func (u userUsecase) Register(dto dto.RegisterUserDTO) (userID uuid.UUID, err error) {
 	_, err = u.userService.GetUserByName(dto.Username)
 	if err != nil {
 		// If error except ErrNotFound
 		if !errors.Is(err, service.ErrNotFound) {
-			log.Error().Err(err).Msg("Failed to check user existing")
+			log.Error().Err(err).Msg("failed to check user existing")
 			return
 		}
 	} else { // If user already exists
@@ -69,7 +72,7 @@ func (u userUsecase) Register(dto dto.CreateUserDTO) (userID uuid.UUID, err erro
 
 	hash, err := hashPassword(dto.Password)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to hash user password")
+		log.Error().Err(err).Msg("failed to hash user password")
 		return
 	}
 
@@ -80,14 +83,70 @@ func (u userUsecase) Register(dto dto.CreateUserDTO) (userID uuid.UUID, err erro
 
 	userID, err = u.userService.CreateUser(userCreate)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to create user")
+		log.Error().Err(err).Msg("failed to create user")
 		return
 	}
 
 	log.Info().Msgf("User %v successfully registered", dto.Username)
 
 	return
-	// return ctx.JSON(fiber.Map{"id": userID})
+}
+
+func (u userUsecase) Login(dto dto.LoginUserDTO) (signedString string, err error) {
+	user, err := u.userService.GetUserByName(dto.Username)
+	if err != nil {
+		// Return ErrBadLogin if user not found
+		if errors.Is(err, service.ErrNotFound) {
+			return "", ErrBadLogin
+		} else {
+			log.Error().Err(err).Msg("failed to check user existing")
+			return
+		}
+	}
+
+	if !checkPasswordHash(dto.Password, user.PasswordHash) {
+		log.Info().Msg("wrong password")
+		return "", ErrBadLogin
+	}
+
+	// TODO already login err
+
+	claims := jwt.MapClaims{
+		"id":       user.ID,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 72).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	signedString, err = token.SignedString([]byte(config.App.JWTSecret))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to sign token")
+		return
+		// return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return
+	// return c.JSON(fiber.Map{"token": signedString})
+}
+
+// Хэширует пароль
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	// log.Debug().Msgf("Password: %v", password)
+	// log.Debug().Msgf("HashPassword: %v", bytes)
+	return string(bytes), err
+}
+
+// Сравнивает пароль и его хэш. Если верно – true, иначе – false.
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		log.Debug().Msgf("failed to compare hash and password (password: '%v' \t hash: '%v')", password, hash)
+	}
+
+	return err == nil
 }
 
 // func (u userUsecase) ListAllBooks(ctx context.Context) []entity.BookView {

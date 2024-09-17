@@ -37,6 +37,7 @@ func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
 func (h *userHandler) Register(router *router.Router) {
 	userGruop := router.V1.Group(userGroup)
 	userGruop.Post(registerURL, h.RegisterUser)
+	userGruop.Post(loginURL, h.Login)
 }
 
 // func (h *bookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -45,7 +46,7 @@ func (h *userHandler) Register(router *router.Router) {
 // 	w.WriteHeader(http.StatusOK)
 // }
 
-// RegisterUser регистрирует нового пользователя, если его не существует.
+// Регистрирует нового пользователя, если его не существует.
 //
 // Возвращаемые статусы:
 //
@@ -54,13 +55,11 @@ func (h *userHandler) Register(router *router.Router) {
 //	500 InternalServerError – ошибка сервера
 func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 	// DTO from client (HTTP/JSON)
-	var dto dto.CreateUserDTO
+	var dto dto.RegisterUserDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to parse user request body")
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
-		})
+		log.Error().Err(err).Msg("failed to parse user request body")
+		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
 
 	// TODO validate
@@ -80,11 +79,44 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 			return ctx.Status(fiber.StatusConflict).SendString("User is already registered")
 		}
 
-		log.Error().Err(err).Msg("Failed to create user (usecase)")
+		log.Error().Err(err).Msg("Failed to register new user")
 		// ? JSON RPC: TRANSPORT: 200, error: {msg, ..., dev_msg}
 		// ? Возвращать JSON?
 		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to create user")
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"id": userID})
+}
+
+// Авторизует пользователя.
+//
+// Возвращаемые статусы:
+//
+//	200 OK – пользователь авторизован
+//	400 BadRequest – переданы некорректные данные
+//	401 Unauthorized – неверные логин/пароль или пользователя не существует
+//	500 InternalServerError – ошибка сервера
+func (h *userHandler) Login(ctx *fiber.Ctx) error {
+	var dto dto.LoginUserDTO
+	err := ctx.BodyParser(&dto)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to parse user request body")
+		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+	}
+
+	// TODO validate
+
+	// TODO already login err
+
+	token, err := h.userUsecase.Login(dto)
+	if err != nil {
+		if errors.Is(err, usecase.ErrBadLogin) {
+			return ctx.Status(fiber.StatusUnauthorized).SendString("Wrong login or password")
+		}
+
+		log.Error().Err(err).Msg("failed to login")
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to login")
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"token": token})
 }
