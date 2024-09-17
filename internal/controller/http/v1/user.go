@@ -76,16 +76,14 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 	userID, err := h.userUsecase.Register(dto)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyRegistered) {
-			return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"error": "User is already registered",
-			})
+			return ctx.Status(fiber.StatusConflict).SendString("User is already registered")
 		}
+
 		log.Error().Err(err).Msg("Failed to create user (usecase)")
-		//? JSON RPC: TRANSPORT: 200, error: {msg, ..., dev_msg}
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create user",
-		})
+		// ? JSON RPC: TRANSPORT: 200, error: {msg, ..., dev_msg}
+		// ? Возвращать JSON?
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to create user")
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(userID)
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"id": userID})
 }

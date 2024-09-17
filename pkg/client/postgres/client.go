@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
+	// "github.com/jackc/pgx/v5"
+	// "github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
-type Client interface {
-	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
-	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
-	Begin(ctx context.Context) (pgx.Tx, error)
-}
+// type Client interface {
+// 	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+// 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+// 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+// 	Begin(ctx context.Context) (pgx.Tx, error)
+// }
 
 func ConnectPostgres(cfg *PostgresConfig) (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf(
@@ -284,7 +284,7 @@ func SyncTables(pool *pgxpool.Pool) (err error) {
 
 	_, err = pool.Exec(context.Background(), query)
 	if err != nil {
-		log.Fatal().Err(err).Msg("error syncing tables")
+		log.Fatal().Err(err).Msg("Error syncing tables")
 		return err
 	}
 

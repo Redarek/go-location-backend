@@ -18,7 +18,7 @@ func NewPostgresComposite() (сomposite *PostgresComposite, err error) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to PostgreSQL")
 	}
-	defer pool.Close()
+	// defer pool.Close()
 
 	// Sync tables
 	err = postgres.SyncTables(pool)

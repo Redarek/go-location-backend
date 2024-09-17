@@ -68,7 +68,7 @@ func (r *userRepo) GetOneByName(username string) (user entity.User, err error) {
 			log.Info().Msgf("user %v not found", username)
 			return user, ErrNotFound
 		}
-		log.Error().Err(err).Msg("Failed to retrieve user")
+		log.Error().Err(err).Msg("Failed when scanning user")
 		return
 	}
 	log.Debug().Msgf("Retrieved user: %v", user)
