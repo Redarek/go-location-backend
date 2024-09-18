@@ -30,4 +30,4 @@ go.work
 .DS_Store
 
 # Fiber static
-static
+public

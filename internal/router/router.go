@@ -24,7 +24,7 @@ func New() *Router {
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
 
-	app.Static("/static", "./static")
+	app.Static("/public", "../../public")
 
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
