@@ -22,17 +22,17 @@ func LoadConfig() {
 	// Load from .env file
 	err := godotenv.Load("../../.env")
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading .env file")
+		log.Fatal().Err(err).Msg("error loading .env file")
 	}
 
 	// Parse environment variables
 	if err := env.Parse(&Postgres); err != nil {
-		log.Fatal().Err(err).Msg("Failed to parse PostgreSQL config")
+		log.Fatal().Err(err).Msg("failed to parse PostgreSQL config")
 	}
 
 	if err := env.Parse(&App); err != nil {
-		log.Fatal().Err(err).Msg("Failed to parse App config")
+		log.Fatal().Err(err).Msg("failed to parse App config")
 	}
 
-	log.Info().Msg("Configuration loaded successfully")
+	log.Info().Msg("configuration loaded successfully")
 }

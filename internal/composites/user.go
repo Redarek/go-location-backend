@@ -14,7 +14,7 @@ type UserComposite struct {
 	Handler    handler.Handler
 }
 
-func NewUserComposite(composite *PostgresComposite) (userComposite *UserComposite, err error) {
+func NewUserComposite(composite *PostgresComposite) (userComposite *UserComposite) {
 	userRepo := repository.NewUserRepo(composite.pool)
 	userService := service.NewUserService(userRepo)
 	userUsecase := usecase.NewUserUsecase(userService)
@@ -25,5 +25,5 @@ func NewUserComposite(composite *PostgresComposite) (userComposite *UserComposit
 		Service:    userService,
 		Usecase:    userUsecase,
 		Handler:    userHandler,
-	}, nil
+	}
 }
