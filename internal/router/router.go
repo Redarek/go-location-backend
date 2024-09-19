@@ -1,8 +1,8 @@
 package router
 
 import (
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 
 	"location-backend/internal/config"
 )
@@ -16,18 +16,12 @@ type Router struct {
 func New() *Router {
 	app := fiber.New()
 
-	// Cors
-	app.Use(cors.New(cors.Config{
-		AllowHeaders:     "Origin, Content-Type, Accept, Content-Length, Accept-Language, Accept-Encoding, Connection, Access-Control-Allow-Origin",
-		AllowOrigins:     config.App.ClientURL,
-		AllowCredentials: true,
-		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
-	}))
-
-	app.Static("/public", "../../public")
+	RegisterRoutes(app)
 
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
+
+	v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 
 	router := &Router{
 		App: app,

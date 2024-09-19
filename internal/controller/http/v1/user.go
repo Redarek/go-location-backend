@@ -19,21 +19,16 @@ const (
 	loginURL    = "/login"
 )
 
-//? Здесь был интерфейс UserUsercase из бизнес логики
-
-// ? Раньше не было
-// type UserHandler interface {
-// 	CreateUser(ctx *fiber.Ctx) error
-// }
-
 type userHandler struct {
-	userUsecase usecase.UserUsecase
+	usecase usecase.UserUsecase
 }
 
+// Регистрирует новый handler
 func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
-	return &userHandler{userUsecase: userUsecase}
+	return &userHandler{usecase: userUsecase}
 }
 
+// Регистрирует маршруты для user
 func (h *userHandler) Register(router *router.Router) {
 	userGruop := router.V1.Group(userGroup)
 	userGruop.Post(registerURL, h.RegisterUser)
@@ -73,7 +68,7 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 
 	// ? Нужно ли передавать ctx внутрь?
 	// Call the use case to create the user
-	userID, err := h.userUsecase.Register(dto)
+	userID, err := h.usecase.Register(dto)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyRegistered) {
 			return ctx.Status(fiber.StatusConflict).SendString("User is already registered")
@@ -108,7 +103,7 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 
 	// TODO already login err
 
-	token, err := h.userUsecase.Login(dto)
+	token, err := h.usecase.Login(dto)
 	if err != nil {
 		if errors.Is(err, usecase.ErrBadLogin) {
 			return ctx.Status(fiber.StatusUnauthorized).SendString("Wrong login or password")
