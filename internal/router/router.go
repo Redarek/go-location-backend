@@ -13,13 +13,9 @@ type Router struct {
 func New() *Router {
 	app := fiber.New()
 
-	RegisterRoutes(app)
-
+	// Глобальные маршруты
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
-
-	// TODO решить что с этим делать
-	// v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 
 	router := &Router{
 		App: app,

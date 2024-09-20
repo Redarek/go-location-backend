@@ -9,9 +9,9 @@ import (
 	"location-backend/internal/config"
 )
 
-func RegisterRoutes(app *fiber.App) {
+func RegisterRoutes(router *Router) {
 	// CORS
-	app.Use(cors.New(cors.Config{
+	router.App.Use(cors.New(cors.Config{
 		AllowHeaders:     "Origin, Content-Type, Accept, Content-Length, Accept-Language, Accept-Encoding, Connection, Access-Control-Allow-Origin",
 		AllowOrigins:     config.App.ClientURL,
 		AllowCredentials: true,
@@ -27,8 +27,13 @@ func RegisterRoutes(app *fiber.App) {
 	}))
 
 	// Public route
-	app.Static("/public", "../../public")
+	router.App.Static("/public", "../../public")
 
+	// api := router.App.Group("/api")
+	// v1 := api.Group("/v1")
+
+	// TODO решить что с этим делать
+	// v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 }
 
 // import (

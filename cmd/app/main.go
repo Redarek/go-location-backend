@@ -26,24 +26,30 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to create database composite")
 	}
 
-	// Initialize and start the Fiber server
-	router := router.New()
-	go func() {
-		if err := router.App.Listen(":" + config.App.Port); err != nil {
-			log.Fatal().Err(err).Msg("failed to start Fiber server")
-		}
-	}()
+	// Create router
+	r := router.New()
 
+	// Register common routes
+	router.RegisterRoutes(r)
+
+	// Register routes
 	// TODO err
 	// TODO вынести в отдельный файл
 	healthComposite := composites.NewHealthComposite(postgresComposite)
-	healthComposite.Handler.Register(router)
+	healthComposite.Handler.Register(r)
 
 	userComposite := composites.NewUserComposite(postgresComposite)
-	userComposite.Handler.Register(router)
+	userComposite.Handler.Register(r)
 
 	// TODO структурировать!
-	router.V1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
+	r.V1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
+
+	// Initialize and start the Fiber server
+	go func() {
+		if err := r.App.Listen(":" + config.App.Port); err != nil {
+			log.Fatal().Err(err).Msg("failed to start Fiber server")
+		}
+	}()
 
 	// Wait for interrupt signal to gracefully shutdown the application
 	sig := make(chan os.Signal, 1)
