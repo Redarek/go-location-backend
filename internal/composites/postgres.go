@@ -20,13 +20,5 @@ func NewPostgresComposite() (сomposite *PostgresComposite, err error) {
 	}
 	// defer pool.Close()
 
-	// Sync tables
-	err = postgres.SyncTables(pool)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to sync tables")
-	}
-
-	// log.Info().Msg("PostgreSQL connection and table sync completed successfully")
-
 	return &PostgresComposite{pool: pool}, err
 }

@@ -41,11 +41,18 @@ func ConnectPostgres(cfg *PostgresConfig) (*pgxpool.Pool, error) {
 	}
 
 	log.Info().Msg("Successfully connected to the PostgreSQL database")
+
+	// TODO перенести в миграции!
+	err = syncTables(pool)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to sync tables")
+	}
+
 	return pool, nil
 }
 
 // SyncTables synchronize database tables.
-func SyncTables(pool *pgxpool.Pool) (err error) {
+func syncTables(pool *pgxpool.Pool) (err error) {
 	query := `
     CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

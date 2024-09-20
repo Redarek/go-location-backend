@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/composites"
@@ -22,7 +23,7 @@ func main() {
 	// Connect to PostgreSQL
 	postgresComposite, err := composites.NewPostgresComposite()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to create composite")
+		log.Fatal().Err(err).Msg("failed to create database composite")
 	}
 
 	// Initialize and start the Fiber server
@@ -40,6 +41,9 @@ func main() {
 
 	userComposite := composites.NewUserComposite(postgresComposite)
 	userComposite.Handler.Register(router)
+
+	// TODO структурировать!
+	router.V1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 
 	// Wait for interrupt signal to gracefully shutdown the application
 	sig := make(chan os.Signal, 1)

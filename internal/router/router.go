@@ -1,10 +1,7 @@
 package router
 
 import (
-	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
-
-	"location-backend/internal/config"
 )
 
 type Router struct {
@@ -21,7 +18,8 @@ func New() *Router {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 
-	v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
+	// TODO решить что с этим делать
+	// v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 
 	router := &Router{
 		App: app,
