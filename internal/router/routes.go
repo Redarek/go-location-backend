@@ -27,12 +27,12 @@ func RegisterRoutes(router *Router) {
 	}))
 
 	// Public route
-	router.App.Static("/public", "../../public")
+	router.App.Static("/public", "/public")
 
 	// api := router.App.Group("/api")
 	// v1 := api.Group("/v1")
 
-	// TODO решить что с этим делать
+	// TODO решить что с этим делать. Нужно вынести это из main
 	// v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
 }
 

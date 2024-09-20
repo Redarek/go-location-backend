@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"os"
@@ -14,7 +14,7 @@ import (
 	"location-backend/pkg/logger"
 )
 
-func main() {
+func Start() {
 	logger.Setup()
 
 	// Load the configuration
