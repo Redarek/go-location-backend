@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
@@ -11,7 +13,7 @@ import (
 
 type SiteUsecase interface {
 	CreateSite(dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
-	// GetSite(dto domain_dto.GetSiteDTO) (site entity.Site, err error)
+	GetSite(dto domain_dto.GetSiteDTO) (siteDTO domain_dto.SiteDTO, err error)
 }
 
 type siteUsecase struct {
@@ -36,5 +38,30 @@ func (u *siteUsecase) CreateSite(dto domain_dto.CreateSiteDTO) (siteID uuid.UUID
 	}
 
 	log.Info().Msgf("site %v successfully created", dto.Name)
+	return
+}
+
+func (u *siteUsecase) GetSite(dto domain_dto.GetSiteDTO) (siteDTO domain_dto.SiteDTO, err error) {
+	site, err := u.siteService.GetSite(dto.ID)
+	if err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			return domain_dto.SiteDTO{}, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get site")
+			return
+		}
+	}
+
+	// Mapping domain entity -> domain DTO
+	siteDTO = domain_dto.SiteDTO{
+		ID:          site.ID,
+		Name:        site.Name,
+		Description: site.Description,
+		UserID:      site.UserID,
+		CreatedAt:   site.CreatedAt,
+		UpdatedAt:   site.UpdatedAt,
+		DeletedAt:   site.DeletedAt,
+	}
+
 	return
 }

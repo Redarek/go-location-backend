@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -29,7 +31,7 @@ func NewSiteHandler(usecase usecase.SiteUsecase) *siteHandler {
 func (h *siteHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
 	router.Post(createSiteURL, h.CreateSite)
-	// router.Get(getSiteURL, h.GetSite)
+	router.Get(getSiteURL, h.GetSite)
 
 	return router
 }
@@ -67,4 +69,47 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"id": siteID})
+}
+
+func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
+	siteID, err := uuid.Parse(ctx.Query("id"))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to parse id as UUID")
+		return ctx.Status(fiber.StatusBadRequest).SendString("Wrong ID: this is not the UUID")
+	}
+
+	var dto http_dto.GetSiteDTO = http_dto.GetSiteDTO{
+		ID: siteID,
+	}
+
+	// TODO validate
+
+	// Mapping http DTO -> domain DTO
+	domainDTO := domain_dto.GetSiteDTO{
+		ID: dto.ID,
+	}
+
+	site, err := h.usecase.GetSite(domainDTO)
+	if err != nil {
+		if errors.Is(err, usecase.ErrNotFound) {
+			ctx.Status(fiber.StatusNoContent)
+			return nil
+		}
+
+		log.Error().Err(err).Msg("failed to get site")
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get site")
+	}
+
+	// Mapping domain DTO -> http DTO
+	siteDTO := http_dto.SiteDTO{
+		ID:          site.ID,
+		Name:        site.Name,
+		Description: site.Description,
+		UserID:      site.UserID,
+		CreatedAt:   site.CreatedAt,
+		UpdatedAt:   site.UpdatedAt,
+		DeletedAt:   site.DeletedAt,
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(siteDTO)
 }
