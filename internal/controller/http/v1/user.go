@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	http_dto "location-backend/internal/controller/http/dto"
+	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 
 	"location-backend/internal/middleware"
@@ -67,16 +68,15 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// ? use only if more than 1 controller
-	// // Mapping dto.CreateUserDTO --> user_usecase.CreateUserDTO
-	// usecaseDTO := user_usecase.CreateUserDTO{
-	// 	Username: d.Username,
-	// 	Password: d.Password,
-	// }
+	// Mapping http DTO -> domain DTO
+	domainDTO := domain_dto.RegisterUserDTO{
+		Username: dto.Username,
+		Password: dto.Password,
+	}
 
 	// ? Нужно ли передавать ctx внутрь?
 	// Call the use case to create the user
-	userID, err := h.usecase.Register(dto)
+	userID, err := h.usecase.Register(domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
 			return ctx.Status(fiber.StatusConflict).SendString("User is already registered")
@@ -111,7 +111,13 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 
 	// TODO already login err
 
-	token, err := h.usecase.Login(dto)
+	// Mapping http DTO -> domain DTO
+	domainDTO := domain_dto.LoginUserDTO{
+		Username: dto.Username,
+		Password: dto.Password,
+	}
+
+	token, err := h.usecase.Login(domain_dto.LoginUserDTO(domainDTO))
 	if err != nil {
 		if errors.Is(err, usecase.ErrBadLogin) {
 			return ctx.Status(fiber.StatusUnauthorized).SendString("Wrong login or password")
@@ -137,7 +143,12 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 	// }
 
 	// TODO validate
-	user, err := h.usecase.GetUserByName(dto)
+
+	domainDTO := domain_dto.GetUserByNameDTO{
+		Username: dto.Username,
+	}
+
+	user, err := h.usecase.GetUserByName(domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			return ctx.Status(fiber.StatusNoContent).SendString("User not found")

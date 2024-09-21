@@ -46,6 +46,7 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
+	// Получение ID пользователя из JWT
 	user := ctx.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	userID, err := uuid.Parse(claims["id"].(string))
@@ -54,6 +55,7 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString("Failed to parse user ID from JWT")
 	}
 
+	// Mapping http DTO -> domain DTO
 	domainDTO := domain_dto.CreateSiteDTO{
 		Name:        dto.Name,
 		Description: dto.Description,

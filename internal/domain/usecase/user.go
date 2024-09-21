@@ -11,14 +11,12 @@ import (
 
 	"location-backend/internal/config"
 
-	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
 
 var (
-
 	// Occurs when login with wrong login or password, or if user does not exist
 	ErrBadLogin = errors.New("incorrect login or password, or no such user")
 )
@@ -26,9 +24,9 @@ var (
 //? Здесь был интерфейс сервиса (Перенесён в в сервисы)
 
 type UserUsecase interface {
-	Register(dto http_dto.RegisterUserDTO) (userID uuid.UUID, err error)
-	Login(dto http_dto.LoginUserDTO) (signedString string, err error)
-	GetUserByName(dto http_dto.GetUserByNameDTO) (user entity.User, err error)
+	Register(dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
+	Login(dto domain_dto.LoginUserDTO) (signedString string, err error)
+	GetUserByName(dto domain_dto.GetUserByNameDTO) (user entity.User, err error)
 	// ListAllBooks(ctx context.Context) []entity.BookView
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
@@ -53,7 +51,7 @@ func NewUserUsecase(userService service.UserService) *userUsecase {
 }
 
 // ? Нужен ли ctx *fiber.Ctx
-func (u userUsecase) Register(dto http_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
+func (u userUsecase) Register(dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
 	_, err = u.userService.GetUserByName(dto.Username)
 	if err != nil {
 		// If error except ErrNotFound
@@ -87,7 +85,7 @@ func (u userUsecase) Register(dto http_dto.RegisterUserDTO) (userID uuid.UUID, e
 	return
 }
 
-func (u userUsecase) Login(dto http_dto.LoginUserDTO) (signedString string, err error) {
+func (u userUsecase) Login(dto domain_dto.LoginUserDTO) (signedString string, err error) {
 	user, err := u.userService.GetUserByName(dto.Username)
 	if err != nil {
 		// Return ErrBadLogin if user not found
@@ -126,7 +124,7 @@ func (u userUsecase) Login(dto http_dto.LoginUserDTO) (signedString string, err 
 	// return c.JSON(fiber.Map{"token": signedString})
 }
 
-func (u userUsecase) GetUserByName(dto http_dto.GetUserByNameDTO) (user entity.User, err error) {
+func (u userUsecase) GetUserByName(dto domain_dto.GetUserByNameDTO) (user entity.User, err error) {
 	user, err = u.userService.GetUserByName(dto.Username)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {

@@ -6,16 +6,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
 
 type RoleUsecase interface {
-	CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
-	GetRole(dto http_dto.GetRoleDTO) (role entity.Role, err error)
-	GetRoleByName(dto http_dto.GetRoleByNameDTO) (role entity.Role, err error)
+	CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetRole(dto domain_dto.GetRoleDTO) (role entity.Role, err error)
+	GetRoleByName(dto domain_dto.GetRoleByNameDTO) (role entity.Role, err error)
 }
 
 type roleUsecase struct {
@@ -26,7 +25,7 @@ func NewRoleUsecase(roleService service.RoleService) *roleUsecase {
 	return &roleUsecase{roleService: roleService}
 }
 
-func (u *roleUsecase) CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+func (u *roleUsecase) CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	_, err = u.roleService.GetRoleByName(dto.Name)
 	if err != nil {
 		// If error except ErrNotFound
@@ -52,7 +51,7 @@ func (u *roleUsecase) CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, 
 	return
 }
 
-func (u *roleUsecase) GetRole(dto http_dto.GetRoleDTO) (role entity.Role, err error) {
+func (u *roleUsecase) GetRole(dto domain_dto.GetRoleDTO) (role entity.Role, err error) {
 	role, err = u.roleService.GetRole(dto.ID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
@@ -66,7 +65,7 @@ func (u *roleUsecase) GetRole(dto http_dto.GetRoleDTO) (role entity.Role, err er
 	return
 }
 
-func (u *roleUsecase) GetRoleByName(dto http_dto.GetRoleByNameDTO) (role entity.Role, err error) {
+func (u *roleUsecase) GetRoleByName(dto domain_dto.GetRoleByNameDTO) (role entity.Role, err error) {
 	role, err = u.roleService.GetRoleByName(dto.Name)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {

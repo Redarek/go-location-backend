@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	"location-backend/internal/controller/http/dto"
 	http_dto "location-backend/internal/controller/http/dto"
+	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
 )
@@ -39,7 +39,7 @@ func (h *roleHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
-	var dto dto.CreateRoleDTO
+	var dto http_dto.CreateRoleDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to parse user request body")
@@ -48,7 +48,12 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	roleID, err := h.usecase.CreateRole(dto)
+	// Mapping http DTO -> domain DTO
+	domainDTO := domain_dto.CreateRoleDTO{
+		Name: dto.Name,
+	}
+
+	roleID, err := h.usecase.CreateRole(domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
 			return ctx.Status(fiber.StatusConflict).SendString("Role is already exists")
@@ -77,7 +82,12 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 
 		// TODO validate
 
-		role, err = h.usecase.GetRole(dto)
+		// Mapping http DTO -> domain DTO
+		domainDTO := domain_dto.GetRoleDTO{
+			ID: dto.ID,
+		}
+
+		role, err = h.usecase.GetRole(domainDTO)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
 				return ctx.Status(fiber.StatusNoContent).SendString("Role not found")
@@ -93,8 +103,13 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 
 		// TODO validate
 
+		// Mapping http DTO -> domain DTO
+		domainDTO := domain_dto.GetRoleByNameDTO{
+			Name: dto.Name,
+		}
+
 		var err error
-		role, err = h.usecase.GetRoleByName(dto)
+		role, err = h.usecase.GetRoleByName(domainDTO)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
 				return ctx.Status(fiber.StatusNoContent).SendString("Role not found")
