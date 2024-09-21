@@ -33,27 +33,14 @@ func Start() {
 	// Create router
 	r := router.New()
 
+	// Create composites
 	repositoryComposit := composites.NewRepositoryComposite(postgresComposite)
 	serviceComposit := composites.NewServiceComposite(repositoryComposit)
 	usecaseComposite := composites.NewUsecaseComposite(serviceComposit)
 	handlerComposite := composites.NewHandlerComposite(usecaseComposite)
 
-	// Register common routes
-	router.RegisterRoutes(r, handlerComposite)
-
 	// Register routes
-	// TODO err
-	// TODO вынести в отдельный файл
-
-	// // Глобальные маршруты
-	// api := r.App.Group("/api")
-	// v1 := api.Group("/v1")
-
-	// healthComposite := composites.NewHealthComposite(postgresComposite)
-	// healthComposite.Handler.Register(&v1)
-
-	// userComposite := composites.NewUserComposite(postgresComposite)
-	// userComposite.Handler.Register(&v1)
+	router.RegisterRoutes(r, handlerComposite)
 
 	// Initialize and start the Fiber server
 	go func() {
