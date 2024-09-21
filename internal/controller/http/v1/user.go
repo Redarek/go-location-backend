@@ -10,9 +10,7 @@ import (
 	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
-
 	"location-backend/internal/middleware"
-	// "location-backend/internal/router"
 )
 
 const (
@@ -144,6 +142,7 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
+	// Mapping http DTO -> domain DTO
 	domainDTO := domain_dto.GetUserByNameDTO{
 		Username: dto.Username,
 	}
@@ -158,6 +157,7 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get user")
 	}
 
+	// Mapping domain DTO -> http DTO
 	userDTO := http_dto.UserDTO{
 		ID:        user.ID,
 		Username:  user.Username,

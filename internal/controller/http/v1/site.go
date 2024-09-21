@@ -8,8 +8,6 @@ import (
 
 	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
-
-	// "location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
 )
 

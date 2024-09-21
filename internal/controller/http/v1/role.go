@@ -1,8 +1,6 @@
 package v1
 
 import (
-	// "encoding/json"
-
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +9,6 @@ import (
 
 	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
-	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
 )
 
@@ -67,7 +64,7 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 }
 
 func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
-	var role entity.Role
+	var role domain_dto.RoleDTO
 
 	if ctx.Query("id") != "" {
 		uuid, err := uuid.Parse(ctx.Query("id"))

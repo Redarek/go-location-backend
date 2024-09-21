@@ -7,14 +7,13 @@ import (
 	"github.com/rs/zerolog/log"
 
 	domain_dto "location-backend/internal/domain/dto"
-	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
 
 type RoleUsecase interface {
 	CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
-	GetRole(dto domain_dto.GetRoleDTO) (role entity.Role, err error)
-	GetRoleByName(dto domain_dto.GetRoleByNameDTO) (role entity.Role, err error)
+	GetRole(dto domain_dto.GetRoleDTO) (roleDTO domain_dto.RoleDTO, err error)
+	GetRoleByName(dto domain_dto.GetRoleByNameDTO) (roleDTO domain_dto.RoleDTO, err error)
 }
 
 type roleUsecase struct {
@@ -51,29 +50,47 @@ func (u *roleUsecase) CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID
 	return
 }
 
-func (u *roleUsecase) GetRole(dto domain_dto.GetRoleDTO) (role entity.Role, err error) {
-	role, err = u.roleService.GetRole(dto.ID)
+func (u *roleUsecase) GetRole(dto domain_dto.GetRoleDTO) (roleDTO domain_dto.RoleDTO, err error) {
+	role, err := u.roleService.GetRole(dto.ID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
-			return entity.Role{}, ErrNotFound
+			return domain_dto.RoleDTO{}, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get role")
 			return
 		}
 	}
 
+	// Mapping domain entity -> domain DTO
+	roleDTO = domain_dto.RoleDTO{
+		ID:        role.ID,
+		Name:      role.Name,
+		CreatedAt: role.CreatedAt,
+		UpdatedAt: role.UpdatedAt,
+		DeletedAt: role.DeletedAt,
+	}
+
 	return
 }
 
-func (u *roleUsecase) GetRoleByName(dto domain_dto.GetRoleByNameDTO) (role entity.Role, err error) {
-	role, err = u.roleService.GetRoleByName(dto.Name)
+func (u *roleUsecase) GetRoleByName(dto domain_dto.GetRoleByNameDTO) (roleDTO domain_dto.RoleDTO, err error) {
+	role, err := u.roleService.GetRoleByName(dto.Name)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
-			return entity.Role{}, ErrNotFound
+			return domain_dto.RoleDTO{}, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get role")
 			return
 		}
+	}
+
+	// Mapping domain entity -> domain DTO
+	roleDTO = domain_dto.RoleDTO{
+		ID:        role.ID,
+		Name:      role.Name,
+		CreatedAt: role.CreatedAt,
+		UpdatedAt: role.UpdatedAt,
+		DeletedAt: role.DeletedAt,
 	}
 
 	return

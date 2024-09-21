@@ -10,7 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"location-backend/internal/config"
-
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
