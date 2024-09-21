@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/config"
+	"location-backend/pkg/httperrors"
 )
 
 // Auth returns the pre-initialized JWT middleware
@@ -18,7 +19,12 @@ func InitAuth() {
 		SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)},
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 			log.Info().Err(err).Msg("token validation failed")
-			return ctx.Status(fiber.StatusUnauthorized).SendString("Invalid or expired JWT")
+			return ctx.Status(fiber.StatusUnauthorized).JSON(httperrors.NewErrorResponse(
+				fiber.StatusUnauthorized,
+				"Invalid or expired JWT",
+				"",
+				nil,
+			))
 		},
 	})
 }

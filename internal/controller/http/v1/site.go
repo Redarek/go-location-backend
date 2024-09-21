@@ -11,6 +11,7 @@ import (
 	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/httperrors"
 )
 
 const (
@@ -40,8 +41,13 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 	var dto http_dto.CreateSiteDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse site request body")
-		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		log.Warn().Err(err).Msg("failed to parse site request body")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid request body",
+			"Failed to parse site request body",
+			nil,
+		))
 	}
 
 	// TODO validate
@@ -51,8 +57,13 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	userID, err := uuid.Parse(claims["id"].(string))
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse user ID from JWT")
-		return ctx.Status(fiber.StatusBadRequest).SendString("Failed to parse user ID from JWT")
+		log.Warn().Err(err).Msg("failed to parse user ID from JWT")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Unable to retrieve user information due to an issue with your authentication token",
+			"",
+			nil,
+		))
 	}
 
 	// Mapping http DTO -> domain DTO
@@ -64,8 +75,13 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 
 	siteID, err := h.usecase.CreateSite(domainDTO)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to create site")
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to create site")
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to create the site")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to create the site",
+			"",
+			nil,
+		))
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"id": siteID})
@@ -74,8 +90,13 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 	siteID, err := uuid.Parse(ctx.Query("id"))
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse id as UUID")
-		return ctx.Status(fiber.StatusBadRequest).SendString("Wrong ID: this is not the UUID")
+		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid ID",
+			"Failed to parse 'id' as UUID",
+			nil,
+		))
 	}
 
 	var dto http_dto.GetSiteDTO = http_dto.GetSiteDTO{
@@ -96,8 +117,13 @@ func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 			return nil
 		}
 
-		log.Error().Err(err).Msg("failed to get site")
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get site")
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to retrieve the site")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to retrieve the site",
+			"",
+			nil,
+		))
 	}
 
 	// Mapping domain DTO -> http DTO

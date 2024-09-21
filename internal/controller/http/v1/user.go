@@ -11,6 +11,7 @@ import (
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/internal/middleware"
+	"location-backend/pkg/httperrors"
 )
 
 const (
@@ -60,8 +61,13 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 	var dto http_dto.RegisterUserDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse user request body")
-		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		log.Warn().Err(err).Msg("failed to parse user request body")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid request body",
+			"Failed to parse user request body",
+			nil,
+		))
 	}
 
 	// TODO validate
@@ -77,13 +83,21 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 	userID, err := h.usecase.Register(domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
-			return ctx.Status(fiber.StatusConflict).SendString("User is already registered")
+			return ctx.Status(fiber.StatusConflict).JSON(httperrors.NewErrorResponse(
+				fiber.StatusConflict,
+				"User is already registered",
+				"",
+				nil,
+			))
 		}
 
-		log.Error().Err(err).Msg("Failed to register new user")
-		// ? JSON RPC: TRANSPORT: 200, error: {msg, ..., dev_msg}
-		// ? Возвращать JSON?
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to create user")
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to register a new user")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to register a new user",
+			"",
+			nil,
+		))
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"id": userID})
@@ -101,8 +115,13 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 	var dto http_dto.LoginUserDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse user request body")
-		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		log.Warn().Err(err).Msg("failed to parse user request body")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid request body",
+			"Failed to parse user request body",
+			nil,
+		))
 	}
 
 	// TODO validate
@@ -118,11 +137,21 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 	token, err := h.usecase.Login(domain_dto.LoginUserDTO(domainDTO))
 	if err != nil {
 		if errors.Is(err, usecase.ErrBadLogin) {
-			return ctx.Status(fiber.StatusUnauthorized).SendString("Wrong login or password")
+			return ctx.Status(fiber.StatusUnauthorized).JSON(httperrors.NewErrorResponse(
+				fiber.StatusUnauthorized,
+				"Wrong login or password",
+				"",
+				nil,
+			))
 		}
 
-		log.Error().Err(err).Msg("failed to login")
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to login")
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to log in")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to log in",
+			"",
+			nil,
+		))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"token": token})
@@ -154,8 +183,13 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 			return nil
 		}
 
-		log.Error().Err(err).Msg("failed to get user")
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get user")
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to get user")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to get user",
+			"",
+			nil,
+		))
 	}
 
 	// Mapping domain DTO -> http DTO

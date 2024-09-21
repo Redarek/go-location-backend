@@ -10,6 +10,7 @@ import (
 	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/httperrors"
 )
 
 const (
@@ -39,8 +40,13 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 	var dto http_dto.CreateRoleDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse user request body")
-		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		log.Warn().Err(err).Msg("failed to parse user request body")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid request body",
+			"Failed to parse role request body",
+			nil,
+		))
 	}
 
 	// TODO validate
@@ -53,11 +59,21 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 	roleID, err := h.usecase.CreateRole(domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
-			return ctx.Status(fiber.StatusConflict).SendString("Role is already exists")
+			return ctx.Status(fiber.StatusConflict).JSON(httperrors.NewErrorResponse(
+				fiber.StatusConflict,
+				"Role is already exists",
+				"",
+				nil,
+			))
 		}
 
-		log.Error().Err(err).Msg("failed to create tole")
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to create role")
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to create the role")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to create the role",
+			"",
+			nil,
+		))
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"id": roleID})
@@ -69,8 +85,13 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 	if ctx.Query("id") != "" {
 		uuid, err := uuid.Parse(ctx.Query("id"))
 		if err != nil {
-			log.Error().Err(err).Msg("failed to parse id as UUID")
-			return ctx.Status(fiber.StatusBadRequest).SendString("Wrong ID: this is not the UUID")
+			log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
+			return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+				fiber.StatusBadRequest,
+				"Invalid ID",
+				"Failed to parse 'id' as UUID",
+				nil,
+			))
 		}
 
 		var dto http_dto.GetRoleDTO = http_dto.GetRoleDTO{
@@ -91,8 +112,13 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 				return nil
 			}
 
-			log.Error().Err(err).Msg("failed to get role by name")
-			return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get role by name")
+			log.Error().Err(err).Msg("an unexpected error has occurred while trying to retrieve the role by ID")
+			return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+				fiber.StatusInternalServerError,
+				"An unexpected error has occurred while trying to retrieve the role by ID",
+				"",
+				nil,
+			))
 		}
 	} else if ctx.Query("name") != "" {
 		var dto http_dto.GetRoleByNameDTO = http_dto.GetRoleByNameDTO{
@@ -114,11 +140,22 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 				return nil
 			}
 
-			log.Error().Err(err).Msg("failed to get role by name")
-			return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get role by name")
+			log.Error().Err(err).Msg("an unexpected error has occurred while trying to retrieve the role by name")
+			return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+				fiber.StatusInternalServerError,
+				"An unexpected error has occurred while trying to retrieve the role by name",
+				"",
+				nil,
+			))
 		}
 	} else {
-		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body: not provided id or name parameter")
+		log.Warn().Msg("invalid request body: either the 'id' or 'name' parameter was not provided")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid request body",
+			"Either the 'id' or 'name' parameter was not provided",
+			nil,
+		))
 	}
 
 	roleDTO := http_dto.RoleDTO{

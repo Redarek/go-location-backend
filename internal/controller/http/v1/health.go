@@ -33,9 +33,8 @@ func (h healthHandler) Health(ctx *fiber.Ctx) error {
 	err := h.healthUsecase.Health()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check database health")
-		// ? Точно ли статус 500?
-		return ctx.Status(fiber.StatusInternalServerError).SendString("It's not healthy")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "unhealthy"})
 	}
 
-	return ctx.Status(fiber.StatusOK).SendString("It's healthy")
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"status": "healthy"})
 }
