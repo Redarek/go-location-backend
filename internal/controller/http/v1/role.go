@@ -80,7 +80,7 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 		role, err = h.usecase.GetRole(dto)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
-				return ctx.Status(fiber.StatusNotFound).SendString("Role not found")
+				return ctx.Status(fiber.StatusNoContent).SendString("Role not found")
 			}
 
 			log.Error().Err(err).Msg("failed to get role by name")
@@ -97,7 +97,7 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 		role, err = h.usecase.GetRoleByName(dto)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
-				return ctx.Status(fiber.StatusNotFound).SendString("Role not found")
+				return ctx.Status(fiber.StatusNoContent).SendString("Role not found")
 			}
 
 			log.Error().Err(err).Msg("failed to get role by name")

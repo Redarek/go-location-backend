@@ -140,7 +140,7 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 	user, err := h.usecase.GetUserByName(dto)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
-			return ctx.Status(fiber.StatusNotFound).SendString("User not found")
+			return ctx.Status(fiber.StatusNoContent).SendString("User not found")
 		}
 
 		log.Error().Err(err).Msg("failed to get user")
