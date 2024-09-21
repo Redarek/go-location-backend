@@ -6,10 +6,12 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/controller/http/dto"
 	http_dto "location-backend/internal/controller/http/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
 )
 
@@ -60,20 +62,49 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 }
 
 func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
-	var dto http_dto.GetRoleByNameDTO = http_dto.GetRoleByNameDTO{
-		Name: ctx.Query("name"),
-	}
+	var role entity.Role
 
-	// TODO validate
-
-	role, err := h.usecase.GetRoleByName(dto)
-	if err != nil {
-		if errors.Is(err, usecase.ErrNotFound) {
-			return ctx.Status(fiber.StatusNotFound).SendString("Role not found")
+	if ctx.Query("id") != "" {
+		uuid, err := uuid.Parse(ctx.Query("id"))
+		if err != nil {
+			log.Error().Err(err).Msg("failed to parse id as UUID")
+			return ctx.Status(fiber.StatusBadRequest).SendString("Wrong ID: this is not the UUID")
 		}
 
-		log.Error().Err(err).Msg("failed to get role")
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get role")
+		var dto http_dto.GetRoleDTO = http_dto.GetRoleDTO{
+			ID: uuid,
+		}
+
+		// TODO validate
+
+		role, err = h.usecase.GetRole(dto)
+		if err != nil {
+			if errors.Is(err, usecase.ErrNotFound) {
+				return ctx.Status(fiber.StatusNotFound).SendString("Role not found")
+			}
+
+			log.Error().Err(err).Msg("failed to get role by name")
+			return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get role by name")
+		}
+	} else if ctx.Query("name") != "" {
+		var dto http_dto.GetRoleByNameDTO = http_dto.GetRoleByNameDTO{
+			Name: ctx.Query("name"),
+		}
+
+		// TODO validate
+
+		var err error
+		role, err = h.usecase.GetRoleByName(dto)
+		if err != nil {
+			if errors.Is(err, usecase.ErrNotFound) {
+				return ctx.Status(fiber.StatusNotFound).SendString("Role not found")
+			}
+
+			log.Error().Err(err).Msg("failed to get role by name")
+			return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get role by name")
+		}
+	} else {
+		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body: not provided id or name parameter")
 	}
 
 	roleDTO := http_dto.RoleDTO{

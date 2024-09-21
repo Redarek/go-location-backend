@@ -15,6 +15,7 @@ import (
 
 type RoleRepo interface {
 	Create(createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetOne(roleID uuid.UUID) (role entity.Role, err error)
 	GetOneByName(name string) (user entity.Role, err error)
 }
 
@@ -39,6 +40,35 @@ func (r *roleRepo) Create(createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, er
 	}
 
 	return role.ID, nil
+}
+
+func (r *roleRepo) GetOne(roleID uuid.UUID) (role entity.Role, err error) {
+	query := `SELECT 
+			id, 
+			name,
+			created_at, 
+			updated_at, 
+			deleted_at 
+		FROM roles
+		WHERE id = $1 AND deleted_at IS NULL`
+	row := r.pool.QueryRow(context.Background(), query, roleID)
+	err = row.Scan(
+		&role.ID,
+		&role.Name,
+		&role.CreatedAt,
+		&role.UpdatedAt,
+		&role.DeletedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			log.Info().Msgf("role with ID %v not found", roleID)
+			return role, ErrNotFound
+		}
+		log.Error().Err(err).Msg("failed to scan role")
+		return
+	}
+	log.Debug().Msgf("retrieved role: %v", role)
+	return
 }
 
 func (r *roleRepo) GetOneByName(name string) (role entity.Role, err error) {

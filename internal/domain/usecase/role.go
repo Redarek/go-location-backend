@@ -14,6 +14,7 @@ import (
 
 type RoleUsecase interface {
 	CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetRole(dto http_dto.GetRoleDTO) (role entity.Role, err error)
 	GetRoleByName(dto http_dto.GetRoleByNameDTO) (role entity.Role, err error)
 }
 
@@ -48,6 +49,20 @@ func (u *roleUsecase) CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, 
 	}
 
 	log.Info().Msgf("role %v successfully created", dto.Name)
+	return
+}
+
+func (u *roleUsecase) GetRole(dto http_dto.GetRoleDTO) (role entity.Role, err error) {
+	role, err = u.roleService.GetRole(dto.ID)
+	if err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			return entity.Role{}, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get role")
+			return
+		}
+	}
+
 	return
 }
 

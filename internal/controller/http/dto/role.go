@@ -20,3 +20,7 @@ type CreateRoleDTO struct {
 type GetRoleByNameDTO struct {
 	Name string `json:"name"`
 }
+
+type GetRoleDTO struct {
+	ID uuid.UUID `json:"id"`
+}
