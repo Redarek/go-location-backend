@@ -2,7 +2,10 @@ package usecase
 
 import "errors"
 
-// Occurs when not found
 var (
+	// Occurs when entity not found
 	ErrNotFound = errors.New("not found")
+
+	// Occurs when entity already exist
+	ErrAlreadyExists = errors.New("already exists")
 )

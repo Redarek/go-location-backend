@@ -18,8 +18,6 @@ import (
 )
 
 var (
-	// Occurs when register the already registered user
-	ErrAlreadyRegistered = errors.New("user is already registered")
 
 	// Occurs when login with wrong login or password, or if user does not exist
 	ErrBadLogin = errors.New("incorrect login or password, or no such user")
@@ -64,7 +62,7 @@ func (u userUsecase) Register(dto http_dto.RegisterUserDTO) (userID uuid.UUID, e
 			return
 		}
 	} else { // If user already exists
-		return userID, ErrAlreadyRegistered
+		return userID, ErrAlreadyExists
 	}
 
 	hash, err := hashPassword(dto.Password)
@@ -84,7 +82,7 @@ func (u userUsecase) Register(dto http_dto.RegisterUserDTO) (userID uuid.UUID, e
 		return
 	}
 
-	log.Info().Msgf("User %v successfully registered", dto.Username)
+	log.Info().Msgf("user %v successfully registered", dto.Username)
 
 	return
 }

@@ -1,0 +1,66 @@
+package usecase
+
+import (
+	"errors"
+
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
+	http_dto "location-backend/internal/controller/http/dto"
+	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
+)
+
+type RoleUsecase interface {
+	CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetRoleByName(dto http_dto.GetRoleByNameDTO) (role entity.Role, err error)
+}
+
+type roleUsecase struct {
+	roleService service.RoleService
+}
+
+func NewRoleUsecase(roleService service.RoleService) *roleUsecase {
+	return &roleUsecase{roleService: roleService}
+}
+
+func (u *roleUsecase) CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+	_, err = u.roleService.GetRoleByName(dto.Name)
+	if err != nil {
+		// If error except ErrNotFound
+		if !errors.Is(err, service.ErrNotFound) {
+			log.Error().Err(err).Msg("failed to check user existing")
+			return
+		}
+	} else { // If user already exists
+		return roleID, ErrAlreadyExists
+	}
+
+	var createRoleDTO domain_dto.CreateRoleDTO = domain_dto.CreateRoleDTO{
+		Name: dto.Name,
+	}
+
+	roleID, err = u.roleService.CreateRole(createRoleDTO)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to create role")
+		return
+	}
+
+	log.Info().Msgf("role %v successfully created", dto.Name)
+	return
+}
+
+func (u *roleUsecase) GetRoleByName(dto http_dto.GetRoleByNameDTO) (role entity.Role, err error) {
+	role, err = u.roleService.GetRoleByName(dto.Name)
+	if err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			return entity.Role{}, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get role")
+			return
+		}
+	}
+
+	return
+}

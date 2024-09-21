@@ -8,6 +8,7 @@ import (
 
 	"location-backend/internal/composites"
 	"location-backend/internal/config"
+	"location-backend/internal/middleware"
 )
 
 func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposite) {
@@ -37,6 +38,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	user := v1.Group("/user")
 	handlerComposite.UserHandler.Register(&user)
+
+	role := v1.Group("/role", middleware.Auth)
+	handlerComposite.RoleHandler.Register(&role)
 }
 
 // import (

@@ -7,11 +7,13 @@ import (
 type RepositoryComposite struct {
 	healthRepo repository.HealthRepo
 	userRepo   repository.UserRepo
+	roleRepo   repository.RoleRepo
 }
 
 func NewRepositoryComposite(composite *PostgresComposite) (repositoryComposite *RepositoryComposite) {
 	return &RepositoryComposite{
 		healthRepo: repository.NewHealthRepo(composite.pool),
 		userRepo:   repository.NewUserRepo(composite.pool),
+		roleRepo:   repository.NewRoleRepo(composite.pool),
 	}
 }

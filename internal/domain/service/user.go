@@ -37,7 +37,7 @@ func (s userService) CreateUser(userCreate dto.CreateUserDTO) (userID uuid.UUID,
 	userID, err = s.repository.Create(userCreate)
 	if err != nil {
 		// TODO улучшить лог
-		log.Error().Err(err).Msg("Failed to create user")
+		log.Error().Err(err).Msg("failed to create user")
 		return
 	}
 
@@ -52,7 +52,7 @@ func (s userService) GetUserByName(username string) (user entity.User, err error
 			return user, ErrNotFound
 		}
 		// TODO улучшить лог
-		log.Error().Err(err).Msg("Failed to retrieve user")
+		log.Error().Err(err).Msg("failed to retrieve user")
 		return
 	}
 

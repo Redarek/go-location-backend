@@ -17,9 +17,9 @@ import (
 const (
 	// TODO user -> users
 	// userURL  = "/user/:user_id"
-	getURL      = "/"
-	registerURL = "/register"
-	loginURL    = "/login"
+	getUserByNameURL = "/"
+	registerURL      = "/register"
+	loginURL         = "/login"
 )
 
 type userHandler struct {
@@ -35,7 +35,7 @@ func NewUserHandler(usecase usecase.UserUsecase) *userHandler {
 func (h *userHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
 
-	router.Get(getURL, middleware.Auth, h.GetUserByName)
+	router.Get(getRoleByNameURL, middleware.Auth, h.GetUserByName)
 	router.Post(registerURL, h.RegisterUser)
 	router.Post(loginURL, h.Login)
 
@@ -77,7 +77,7 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 	// Call the use case to create the user
 	userID, err := h.usecase.Register(dto)
 	if err != nil {
-		if errors.Is(err, usecase.ErrAlreadyRegistered) {
+		if errors.Is(err, usecase.ErrAlreadyExists) {
 			return ctx.Status(fiber.StatusConflict).SendString("User is already registered")
 		}
 
