@@ -34,7 +34,7 @@ func NewUserHandler(usecase usecase.UserUsecase) *userHandler {
 // Регистрирует маршруты для user
 func (h *userHandler) Register(router *router.Router) {
 	user := router.V1.Group(userGroup)
-	user.Get(getURL, middleware.Auth(), h.GetUserByName) // TODO middleware
+	user.Get(getURL, middleware.Auth, h.GetUserByName) // TODO middleware
 	// user.Get(getURL, jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}), h.GetUserByName)
 	user.Post(registerURL, h.RegisterUser)
 	user.Post(loginURL, h.Login)

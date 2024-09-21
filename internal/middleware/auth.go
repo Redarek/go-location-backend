@@ -8,12 +8,13 @@ import (
 	"location-backend/internal/config"
 )
 
-var jwtMiddleware fiber.Handler
+// Auth returns the pre-initialized JWT middleware
+var Auth fiber.Handler
 
 func InitAuth() {
 	log.Info().Msg("initializing JWT middleware")
 	// Initialize the JWT middleware once
-	jwtMiddleware = jwtware.New(jwtware.Config{
+	Auth = jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)},
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 			log.Info().Err(err).Msg("token validation failed")
@@ -22,7 +23,7 @@ func InitAuth() {
 	})
 }
 
-// Auth returns the pre-initialized JWT middleware
-func Auth() fiber.Handler {
-	return jwtMiddleware
-}
+// // Auth returns the pre-initialized JWT middleware
+// func Auth() fiber.Handler {
+// 	return jwtMiddleware
+// }
