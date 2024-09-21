@@ -16,6 +16,7 @@ import (
 
 const (
 	// TODO user -> users
+	// TODO logout
 	// userURL  = "/user/:user_id"
 	getUserByNameURL = "/"
 	registerURL      = "/register"
@@ -35,9 +36,9 @@ func NewUserHandler(usecase usecase.UserUsecase) *userHandler {
 func (h *userHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
 
-	router.Get(getRoleByNameURL, middleware.Auth, h.GetUserByName)
 	router.Post(registerURL, h.RegisterUser)
 	router.Post(loginURL, h.Login)
+	router.Get(getRoleByNameURL, middleware.Auth, h.GetUserByName)
 
 	return router
 }

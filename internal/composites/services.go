@@ -8,6 +8,7 @@ type ServiceComposite struct {
 	healthService service.HealthService
 	userService   service.UserService
 	roleService   service.RoleService
+	siteService   service.SiteService
 }
 
 func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *ServiceComposite) {
@@ -15,5 +16,6 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		healthService: service.NewHealthService(composite.healthRepo),
 		userService:   service.NewUserService(composite.userRepo),
 		roleService:   service.NewRoleService(composite.roleRepo),
+		siteService:   service.NewSiteService(composite.siteRepo),
 	}
 }

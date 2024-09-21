@@ -9,11 +9,11 @@ import (
 
 // User без пароля
 type UserDTO struct {
-	ID        uuid.UUID           `db:"id"`
-	Username  string              `db:"username"`
-	CreatedAt pgtype.Timestamptz  `db:"created_at"`
-	UpdatedAt pgtype.Timestamptz  `db:"updated_at"`
-	DeletedAt *pgtype.Timestamptz `db:"deleted_at"`
+	ID        uuid.UUID           `json:"id"`
+	Username  string              `json:"username"`
+	CreatedAt pgtype.Timestamptz  `json:"createdAt"`
+	UpdatedAt pgtype.Timestamptz  `json:"updatedAt"`
+	DeletedAt *pgtype.Timestamptz `json:"deletedAt"`
 }
 
 type RegisterUserDTO struct {
@@ -27,7 +27,7 @@ type LoginUserDTO struct {
 }
 
 type GetUserByNameDTO struct {
-	Username string `db:"username"`
+	Username string `json:"username"`
 }
 
 type PathUpdateUserDTO struct {

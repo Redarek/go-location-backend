@@ -41,6 +41,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	role := v1.Group("/role", middleware.Auth)
 	handlerComposite.RoleHandler.Register(&role)
+
+	site := v1.Group("/site", middleware.Auth)
+	handlerComposite.SiteHandler.Register(&site)
 }
 
 // import (

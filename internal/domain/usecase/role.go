@@ -34,7 +34,7 @@ func (u *roleUsecase) CreateRole(dto http_dto.CreateRoleDTO) (roleID uuid.UUID, 
 			log.Error().Err(err).Msg("failed to check user existing")
 			return
 		}
-	} else { // If user already exists
+	} else { // If already exists
 		return roleID, ErrAlreadyExists
 	}
 
