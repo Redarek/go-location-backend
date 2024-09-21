@@ -12,6 +12,7 @@ import (
 
 	repository "location-backend/internal/adapters/db/postgres"
 	// "location-backend/internal/controller/http/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
@@ -21,7 +22,7 @@ type UserService interface {
 	// GetAllForList(ctx context.Context) []entity.BookView
 	// GetByID(ctx context.Context, id uuid.UUID) entity.User
 	GetUserByName(username string) (user entity.User, err error)
-	CreateUser(userCreate entity.UserCreate) (userID uuid.UUID, err error)
+	CreateUser(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
 }
 
 type userService struct {
@@ -32,7 +33,7 @@ func NewUserService(repository repository.UserRepo) *userService {
 	return &userService{repository: repository}
 }
 
-func (s userService) CreateUser(userCreate entity.UserCreate) (userID uuid.UUID, err error) {
+func (s userService) CreateUser(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
 	userID, err = s.repository.Create(userCreate)
 	if err != nil {
 		// TODO улучшить лог

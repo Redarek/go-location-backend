@@ -9,11 +9,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type UserRepo interface {
-	Create(userCreate entity.UserCreate) (userID uuid.UUID, err error)
+	Create(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
 	GetOneByName(username string) (user entity.User, err error)
 	// GetOneByName(username string) entity.User
 	// GetAll(limit, offset int) []entity.User
@@ -28,7 +29,7 @@ func NewUserRepo(pool *pgxpool.Pool) *userRepo {
 	return &userRepo{pool: pool}
 }
 
-func (r *userRepo) Create(userCreate entity.UserCreate) (userID uuid.UUID, err error) {
+func (r *userRepo) Create(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
 	query := `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`
 	row := r.pool.QueryRow(context.Background(), query,
 		userCreate.Username,

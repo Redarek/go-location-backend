@@ -7,14 +7,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 
-	"location-backend/internal/controller/http/dto"
+	http_dto "location-backend/internal/controller/http/dto"
 	"location-backend/internal/domain/usecase"
+
+	"location-backend/internal/middleware"
 	"location-backend/internal/router"
 )
 
 const (
-	// userURL  = "/users/:user_id"
+	// userURL  = "/user/:user_id"
 	userGroup   = "/user"
+	getURL      = "/"
 	registerURL = "/register"
 	loginURL    = "/login"
 )
@@ -24,15 +27,17 @@ type userHandler struct {
 }
 
 // Регистрирует новый handler
-func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
-	return &userHandler{usecase: userUsecase}
+func NewUserHandler(usecase usecase.UserUsecase) *userHandler {
+	return &userHandler{usecase: usecase}
 }
 
 // Регистрирует маршруты для user
 func (h *userHandler) Register(router *router.Router) {
-	userGruop := router.V1.Group(userGroup)
-	userGruop.Post(registerURL, h.RegisterUser)
-	userGruop.Post(loginURL, h.Login)
+	user := router.V1.Group(userGroup)
+	user.Get(getURL, middleware.Auth(), h.GetUserByName) // TODO middleware
+	// user.Get(getURL, jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}), h.GetUserByName)
+	user.Post(registerURL, h.RegisterUser)
+	user.Post(loginURL, h.Login)
 }
 
 // func (h *bookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -50,7 +55,7 @@ func (h *userHandler) Register(router *router.Router) {
 //	500 InternalServerError – ошибка сервера
 func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 	// DTO from client (HTTP/JSON)
-	var dto dto.RegisterUserDTO
+	var dto http_dto.RegisterUserDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to parse user request body")
@@ -92,7 +97,7 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 //	401 Unauthorized – неверные логин/пароль или пользователя не существует
 //	500 InternalServerError – ошибка сервера
 func (h *userHandler) Login(ctx *fiber.Ctx) error {
-	var dto dto.LoginUserDTO
+	var dto http_dto.LoginUserDTO
 	err := ctx.BodyParser(&dto)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to parse user request body")
@@ -114,4 +119,38 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"token": token})
+}
+
+func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
+	var dto http_dto.GetUserByNameDTO = http_dto.GetUserByNameDTO{
+		Username: ctx.Query("username"),
+	}
+	// accessPointID, err := uuid.Parse(c.Query("id"))
+
+	// err := ctx.BodyParser(&dto)
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("failed to parse user request body")
+	// 	return ctx.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+	// }
+
+	// TODO validate
+	user, err := h.usecase.GetUserByName(dto)
+	if err != nil {
+		if errors.Is(err, usecase.ErrNotFound) {
+			return ctx.Status(fiber.StatusNotFound).SendString("User not found")
+		}
+
+		log.Error().Err(err).Msg("failed to get user")
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Failed to get user")
+	}
+
+	userDTO := http_dto.UserDTO{
+		ID:        user.ID,
+		Username:  user.Username,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: user.DeletedAt,
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(userDTO)
 }

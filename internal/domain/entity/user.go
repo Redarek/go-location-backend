@@ -14,11 +14,6 @@ type User struct {
 	DeletedAt    *pgtype.Timestamptz `db:"deleted_at"`
 }
 
-type UserCreate struct {
-	Username     string `db:"username"`
-	PasswordHash string `db:"password"`
-}
-
 // type UserLogin struct {
 // 	ID           uuid.UUID `db:"id"`
 // 	Username     string    `db:"username"`

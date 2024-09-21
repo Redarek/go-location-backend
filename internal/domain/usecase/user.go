@@ -10,25 +10,30 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"location-backend/internal/config"
-	"location-backend/internal/controller/http/dto"
+
+	http_dto "location-backend/internal/controller/http/dto"
+	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
 
 var (
-	// ErrAlreadyRegistered occurs when register the already registered user
+	// Occurs when register the already registered user
 	ErrAlreadyRegistered = errors.New("user is already registered")
 
-	// ErrAlreadyRegistered occurs when login with wrong login or password,
-	// or if user does not exist
+	// Occurs when login with wrong login or password, or if user does not exist
 	ErrBadLogin = errors.New("incorrect login or password, or no such user")
+
+	// Occurs when user not found
+	ErrNotFound = errors.New("user not found")
 )
 
 //? Здесь был интерфейс сервиса (Перенесён в в сервисы)
 
 type UserUsecase interface {
-	Register(dto dto.RegisterUserDTO) (userID uuid.UUID, err error)
-	Login(dto dto.LoginUserDTO) (signedString string, err error)
+	Register(dto http_dto.RegisterUserDTO) (userID uuid.UUID, err error)
+	Login(dto http_dto.LoginUserDTO) (signedString string, err error)
+	GetUserByName(dto http_dto.GetUserByNameDTO) (user entity.User, err error)
 	// ListAllBooks(ctx context.Context) []entity.BookView
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
@@ -47,18 +52,13 @@ type userUsecase struct {
 	// genreService  GenreService
 }
 
-type createUserDTO struct {
-	Username     string
-	PasswordHash string
-}
-
 // ? TEST. Изначально этого не было
 func NewUserUsecase(userService service.UserService) *userUsecase {
 	return &userUsecase{userService: userService}
 }
 
 // ? Нужен ли ctx *fiber.Ctx
-func (u userUsecase) Register(dto dto.RegisterUserDTO) (userID uuid.UUID, err error) {
+func (u userUsecase) Register(dto http_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
 	_, err = u.userService.GetUserByName(dto.Username)
 	if err != nil {
 		// If error except ErrNotFound
@@ -76,12 +76,12 @@ func (u userUsecase) Register(dto dto.RegisterUserDTO) (userID uuid.UUID, err er
 		return
 	}
 
-	var userCreate entity.UserCreate = entity.UserCreate{
+	var createUserDTO domain_dto.CreateUserDTO = domain_dto.CreateUserDTO{
 		Username:     dto.Username,
 		PasswordHash: hash,
 	}
 
-	userID, err = u.userService.CreateUser(userCreate)
+	userID, err = u.userService.CreateUser(createUserDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create user")
 		return
@@ -92,7 +92,7 @@ func (u userUsecase) Register(dto dto.RegisterUserDTO) (userID uuid.UUID, err er
 	return
 }
 
-func (u userUsecase) Login(dto dto.LoginUserDTO) (signedString string, err error) {
+func (u userUsecase) Login(dto http_dto.LoginUserDTO) (signedString string, err error) {
 	user, err := u.userService.GetUserByName(dto.Username)
 	if err != nil {
 		// Return ErrBadLogin if user not found
@@ -129,6 +129,20 @@ func (u userUsecase) Login(dto dto.LoginUserDTO) (signedString string, err error
 
 	return
 	// return c.JSON(fiber.Map{"token": signedString})
+}
+
+func (u userUsecase) GetUserByName(dto http_dto.GetUserByNameDTO) (user entity.User, err error) {
+	user, err = u.userService.GetUserByName(dto.Username)
+	if err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			return entity.User{}, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get user")
+			return
+		}
+	}
+
+	return
 }
 
 // Хэширует пароль

@@ -14,7 +14,7 @@ func Setup() {
 	flag.Parse()
 
 	// Default level for this example is info, unless debug flag is present
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	if *debug {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
