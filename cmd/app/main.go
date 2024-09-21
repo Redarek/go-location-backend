@@ -26,6 +26,7 @@ func Start() {
 		log.Fatal().Err(err).Msg("failed to create database composite")
 	}
 
+	// TODO в композит
 	// Init middleware
 	middleware.InitAuth()
 
@@ -38,20 +39,16 @@ func Start() {
 	// Register routes
 	// TODO err
 	// TODO вынести в отдельный файл
+
+	// Глобальные маршруты
+	api := r.App.Group("/api")
+	v1 := api.Group("/v1")
+
 	healthComposite := composites.NewHealthComposite(postgresComposite)
-	healthComposite.Handler.Register(r)
+	healthComposite.Handler.Register(v1)
 
 	userComposite := composites.NewUserComposite(postgresComposite)
-	userComposite.Handler.Register(r)
-
-	// TODO структурировать!
-	// r.V1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
-
-	// for _, route := range r.App.GetRoutes() {
-	// 	// log.Debug().Msgf("Route path: %s", route.Path)
-	// 	handler := reflect.ValueOf(route.Handlers)
-	// 	log.Debug().Msgf("Method: %s, Path: %s, Handler: %s", route.Method, route.Path, ValueOf(handler.Pointer())
-	// }
+	userComposite.Handler.Register(v1)
 
 	// Initialize and start the Fiber server
 	go func() {
@@ -65,6 +62,6 @@ func Start() {
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	<-sig
 
-	log.Info().Msg("Shutting down gracefully...")
+	log.Info().Msg("shutting down gracefully...")
 	// TODO might need to add code here to shut down server properly
 }

@@ -1,7 +1,9 @@
 package v1
 
-import "location-backend/internal/router"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type Handler interface {
-	Register(router *router.Router)
+	Register(router fiber.Router) fiber.Router
 }

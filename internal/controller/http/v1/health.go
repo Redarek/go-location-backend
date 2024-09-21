@@ -5,7 +5,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/domain/usecase"
-	"location-backend/internal/router"
 )
 
 const (
@@ -20,8 +19,9 @@ func NewHealthHandler(healthUsecase usecase.HealthUsecase) *healthHandler {
 	return &healthHandler{healthUsecase: healthUsecase}
 }
 
-func (h *healthHandler) Register(router *router.Router) {
-	router.App.Get(healthURL, h.Health)
+func (h *healthHandler) Register(router fiber.Router) fiber.Router {
+	health := router.Get(healthURL, h.Health)
+	return health
 }
 
 func (h healthHandler) Health(ctx *fiber.Ctx) error {
