@@ -129,5 +129,5 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 		DeletedAt: role.DeletedAt,
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(roleDTO)
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": roleDTO})
 }

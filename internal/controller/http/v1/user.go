@@ -167,5 +167,5 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 		DeletedAt: user.DeletedAt,
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(userDTO)
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": userDTO})
 }

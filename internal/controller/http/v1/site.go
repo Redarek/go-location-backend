@@ -111,5 +111,5 @@ func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 		DeletedAt:   site.DeletedAt,
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(siteDTO)
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": siteDTO})
 }
