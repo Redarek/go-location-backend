@@ -21,6 +21,7 @@ func Start() {
 	config.LoadConfig()
 
 	// Connect to PostgreSQL
+	log.Info().Msg("connecting to PostgreSQL...")
 	postgresComposite, err := composites.NewPostgresComposite()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create database composite")
@@ -28,21 +29,26 @@ func Start() {
 
 	// TODO в композит
 	// Init middleware
+	log.Info().Msg("initializing middleware...")
 	middleware.InitAuth()
 
 	// Create router
+	log.Info().Msg("initializing router...")
 	r := router.New()
 
 	// Create composites
+	log.Info().Msg("initializing composites...")
 	repositoryComposit := composites.NewRepositoryComposite(postgresComposite)
 	serviceComposit := composites.NewServiceComposite(repositoryComposit)
 	usecaseComposite := composites.NewUsecaseComposite(serviceComposit)
 	handlerComposite := composites.NewHandlerComposite(usecaseComposite)
 
 	// Register routes
+	log.Info().Msg("registering routes...")
 	router.RegisterRoutes(r, handlerComposite)
 
 	// Initialize and start the Fiber server
+	log.Info().Msg("initializing and starting the Fiber server...")
 	go func() {
 		if err := r.App.Listen(":" + config.App.Port); err != nil {
 			log.Fatal().Err(err).Msg("failed to start Fiber server")
