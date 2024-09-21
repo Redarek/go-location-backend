@@ -17,17 +17,10 @@ import (
 const (
 	// TODO user -> users
 	// userURL  = "/user/:user_id"
-	userGroup   = "/user"
 	getURL      = "/"
 	registerURL = "/register"
 	loginURL    = "/login"
 )
-
-// type UserHandler interface {
-// 	RegisterUser(ctx *fiber.Ctx) error
-// 	Login(ctx *fiber.Ctx) error
-// 	GetUserByName(ctx *fiber.Ctx) error
-// }
 
 type userHandler struct {
 	usecase usecase.UserUsecase
@@ -41,12 +34,12 @@ func NewUserHandler(usecase usecase.UserUsecase) *userHandler {
 // Регистрирует маршруты для user
 func (h *userHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
-	user := router.Group(userGroup)
-	user.Get(getURL, middleware.Auth, h.GetUserByName)
-	user.Post(registerURL, h.RegisterUser)
-	user.Post(loginURL, h.Login)
 
-	return user
+	router.Get(getURL, middleware.Auth, h.GetUserByName)
+	router.Post(registerURL, h.RegisterUser)
+	router.Post(loginURL, h.Login)
+
+	return router
 }
 
 // func (h *bookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

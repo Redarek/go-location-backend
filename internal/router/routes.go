@@ -34,7 +34,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 	v1 := api.Group("/v1")
 
 	handlerComposite.HealthHandler.Register(&v1)
-	handlerComposite.UserHandler.Register(&v1)
+
+	user := v1.Group("/user")
+	handlerComposite.UserHandler.Register(&user)
 }
 
 // import (
