@@ -23,9 +23,6 @@ var (
 
 	// Occurs when login with wrong login or password, or if user does not exist
 	ErrBadLogin = errors.New("incorrect login or password, or no such user")
-
-	// Occurs when user not found
-	ErrNotFound = errors.New("user not found")
 )
 
 //? Здесь был интерфейс сервиса (Перенесён в в сервисы)
