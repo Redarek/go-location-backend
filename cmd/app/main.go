@@ -5,11 +5,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/composites"
 	"location-backend/internal/config"
+	"location-backend/internal/middleware"
 	"location-backend/internal/router"
 	"location-backend/pkg/logger"
 )
@@ -25,6 +25,9 @@ func Start() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create database composite")
 	}
+
+	// Init middleware
+	middleware.InitAuth()
 
 	// Create router
 	r := router.New()
@@ -42,7 +45,13 @@ func Start() {
 	userComposite.Handler.Register(r)
 
 	// TODO структурировать!
-	r.V1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
+	// r.V1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
+
+	// for _, route := range r.App.GetRoutes() {
+	// 	// log.Debug().Msgf("Route path: %s", route.Path)
+	// 	handler := reflect.ValueOf(route.Handlers)
+	// 	log.Debug().Msgf("Method: %s, Path: %s, Handler: %s", route.Method, route.Path, ValueOf(handler.Pointer())
+	// }
 
 	// Initialize and start the Fiber server
 	go func() {
