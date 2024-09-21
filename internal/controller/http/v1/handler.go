@@ -5,5 +5,5 @@ import (
 )
 
 type Handler interface {
-	Register(router fiber.Router) fiber.Router
+	Register(router *fiber.Router) fiber.Router
 }

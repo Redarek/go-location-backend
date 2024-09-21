@@ -6,10 +6,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 
+	"location-backend/internal/composites"
 	"location-backend/internal/config"
 )
 
-func RegisterRoutes(router *Router) {
+func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposite) {
 	// CORS
 	router.App.Use(cors.New(cors.Config{
 		AllowHeaders:     "Origin, Content-Type, Accept, Content-Length, Accept-Language, Accept-Encoding, Connection, Access-Control-Allow-Origin",
@@ -29,11 +30,11 @@ func RegisterRoutes(router *Router) {
 	// Public route
 	router.App.Static("/public", "/public")
 
-	// api := router.App.Group("/api")
-	// v1 := api.Group("/v1")
+	api := router.App.Group("/api")
+	v1 := api.Group("/v1")
 
-	// TODO решить что с этим делать. Нужно вынести это из main
-	// v1.Use(jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}))
+	handlerComposite.HealthHandler.Register(&v1)
+	handlerComposite.UserHandler.Register(&v1)
 }
 
 // import (

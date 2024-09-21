@@ -11,6 +11,10 @@ const (
 	healthURL = "/health"
 )
 
+// type HealthHandler interface {
+// 	Health(ctx *fiber.Ctx) error
+// }
+
 type healthHandler struct {
 	healthUsecase usecase.HealthUsecase
 }
@@ -19,9 +23,10 @@ func NewHealthHandler(healthUsecase usecase.HealthUsecase) *healthHandler {
 	return &healthHandler{healthUsecase: healthUsecase}
 }
 
-func (h *healthHandler) Register(router fiber.Router) fiber.Router {
-	health := router.Get(healthURL, h.Health)
-	return health
+func (h *healthHandler) Register(r *fiber.Router) fiber.Router {
+	router := *r
+	router.Get(healthURL, h.Health)
+	return router
 }
 
 func (h healthHandler) Health(ctx *fiber.Ctx) error {

@@ -23,6 +23,12 @@ const (
 	loginURL    = "/login"
 )
 
+// type UserHandler interface {
+// 	RegisterUser(ctx *fiber.Ctx) error
+// 	Login(ctx *fiber.Ctx) error
+// 	GetUserByName(ctx *fiber.Ctx) error
+// }
+
 type userHandler struct {
 	usecase usecase.UserUsecase
 }
@@ -33,10 +39,10 @@ func NewUserHandler(usecase usecase.UserUsecase) *userHandler {
 }
 
 // Регистрирует маршруты для user
-func (h *userHandler) Register(router fiber.Router) fiber.Router {
+func (h *userHandler) Register(r *fiber.Router) fiber.Router {
+	router := *r
 	user := router.Group(userGroup)
-	user.Get(getURL, middleware.Auth, h.GetUserByName) // TODO middleware
-	// user.Get(getURL, jwtware.New(jwtware.Config{SigningKey: jwtware.SigningKey{Key: []byte(config.App.JWTSecret)}}), h.GetUserByName)
+	user.Get(getURL, middleware.Auth, h.GetUserByName)
 	user.Post(registerURL, h.RegisterUser)
 	user.Post(loginURL, h.Login)
 
