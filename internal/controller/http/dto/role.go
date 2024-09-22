@@ -6,11 +6,11 @@ import (
 )
 
 type RoleDTO struct {
-	ID        uuid.UUID          `json:"id"`
-	Name      string             `json:"name"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
-	DeletedAt pgtype.Timestamptz `json:"deletedAt"`
+	ID        uuid.UUID           `json:"id"`
+	Name      string              `json:"name"`
+	CreatedAt pgtype.Timestamptz  `json:"createdAt"`
+	UpdatedAt pgtype.Timestamptz  `json:"updatedAt"`
+	DeletedAt *pgtype.Timestamptz `json:"deletedAt"`
 }
 
 type CreateRoleDTO struct {

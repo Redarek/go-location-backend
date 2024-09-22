@@ -6,13 +6,13 @@ import (
 )
 
 type Site struct {
-	ID          uuid.UUID          `json:"id" db:"id"`
-	Name        string             `json:"name" db:"name"`
-	Description *string            `json:"description" db:"description"`
-	UserID      uuid.UUID          `json:"userId" db:"user_id"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt" db:"created_at"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
-	DeletedAt   pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	ID          uuid.UUID           `json:"id" db:"id"`
+	Name        string              `json:"name" db:"name"`
+	Description *string             `json:"description" db:"description"`
+	UserID      uuid.UUID           `json:"userId" db:"user_id"`
+	CreatedAt   pgtype.Timestamptz  `json:"createdAt" db:"created_at"`
+	UpdatedAt   pgtype.Timestamptz  `json:"updatedAt" db:"updated_at"`
+	DeletedAt   *pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 }
 
 type SiteDetailed struct {
@@ -23,6 +23,6 @@ type SiteDetailed struct {
 	SensorTypes      []*SensorType      `json:"sensorTypes"`
 }
 
-type SiteView struct {
-	Site
-}
+// type SiteView struct {
+// 	Site
+// }

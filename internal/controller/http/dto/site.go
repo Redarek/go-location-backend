@@ -6,13 +6,13 @@ import (
 )
 
 type SiteDTO struct {
-	ID          uuid.UUID          `json:"id"`
-	Name        string             `json:"name"`
-	Description *string            `json:"description"`
-	UserID      uuid.UUID          `json:"userId"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
-	DeletedAt   pgtype.Timestamptz `json:"deletedAt"`
+	ID          uuid.UUID           `json:"id"`
+	Name        string              `json:"name"`
+	Description *string             `json:"description"`
+	UserID      uuid.UUID           `json:"userId"`
+	CreatedAt   pgtype.Timestamptz  `json:"createdAt"`
+	UpdatedAt   pgtype.Timestamptz  `json:"updatedAt"`
+	DeletedAt   *pgtype.Timestamptz `json:"deletedAt"`
 }
 
 type CreateSiteDTO struct {
