@@ -24,3 +24,20 @@ type CreateSiteDTO struct {
 type GetSiteDTO struct {
 	ID uuid.UUID `db:"id"`
 }
+
+type GetSitesDTO struct {
+	UserID uuid.UUID `db:"id"`
+	Limit  int
+	Offset int
+}
+
+type PatchUpdateSiteDTO struct {
+	ID          uuid.UUID `db:"id"`
+	Name        *string   `db:"name"`
+	Description *string   `db:"description"`
+	// UserID      *uuid.UUID          `db:"user_id"` // TODO Возможно позже стоит добавить
+}
+
+// type SoftDeleteSiteDTO struct {
+// 	ID uuid.UUID `db:"id"`
+// }

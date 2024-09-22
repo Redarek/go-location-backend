@@ -8,4 +8,10 @@ var (
 
 	// Occurs when entity already exist
 	ErrAlreadyExists = errors.New("already exists")
+
+	// Occurs when entity already soft deleted
+	ErrAlreadySoftDeleted = errors.New("already soft deleted")
+
+	// Occurs when desired entity was not updated
+	ErrNotUpdated = errors.New("entity not updated")
 )

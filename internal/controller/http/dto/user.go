@@ -30,8 +30,8 @@ type GetUserByNameDTO struct {
 	Username string `json:"username"`
 }
 
-type PathUpdateUserDTO struct {
+type PatchUpdateUserDTO struct {
 	ID       uuid.UUID `json:"id"`
-	Username *string   `json:"username"`
-	Password *string   `json:"password"`
+	Username *string   `json:"username,omitempty"`
+	Password *string   `json:"password,omitempty"`
 }

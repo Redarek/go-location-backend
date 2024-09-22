@@ -23,3 +23,20 @@ type CreateSiteDTO struct {
 type GetSiteDTO struct {
 	ID uuid.UUID `json:"id"`
 }
+
+type GetSitesDTO struct {
+	UserID uuid.UUID `json:"id"`
+	Page   int       `json:"page"`
+	Size   int       `json:"size"`
+}
+
+type PatchUpdateSiteDTO struct {
+	ID          uuid.UUID `json:"id"`
+	Name        *string   `json:"name,omitempty"`
+	Description *string   `json:"description"`
+	// UserID      *uuid.UUID          `db:"user_id"` // TODO Возможно позже стоит добавить
+}
+
+// type SoftDeleteSiteDTO struct {
+// 	ID uuid.UUID `json:"id"`
+// }

@@ -2,5 +2,10 @@ package service
 
 import "errors"
 
-// ErrNotFound occurs when no desired entity in database
-var ErrNotFound = errors.New("entity not found")
+var (
+	// Occurs when no desired entity in database
+	ErrNotFound = errors.New("entity not found")
+
+	// Occurs when desired entity was not updated
+	ErrNotUpdated = errors.New("entity not updated")
+)
