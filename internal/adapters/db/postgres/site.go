@@ -167,7 +167,7 @@ func (r *siteRepo) Update(ctx context.Context, updateSiteDTO dto.PatchUpdateSite
 
 	commandTag, err := r.pool.Exec(ctx, query, params...)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to execute update")
+		log.Error().Err(err).Msg("failed to execute update")
 		return
 	}
 	if commandTag.RowsAffected() == 0 {

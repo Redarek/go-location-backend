@@ -25,14 +25,14 @@ type GetSiteDTO struct {
 }
 
 type GetSitesDTO struct {
-	UserID uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
 	Page   int       `json:"page"`
 	Size   int       `json:"size"`
 }
 
 type PatchUpdateSiteDTO struct {
 	ID          uuid.UUID `json:"id"`
-	Name        *string   `json:"name,omitempty"`
+	Name        *string   `json:"name"`
 	Description *string   `json:"description"`
 	// UserID      *uuid.UUID          `db:"user_id"` // TODO Возможно позже стоит добавить
 }

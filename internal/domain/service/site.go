@@ -72,20 +72,6 @@ func (s *siteService) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites 
 	return
 }
 
-func (s *siteService) IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error) {
-	isDeleted, err = s.repository.IsSiteSoftDeleted(ctx, siteID)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return false, ErrNotFound
-		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve site")
-		return
-	}
-
-	return
-}
-
 // TODO PUT update
 func (s *siteService) UpdateSite(ctx context.Context, updateSiteDTO dto.PatchUpdateSiteDTO) (err error) {
 	err = s.repository.Update(ctx, updateSiteDTO)
@@ -98,6 +84,20 @@ func (s *siteService) UpdateSite(ctx context.Context, updateSiteDTO dto.PatchUpd
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to update site")
+		return
+	}
+
+	return
+}
+
+func (s *siteService) IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error) {
+	isDeleted, err = s.repository.IsSiteSoftDeleted(ctx, siteID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return false, ErrNotFound
+		}
+		// TODO улучшить лог
+		log.Error().Err(err).Msg("failed to retrieve site")
 		return
 	}
 
