@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 
@@ -30,7 +32,7 @@ func (h *healthHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h healthHandler) Health(ctx *fiber.Ctx) error {
-	err := h.healthUsecase.Health()
+	err := h.healthUsecase.Health(context.Background())
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check database health")
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "unhealthy"})

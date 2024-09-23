@@ -9,7 +9,7 @@ import (
 )
 
 type HealthRepo interface {
-	Health() (err error)
+	Health(ctx context.Context) (err error)
 }
 
 type healthRepo struct {
@@ -22,9 +22,9 @@ func NewHealthRepo(pool *pgxpool.Pool) *healthRepo {
 }
 
 // Health pings database
-func (r *healthRepo) Health() (err error) {
+func (r *healthRepo) Health(ctx context.Context) (err error) {
 	// Creating a context with a timeout ensures that the health check does not hang indefinitely.
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	// Ping the database to check connectivity.

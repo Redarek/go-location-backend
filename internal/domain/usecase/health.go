@@ -1,11 +1,13 @@
 package usecase
 
 import (
+	"context"
+
 	"location-backend/internal/domain/service"
 )
 
 type HealthUsecase interface {
-	Health() (err error)
+	Health(ctx context.Context) (err error)
 }
 
 type healthUsecase struct {
@@ -17,7 +19,7 @@ func NewHealthUsecase(healthService service.HealthService) *healthUsecase {
 }
 
 // Health pings database
-func (u *healthUsecase) Health() (err error) {
-	err = u.healthService.Health()
+func (u *healthUsecase) Health(ctx context.Context) (err error) {
+	err = u.healthService.Health(ctx)
 	return
 }
