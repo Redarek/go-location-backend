@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -22,9 +23,9 @@ var (
 //? Здесь был интерфейс сервиса (Перенесён в в сервисы)
 
 type UserUsecase interface {
-	Register(dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
-	Login(dto domain_dto.LoginUserDTO) (signedString string, err error)
-	GetUserByName(dto domain_dto.GetUserByNameDTO) (user entity.User, err error)
+	Register(ctx context.Context, dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
+	Login(ctx context.Context, dto domain_dto.LoginUserDTO) (signedString string, err error)
+	GetUserByName(ctx context.Context, dto domain_dto.GetUserByNameDTO) (user *entity.User, err error)
 	// ListAllBooks(ctx context.Context) []entity.BookView
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
@@ -49,8 +50,8 @@ func NewUserUsecase(userService service.UserService) *userUsecase {
 }
 
 // ? Нужен ли ctx *fiber.Ctx
-func (u userUsecase) Register(dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
-	_, err = u.userService.GetUserByName(dto.Username)
+func (u userUsecase) Register(ctx context.Context, dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
+	_, err = u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// If error except ErrNotFound
 		if !errors.Is(err, service.ErrNotFound) {
@@ -72,7 +73,7 @@ func (u userUsecase) Register(dto domain_dto.RegisterUserDTO) (userID uuid.UUID,
 		PasswordHash: hash,
 	}
 
-	userID, err = u.userService.CreateUser(createUserDTO)
+	userID, err = u.userService.CreateUser(ctx, createUserDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create user")
 		return
@@ -83,8 +84,8 @@ func (u userUsecase) Register(dto domain_dto.RegisterUserDTO) (userID uuid.UUID,
 	return
 }
 
-func (u userUsecase) Login(dto domain_dto.LoginUserDTO) (signedString string, err error) {
-	user, err := u.userService.GetUserByName(dto.Username)
+func (u userUsecase) Login(ctx context.Context, dto domain_dto.LoginUserDTO) (signedString string, err error) {
+	user, err := u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// Return ErrBadLogin if user not found
 		if errors.Is(err, service.ErrNotFound) {
@@ -122,11 +123,11 @@ func (u userUsecase) Login(dto domain_dto.LoginUserDTO) (signedString string, er
 	// return c.JSON(fiber.Map{"token": signedString})
 }
 
-func (u userUsecase) GetUserByName(dto domain_dto.GetUserByNameDTO) (user entity.User, err error) {
-	user, err = u.userService.GetUserByName(dto.Username)
+func (u userUsecase) GetUserByName(ctx context.Context, dto domain_dto.GetUserByNameDTO) (user *entity.User, err error) {
+	user, err = u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
-			return entity.User{}, ErrNotFound
+			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get user")
 			return

@@ -1,8 +1,7 @@
 package service
 
 import (
-	// "context"
-
+	"context"
 	"errors"
 
 	"github.com/google/uuid"
@@ -19,8 +18,8 @@ import (
 type UserService interface {
 	// GetAllForList(ctx context.Context) []entity.BookView
 	// GetByID(ctx context.Context, id uuid.UUID) entity.User
-	GetUserByName(username string) (user entity.User, err error)
-	CreateUser(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
+	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
+	CreateUser(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
 
 	HashPassword(password string) (string, error)
 	CheckPasswordHash(password, hash string) bool
@@ -34,8 +33,8 @@ func NewUserService(repository repository.UserRepo) *userService {
 	return &userService{repository: repository}
 }
 
-func (s userService) CreateUser(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
-	userID, err = s.repository.Create(userCreate)
+func (s userService) CreateUser(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
+	userID, err = s.repository.Create(ctx, userCreate)
 	if err != nil {
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to create user")
@@ -46,8 +45,8 @@ func (s userService) CreateUser(userCreate dto.CreateUserDTO) (userID uuid.UUID,
 }
 
 // ? Нужен ли ctx *fiber.Ctx здесь?
-func (s userService) GetUserByName(username string) (user entity.User, err error) {
-	user, err = s.repository.GetOneByName(username)
+func (s userService) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
+	user, err = s.repository.GetOneByName(ctx, username)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return user, ErrNotFound

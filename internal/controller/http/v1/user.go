@@ -2,6 +2,7 @@ package v1
 
 import (
 	// "encoding/json"
+	"context"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
@@ -80,7 +81,7 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 
 	// ? Нужно ли передавать ctx внутрь?
 	// Call the use case to create the user
-	userID, err := h.usecase.Register(domainDTO)
+	userID, err := h.usecase.Register(context.Background(), domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
 			return ctx.Status(fiber.StatusConflict).JSON(httperrors.NewErrorResponse(
@@ -134,7 +135,7 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 		Password: dto.Password,
 	}
 
-	token, err := h.usecase.Login(domain_dto.LoginUserDTO(domainDTO))
+	token, err := h.usecase.Login(context.Background(), domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrBadLogin) {
 			return ctx.Status(fiber.StatusUnauthorized).JSON(httperrors.NewErrorResponse(
@@ -176,7 +177,7 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 		Username: dto.Username,
 	}
 
-	user, err := h.usecase.GetUserByName(domainDTO)
+	user, err := h.usecase.GetUserByName(context.Background(), domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)

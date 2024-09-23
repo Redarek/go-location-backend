@@ -14,8 +14,8 @@ import (
 )
 
 type UserRepo interface {
-	Create(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
-	GetOneByName(username string) (user entity.User, err error)
+	Create(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
+	GetOneByName(ctx context.Context, username string) (user *entity.User, err error)
 	// GetOneByName(username string) entity.User
 	// GetAll(limit, offset int) []entity.User
 	// Delete(book entity.Book) error
@@ -29,9 +29,9 @@ func NewUserRepo(pool *pgxpool.Pool) *userRepo {
 	return &userRepo{pool: pool}
 }
 
-func (r *userRepo) Create(userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
+func (r *userRepo) Create(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
 	query := `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`
-	row := r.pool.QueryRow(context.Background(), query,
+	row := r.pool.QueryRow(ctx, query,
 		userCreate.Username,
 		userCreate.PasswordHash,
 	)
@@ -45,7 +45,7 @@ func (r *userRepo) Create(userCreate dto.CreateUserDTO) (userID uuid.UUID, err e
 	return user.ID, nil
 }
 
-func (r *userRepo) GetOneByName(username string) (user entity.User, err error) {
+func (r *userRepo) GetOneByName(ctx context.Context, username string) (user *entity.User, err error) {
 	query := `SELECT 
 		id, 
 		username, 
@@ -55,7 +55,9 @@ func (r *userRepo) GetOneByName(username string) (user entity.User, err error) {
 		deleted_at 
 	FROM users 
 	WHERE username = $1 AND deleted_at IS NULL`
-	row := r.pool.QueryRow(context.Background(), query, username)
+	row := r.pool.QueryRow(ctx, query, username)
+
+	user = &entity.User{}
 	err = row.Scan(
 		&user.ID,
 		&user.Username,
