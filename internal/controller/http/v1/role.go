@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
@@ -56,7 +57,7 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 		Name: dto.Name,
 	}
 
-	roleID, err := h.usecase.CreateRole(domainDTO)
+	roleID, err := h.usecase.CreateRole(context.Background(), domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
 			return ctx.Status(fiber.StatusConflict).JSON(httperrors.NewErrorResponse(
@@ -80,7 +81,7 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 }
 
 func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
-	var role domain_dto.RoleDTO
+	var role *domain_dto.RoleDTO
 
 	if ctx.Query("id") != "" {
 		uuid, err := uuid.Parse(ctx.Query("id"))
@@ -105,7 +106,7 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 			ID: dto.ID,
 		}
 
-		role, err = h.usecase.GetRole(domainDTO)
+		role, err = h.usecase.GetRole(context.Background(), domainDTO)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
 				ctx.Status(fiber.StatusNoContent)
@@ -133,7 +134,7 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 		}
 
 		var err error
-		role, err = h.usecase.GetRoleByName(domainDTO)
+		role, err = h.usecase.GetRoleByName(context.Background(), domainDTO)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
 				ctx.Status(fiber.StatusNoContent)

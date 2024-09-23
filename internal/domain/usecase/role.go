@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 
 	"github.com/google/uuid"
@@ -11,9 +12,9 @@ import (
 )
 
 type RoleUsecase interface {
-	CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
-	GetRole(dto domain_dto.GetRoleDTO) (roleDTO domain_dto.RoleDTO, err error)
-	GetRoleByName(dto domain_dto.GetRoleByNameDTO) (roleDTO domain_dto.RoleDTO, err error)
+	CreateRole(ctx context.Context, dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetRole(ctx context.Context, dto domain_dto.GetRoleDTO) (roleDTO *domain_dto.RoleDTO, err error)
+	GetRoleByName(ctx context.Context, dto domain_dto.GetRoleByNameDTO) (roleDTO *domain_dto.RoleDTO, err error)
 }
 
 type roleUsecase struct {
@@ -24,8 +25,8 @@ func NewRoleUsecase(roleService service.RoleService) *roleUsecase {
 	return &roleUsecase{roleService: roleService}
 }
 
-func (u *roleUsecase) CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
-	_, err = u.roleService.GetRoleByName(dto.Name)
+func (u *roleUsecase) CreateRole(ctx context.Context, dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+	_, err = u.roleService.GetRoleByName(ctx, dto.Name)
 	if err != nil {
 		// If error except ErrNotFound
 		if !errors.Is(err, service.ErrNotFound) {
@@ -40,7 +41,7 @@ func (u *roleUsecase) CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID
 		Name: dto.Name,
 	}
 
-	roleID, err = u.roleService.CreateRole(createRoleDTO)
+	roleID, err = u.roleService.CreateRole(ctx, createRoleDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create role")
 		return
@@ -50,11 +51,11 @@ func (u *roleUsecase) CreateRole(dto domain_dto.CreateRoleDTO) (roleID uuid.UUID
 	return
 }
 
-func (u *roleUsecase) GetRole(dto domain_dto.GetRoleDTO) (roleDTO domain_dto.RoleDTO, err error) {
-	role, err := u.roleService.GetRole(dto.ID)
+func (u *roleUsecase) GetRole(ctx context.Context, dto domain_dto.GetRoleDTO) (roleDTO *domain_dto.RoleDTO, err error) {
+	role, err := u.roleService.GetRole(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
-			return domain_dto.RoleDTO{}, ErrNotFound
+			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get role")
 			return
@@ -62,7 +63,7 @@ func (u *roleUsecase) GetRole(dto domain_dto.GetRoleDTO) (roleDTO domain_dto.Rol
 	}
 
 	// Mapping domain entity -> domain DTO
-	roleDTO = domain_dto.RoleDTO{
+	roleDTO = &domain_dto.RoleDTO{
 		ID:        role.ID,
 		Name:      role.Name,
 		CreatedAt: role.CreatedAt,
@@ -73,11 +74,11 @@ func (u *roleUsecase) GetRole(dto domain_dto.GetRoleDTO) (roleDTO domain_dto.Rol
 	return
 }
 
-func (u *roleUsecase) GetRoleByName(dto domain_dto.GetRoleByNameDTO) (roleDTO domain_dto.RoleDTO, err error) {
-	role, err := u.roleService.GetRoleByName(dto.Name)
+func (u *roleUsecase) GetRoleByName(ctx context.Context, dto domain_dto.GetRoleByNameDTO) (roleDTO *domain_dto.RoleDTO, err error) {
+	role, err := u.roleService.GetRoleByName(ctx, dto.Name)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
-			return domain_dto.RoleDTO{}, ErrNotFound
+			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get role")
 			return
@@ -85,7 +86,7 @@ func (u *roleUsecase) GetRoleByName(dto domain_dto.GetRoleByNameDTO) (roleDTO do
 	}
 
 	// Mapping domain entity -> domain DTO
-	roleDTO = domain_dto.RoleDTO{
+	roleDTO = &domain_dto.RoleDTO{
 		ID:        role.ID,
 		Name:      role.Name,
 		CreatedAt: role.CreatedAt,

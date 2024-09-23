@@ -14,9 +14,9 @@ import (
 )
 
 type RoleRepo interface {
-	Create(createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error)
-	GetOne(roleID uuid.UUID) (role entity.Role, err error)
-	GetOneByName(name string) (user entity.Role, err error)
+	Create(ctx context.Context, createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetOne(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
+	GetOneByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
 
 type roleRepo struct {
@@ -27,22 +27,22 @@ func NewRoleRepo(pool *pgxpool.Pool) *roleRepo {
 	return &roleRepo{pool: pool}
 }
 
-func (r *roleRepo) Create(createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+func (r *roleRepo) Create(ctx context.Context, createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	query := `INSERT INTO roles (name) VALUES ($1) RETURNING id`
-	row := r.pool.QueryRow(context.Background(), query,
+	row := r.pool.QueryRow(ctx, query,
 		createRoleDTO.Name,
 	)
-	var role entity.Role
-	err = row.Scan(&role.ID)
+
+	err = row.Scan(&roleID)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to scan role")
 		return uuid.UUID{}, err
 	}
 
-	return role.ID, nil
+	return
 }
 
-func (r *roleRepo) GetOne(roleID uuid.UUID) (role entity.Role, err error) {
+func (r *roleRepo) GetOne(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error) {
 	query := `SELECT 
 			id, 
 			name,
@@ -51,13 +51,13 @@ func (r *roleRepo) GetOne(roleID uuid.UUID) (role entity.Role, err error) {
 			deleted_at 
 		FROM roles
 		WHERE id = $1 AND deleted_at IS NULL`
-	row := r.pool.QueryRow(context.Background(), query, roleID)
+	row := r.pool.QueryRow(ctx, query, roleID)
+
+	role = &entity.Role{}
 	err = row.Scan(
 		&role.ID,
 		&role.Name,
-		&role.CreatedAt,
-		&role.UpdatedAt,
-		&role.DeletedAt,
+		&role.CreatedAt, &role.UpdatedAt, &role.DeletedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -71,7 +71,7 @@ func (r *roleRepo) GetOne(roleID uuid.UUID) (role entity.Role, err error) {
 	return
 }
 
-func (r *roleRepo) GetOneByName(name string) (role entity.Role, err error) {
+func (r *roleRepo) GetOneByName(ctx context.Context, name string) (role *entity.Role, err error) {
 	query := `SELECT 
 			id, 
 			name,
@@ -80,13 +80,13 @@ func (r *roleRepo) GetOneByName(name string) (role entity.Role, err error) {
 			deleted_at 
 		FROM roles
 		WHERE name = $1 AND deleted_at IS NULL`
-	row := r.pool.QueryRow(context.Background(), query, name)
+	row := r.pool.QueryRow(ctx, query, name)
+
+	role = &entity.Role{}
 	err = row.Scan(
 		&role.ID,
 		&role.Name,
-		&role.CreatedAt,
-		&role.UpdatedAt,
-		&role.DeletedAt,
+		&role.CreatedAt, &role.UpdatedAt, &role.DeletedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
