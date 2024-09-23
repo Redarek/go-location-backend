@@ -7,7 +7,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/crypto/bcrypt"
 
 	"location-backend/internal/config"
 	domain_dto "location-backend/internal/domain/dto"
@@ -62,7 +61,7 @@ func (u userUsecase) Register(dto domain_dto.RegisterUserDTO) (userID uuid.UUID,
 		return userID, ErrAlreadyExists
 	}
 
-	hash, err := hashPassword(dto.Password)
+	hash, err := u.userService.HashPassword(dto.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to hash user password")
 		return
@@ -96,7 +95,7 @@ func (u userUsecase) Login(dto domain_dto.LoginUserDTO) (signedString string, er
 		}
 	}
 
-	if !checkPasswordHash(dto.Password, user.PasswordHash) {
+	if !u.userService.CheckPasswordHash(dto.Password, user.PasswordHash) {
 		log.Info().Msg("wrong password")
 		return "", ErrBadLogin
 	}
@@ -135,24 +134,6 @@ func (u userUsecase) GetUserByName(dto domain_dto.GetUserByNameDTO) (user entity
 	}
 
 	return
-}
-
-// Хэширует пароль
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	// log.Debug().Msgf("Password: %v", password)
-	// log.Debug().Msgf("HashPassword: %v", bytes)
-	return string(bytes), err
-}
-
-// Сравнивает пароль и его хэш. Если верно – true, иначе – false.
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	if err != nil {
-		log.Debug().Msgf("failed to compare hash and password (password: '%v' \t hash: '%v')", password, hash)
-	}
-
-	return err == nil
 }
 
 // func (u userUsecase) ListAllBooks(ctx context.Context) []entity.BookView {
