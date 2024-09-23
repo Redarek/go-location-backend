@@ -21,10 +21,6 @@ type CreateSiteDTO struct {
 	UserID      uuid.UUID `db:"user_id"`
 }
 
-type GetSiteDTO struct {
-	ID uuid.UUID `db:"id"`
-}
-
 type GetSitesDTO struct {
 	UserID uuid.UUID `db:"id"`
 	Limit  int

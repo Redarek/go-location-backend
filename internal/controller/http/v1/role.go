@@ -129,12 +129,12 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 		// TODO validate
 
 		// Mapping http DTO -> domain DTO
-		domainDTO := domain_dto.GetRoleByNameDTO{
-			Name: dto.Name,
-		}
+		// domainDTO := domain_dto.GetRoleByNameDTO{
+		// 	Name: dto.Name,
+		// }
 
 		var err error
-		role, err = h.usecase.GetRoleByName(context.Background(), domainDTO)
+		role, err = h.usecase.GetRoleByName(context.Background(), dto.Name)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
 				ctx.Status(fiber.StatusNoContent)

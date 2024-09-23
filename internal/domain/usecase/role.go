@@ -14,7 +14,7 @@ import (
 type RoleUsecase interface {
 	CreateRole(ctx context.Context, dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
 	GetRole(ctx context.Context, dto domain_dto.GetRoleDTO) (roleDTO *domain_dto.RoleDTO, err error)
-	GetRoleByName(ctx context.Context, dto domain_dto.GetRoleByNameDTO) (roleDTO *domain_dto.RoleDTO, err error)
+	GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error)
 }
 
 type roleUsecase struct {
@@ -74,8 +74,8 @@ func (u *roleUsecase) GetRole(ctx context.Context, dto domain_dto.GetRoleDTO) (r
 	return
 }
 
-func (u *roleUsecase) GetRoleByName(ctx context.Context, dto domain_dto.GetRoleByNameDTO) (roleDTO *domain_dto.RoleDTO, err error) {
-	role, err := u.roleService.GetRoleByName(ctx, dto.Name)
+func (u *roleUsecase) GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error) {
+	role, err := u.roleService.GetRoleByName(ctx, name)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			return nil, ErrNotFound

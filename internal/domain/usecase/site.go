@@ -13,7 +13,7 @@ import (
 
 type SiteUsecase interface {
 	CreateSite(ctx context.Context, dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
-	GetSite(ctx context.Context, dto domain_dto.GetSiteDTO) (siteDTO *domain_dto.SiteDTO, err error)
+	GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *domain_dto.SiteDTO, err error)
 	GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error)
 	// TODO GetSitesDetailed
 
@@ -47,8 +47,8 @@ func (u *siteUsecase) CreateSite(ctx context.Context, dto domain_dto.CreateSiteD
 	return
 }
 
-func (u *siteUsecase) GetSite(ctx context.Context, dto domain_dto.GetSiteDTO) (siteDTO *domain_dto.SiteDTO, err error) {
-	site, err := u.siteService.GetSite(ctx, dto.ID)
+func (u *siteUsecase) GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *domain_dto.SiteDTO, err error) {
+	site, err := u.siteService.GetSite(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			return nil, ErrNotFound

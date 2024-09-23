@@ -173,11 +173,11 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetUserByNameDTO{
-		Username: dto.Username,
-	}
+	// domainDTO := domain_dto.GetUserByNameDTO{
+	// 	Username: dto.Username,
+	// }
 
-	user, err := h.usecase.GetUserByName(context.Background(), domainDTO)
+	user, err := h.usecase.GetUserByName(context.Background(), dto.Username)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)

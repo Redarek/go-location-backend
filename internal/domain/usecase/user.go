@@ -25,7 +25,7 @@ var (
 type UserUsecase interface {
 	Register(ctx context.Context, dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
 	Login(ctx context.Context, dto domain_dto.LoginUserDTO) (signedString string, err error)
-	GetUserByName(ctx context.Context, dto domain_dto.GetUserByNameDTO) (user *entity.User, err error)
+	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
 	// ListAllBooks(ctx context.Context) []entity.BookView
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
@@ -123,8 +123,8 @@ func (u userUsecase) Login(ctx context.Context, dto domain_dto.LoginUserDTO) (si
 	// return c.JSON(fiber.Map{"token": signedString})
 }
 
-func (u userUsecase) GetUserByName(ctx context.Context, dto domain_dto.GetUserByNameDTO) (user *entity.User, err error) {
-	user, err = u.userService.GetUserByName(ctx, dto.Username)
+func (u userUsecase) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
+	user, err = u.userService.GetUserByName(ctx, username)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			return nil, ErrNotFound

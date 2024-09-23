@@ -17,10 +17,6 @@ type LoginUserDTO struct {
 	Password string `db:"password"`
 }
 
-type GetUserByNameDTO struct {
-	Username string `db:"username"`
-}
-
 type PatchUpdateUserDTO struct {
 	ID       uuid.UUID `db:"id"`
 	Username *string   `db:"username"`

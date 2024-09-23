@@ -117,11 +117,11 @@ func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetSiteDTO{
-		ID: dto.ID,
-	}
+	// domainDTO := domain_dto.GetSiteDTO{
+	// 	ID: dto.ID,
+	// }
 
-	site, err := h.usecase.GetSite(context.Background(), domainDTO)
+	site, err := h.usecase.GetSite(context.Background(), dto.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
