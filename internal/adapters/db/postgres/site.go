@@ -17,9 +17,9 @@ import (
 )
 
 type SiteRepo interface {
-	Create(createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error)
-	GetOne(siteID uuid.UUID) (site entity.Site, err error)
-	GetAll(ctx context.Context, userID uuid.UUID, limit, offset int) (sites []entity.Site, err error)
+	Create(ctx context.Context, createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	GetOne(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
+	GetAll(ctx context.Context, userID uuid.UUID, limit, offset int) (sites []*entity.Site, err error)
 
 	Update(ctx context.Context, updateSiteDTO dto.PatchUpdateSiteDTO) (err error)
 
@@ -36,7 +36,7 @@ func NewSiteRepo(pool *pgxpool.Pool) *siteRepo {
 	return &siteRepo{pool: pool}
 }
 
-func (r *siteRepo) Create(createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
+func (r *siteRepo) Create(ctx context.Context, createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
 	query := `INSERT INTO sites (
 			name, 
 			description, 
@@ -44,7 +44,7 @@ func (r *siteRepo) Create(createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, er
 		)
 		VALUES ($1, $2, $3)
 		RETURNING id`
-	row := r.pool.QueryRow(context.Background(), query,
+	row := r.pool.QueryRow(ctx, query,
 		createSiteDTO.Name,
 		createSiteDTO.Description,
 		createSiteDTO.UserID,
@@ -59,7 +59,7 @@ func (r *siteRepo) Create(createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, er
 	return site.ID, nil
 }
 
-func (r *siteRepo) GetOne(siteID uuid.UUID) (site entity.Site, err error) {
+func (r *siteRepo) GetOne(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error) {
 	query := `SELECT 
 			id, 
 			name,
@@ -68,7 +68,9 @@ func (r *siteRepo) GetOne(siteID uuid.UUID) (site entity.Site, err error) {
 			created_at, updated_at, deleted_at 
 		FROM sites
 		WHERE id = $1 AND deleted_at IS NULL`
-	row := r.pool.QueryRow(context.Background(), query, siteID)
+	row := r.pool.QueryRow(ctx, query, siteID)
+
+	site = &entity.Site{}
 	err = row.Scan(
 		&site.ID,
 		&site.Name,
@@ -81,7 +83,7 @@ func (r *siteRepo) GetOne(siteID uuid.UUID) (site entity.Site, err error) {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Msgf("site with ID %v not found", siteID)
-			return site, ErrNotFound
+			return nil, ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to scan site")
 		return
@@ -90,7 +92,7 @@ func (r *siteRepo) GetOne(siteID uuid.UUID) (site entity.Site, err error) {
 	return
 }
 
-func (r *siteRepo) GetAll(ctx context.Context, userID uuid.UUID, limit, offset int) (sites []entity.Site, err error) {
+func (r *siteRepo) GetAll(ctx context.Context, userID uuid.UUID, limit, offset int) (sites []*entity.Site, err error) {
 	query := `SELECT 
 			id,
 			name, 
@@ -108,7 +110,7 @@ func (r *siteRepo) GetAll(ctx context.Context, userID uuid.UUID, limit, offset i
 	defer rows.Close()
 
 	for rows.Next() {
-		var site entity.Site
+		site := new(entity.Site)
 		err = rows.Scan(
 			&site.ID,
 			&site.Name,
@@ -131,7 +133,7 @@ func (r *siteRepo) GetAll(ctx context.Context, userID uuid.UUID, limit, offset i
 	length := len(sites)
 	if length == 0 {
 		log.Info().Msgf("sites for user ID %v were not found", userID)
-		return sites, ErrNotFound
+		return nil, ErrNotFound
 	}
 
 	log.Debug().Msgf("retrieved %d sites", length)

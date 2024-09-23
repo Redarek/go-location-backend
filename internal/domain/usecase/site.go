@@ -12,9 +12,9 @@ import (
 )
 
 type SiteUsecase interface {
-	CreateSite(dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
-	GetSite(dto domain_dto.GetSiteDTO) (siteDTO domain_dto.SiteDTO, err error)
-	GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []domain_dto.SiteDTO, err error)
+	CreateSite(ctx context.Context, dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	GetSite(ctx context.Context, dto domain_dto.GetSiteDTO) (siteDTO *domain_dto.SiteDTO, err error)
+	GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error)
 	// TODO GetSitesDetailed
 
 	PatchUpdateSite(ctx context.Context, patchUpdateDTO domain_dto.PatchUpdateSiteDTO) (err error)
@@ -30,14 +30,14 @@ func NewSiteUsecase(siteService service.SiteService) *siteUsecase {
 	return &siteUsecase{siteService: siteService}
 }
 
-func (u *siteUsecase) CreateSite(dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
+func (u *siteUsecase) CreateSite(ctx context.Context, dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
 	var createSiteDTO domain_dto.CreateSiteDTO = domain_dto.CreateSiteDTO{
 		Name:        dto.Name,
 		Description: dto.Description,
 		UserID:      dto.UserID,
 	}
 
-	siteID, err = u.siteService.CreateSite(createSiteDTO)
+	siteID, err = u.siteService.CreateSite(ctx, createSiteDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create site")
 		return
@@ -47,11 +47,11 @@ func (u *siteUsecase) CreateSite(dto domain_dto.CreateSiteDTO) (siteID uuid.UUID
 	return
 }
 
-func (u *siteUsecase) GetSite(dto domain_dto.GetSiteDTO) (siteDTO domain_dto.SiteDTO, err error) {
-	site, err := u.siteService.GetSite(dto.ID)
+func (u *siteUsecase) GetSite(ctx context.Context, dto domain_dto.GetSiteDTO) (siteDTO *domain_dto.SiteDTO, err error) {
+	site, err := u.siteService.GetSite(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
-			return domain_dto.SiteDTO{}, ErrNotFound
+			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get site")
 			return
@@ -59,7 +59,7 @@ func (u *siteUsecase) GetSite(dto domain_dto.GetSiteDTO) (siteDTO domain_dto.Sit
 	}
 
 	// Mapping domain entity -> domain DTO
-	siteDTO = domain_dto.SiteDTO{
+	siteDTO = &domain_dto.SiteDTO{
 		ID:          site.ID,
 		Name:        site.Name,
 		Description: site.Description,
@@ -72,11 +72,11 @@ func (u *siteUsecase) GetSite(dto domain_dto.GetSiteDTO) (siteDTO domain_dto.Sit
 	return
 }
 
-func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []domain_dto.SiteDTO, err error) {
+func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error) {
 	sites, err := u.siteService.GetSites(ctx, dto)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
-			return []domain_dto.SiteDTO{}, ErrNotFound
+			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get sites")
 			return
@@ -85,7 +85,7 @@ func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) 
 
 	for _, site := range sites {
 		// Mapping domain entity -> domain DTO
-		siteDTO := domain_dto.SiteDTO{
+		siteDTO := &domain_dto.SiteDTO{
 			ID:          site.ID,
 			Name:        site.Name,
 			Description: site.Description,
@@ -102,7 +102,7 @@ func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) 
 }
 
 func (u *siteUsecase) PatchUpdateSite(ctx context.Context, patchUpdateDTO domain_dto.PatchUpdateSiteDTO) (err error) {
-	_, err = u.siteService.GetSite(patchUpdateDTO.ID)
+	_, err = u.siteService.GetSite(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check site existing")

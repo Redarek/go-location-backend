@@ -15,9 +15,9 @@ import (
 )
 
 type SiteService interface {
-	CreateSite(userCreate dto.CreateSiteDTO) (siteID uuid.UUID, err error)
-	GetSite(siteID uuid.UUID) (site entity.Site, err error)
-	GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites []entity.Site, err error)
+	CreateSite(ctx context.Context, userCreate dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
+	GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites []*entity.Site, err error)
 	// TODO get site list detailed
 
 	UpdateSite(ctx context.Context, updateSiteDTO dto.PatchUpdateSiteDTO) (err error)
@@ -35,8 +35,8 @@ func NewSiteService(repository repository.SiteRepo) *siteService {
 	return &siteService{repository: repository}
 }
 
-func (s *siteService) CreateSite(createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
-	siteID, err = s.repository.Create(createSiteDTO)
+func (s *siteService) CreateSite(ctx context.Context, createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
+	siteID, err = s.repository.Create(ctx, createSiteDTO)
 	if err != nil {
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to create site")
@@ -46,8 +46,8 @@ func (s *siteService) CreateSite(createSiteDTO dto.CreateSiteDTO) (siteID uuid.U
 	return siteID, nil
 }
 
-func (s *siteService) GetSite(siteID uuid.UUID) (site entity.Site, err error) {
-	site, err = s.repository.GetOne(siteID)
+func (s *siteService) GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error) {
+	site, err = s.repository.GetOne(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return site, ErrNotFound
@@ -60,7 +60,7 @@ func (s *siteService) GetSite(siteID uuid.UUID) (site entity.Site, err error) {
 	return
 }
 
-func (s *siteService) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites []entity.Site, err error) {
+func (s *siteService) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites []*entity.Site, err error) {
 	sites, err = s.repository.GetAll(ctx, dto.UserID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {

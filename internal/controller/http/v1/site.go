@@ -84,7 +84,7 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 		UserID:      userID,
 	}
 
-	siteID, err := h.usecase.CreateSite(domainDTO)
+	siteID, err := h.usecase.CreateSite(context.Background(), domainDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("an unexpected error has occurred while trying to create the site")
 		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
@@ -121,7 +121,7 @@ func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 		ID: dto.ID,
 	}
 
-	site, err := h.usecase.GetSite(domainDTO)
+	site, err := h.usecase.GetSite(context.Background(), domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
