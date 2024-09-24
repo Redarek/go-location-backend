@@ -12,8 +12,8 @@ import (
 )
 
 type RoleUsecase interface {
-	CreateRole(ctx context.Context, dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
-	GetRole(ctx context.Context, dto domain_dto.GetRoleDTO) (roleDTO *domain_dto.RoleDTO, err error)
+	CreateRole(ctx context.Context, dto *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *domain_dto.RoleDTO, err error)
 	GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error)
 }
 
@@ -25,7 +25,7 @@ func NewRoleUsecase(roleService service.RoleService) *roleUsecase {
 	return &roleUsecase{roleService: roleService}
 }
 
-func (u *roleUsecase) CreateRole(ctx context.Context, dto domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+func (u *roleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	_, err = u.roleService.GetRoleByName(ctx, dto.Name)
 	if err != nil {
 		// If error except ErrNotFound
@@ -37,11 +37,7 @@ func (u *roleUsecase) CreateRole(ctx context.Context, dto domain_dto.CreateRoleD
 		return roleID, ErrAlreadyExists
 	}
 
-	var createRoleDTO domain_dto.CreateRoleDTO = domain_dto.CreateRoleDTO{
-		Name: dto.Name,
-	}
-
-	roleID, err = u.roleService.CreateRole(ctx, createRoleDTO)
+	roleID, err = u.roleService.CreateRole(ctx, dto)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create role")
 		return
@@ -51,8 +47,8 @@ func (u *roleUsecase) CreateRole(ctx context.Context, dto domain_dto.CreateRoleD
 	return
 }
 
-func (u *roleUsecase) GetRole(ctx context.Context, dto domain_dto.GetRoleDTO) (roleDTO *domain_dto.RoleDTO, err error) {
-	role, err := u.roleService.GetRole(ctx, dto.ID)
+func (u *roleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *domain_dto.RoleDTO, err error) {
+	role, err := u.roleService.GetRole(ctx, roleID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			return nil, ErrNotFound

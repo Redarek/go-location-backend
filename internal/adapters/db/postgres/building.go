@@ -17,11 +17,11 @@ import (
 )
 
 type BuildingRepo interface {
-	Create(ctx context.Context, createBuildingDTO dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
+	Create(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetOne(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
-	GetAll(ctx context.Context, buildingID uuid.UUID, limit, offset int) (buildings []*entity.Building, err error)
+	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (buildings []*entity.Building, err error)
 
-	Update(ctx context.Context, updateBuildingDTO dto.PatchUpdateBuildingDTO) (err error)
+	Update(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error)
 
 	IsBuildingSoftDeleted(ctx context.Context, buildingID uuid.UUID) (isDeleted bool, err error)
 	SoftDelete(ctx context.Context, buildingID uuid.UUID) (err error)
@@ -36,7 +36,7 @@ func NewBuildingRepo(pool *pgxpool.Pool) *buildingRepo {
 	return &buildingRepo{pool: pool}
 }
 
-func (r *buildingRepo) Create(ctx context.Context, createBuildingDTO dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
+func (r *buildingRepo) Create(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
 	query := `INSERT INTO buildings (
 			name, 
 			description, 
@@ -120,7 +120,7 @@ func (r *buildingRepo) GetAll(ctx context.Context, siteID uuid.UUID, limit, offs
 	defer rows.Close()
 
 	for rows.Next() {
-		building := new(entity.Building)
+		building := &entity.Building{}
 		err = rows.Scan(
 			&building.ID,
 			&building.Name,
@@ -153,7 +153,7 @@ func (r *buildingRepo) GetAll(ctx context.Context, siteID uuid.UUID, limit, offs
 	return
 }
 
-func (r *buildingRepo) Update(ctx context.Context, updateBuildingDTO dto.PatchUpdateBuildingDTO) (err error) {
+func (r *buildingRepo) Update(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error) {
 	query := "UPDATE buildings SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}

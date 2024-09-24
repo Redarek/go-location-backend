@@ -13,12 +13,12 @@ import (
 )
 
 type SiteService interface {
-	CreateSite(ctx context.Context, userCreate dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	CreateSite(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
 	GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
-	GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites []*entity.Site, err error)
+	GetSites(ctx context.Context, getSiteDTO dto.GetSitesDTO) (sites []*entity.Site, err error)
 	// TODO get site list detailed
 
-	UpdateSite(ctx context.Context, updateSiteDTO dto.PatchUpdateSiteDTO) (err error)
+	UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error)
 
 	IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error)
@@ -33,7 +33,7 @@ func NewSiteService(repository repository.SiteRepo) *siteService {
 	return &siteService{repository: repository}
 }
 
-func (s *siteService) CreateSite(ctx context.Context, createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
+func (s *siteService) CreateSite(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
 	siteID, err = s.repository.Create(ctx, createSiteDTO)
 	if err != nil {
 		// TODO улучшить лог
@@ -73,8 +73,8 @@ func (s *siteService) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites 
 }
 
 // TODO PUT update
-func (s *siteService) UpdateSite(ctx context.Context, updateSiteDTO dto.PatchUpdateSiteDTO) (err error) {
-	err = s.repository.Update(ctx, updateSiteDTO)
+func (s *siteService) UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error) {
+	err = s.repository.Update(ctx, patchUpdateSiteDTO)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return ErrNotFound

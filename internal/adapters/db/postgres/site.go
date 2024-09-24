@@ -17,11 +17,11 @@ import (
 )
 
 type SiteRepo interface {
-	Create(ctx context.Context, createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	Create(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
 	GetOne(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
 	GetAll(ctx context.Context, userID uuid.UUID, limit, offset int) (sites []*entity.Site, err error)
 
-	Update(ctx context.Context, updateSiteDTO dto.PatchUpdateSiteDTO) (err error)
+	Update(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error)
 
 	IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error)
 	SoftDelete(ctx context.Context, siteID uuid.UUID) (err error)
@@ -36,7 +36,7 @@ func NewSiteRepo(pool *pgxpool.Pool) *siteRepo {
 	return &siteRepo{pool: pool}
 }
 
-func (r *siteRepo) Create(ctx context.Context, createSiteDTO dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
+func (r *siteRepo) Create(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
 	query := `INSERT INTO sites (
 			name, 
 			description, 
@@ -140,20 +140,20 @@ func (r *siteRepo) GetAll(ctx context.Context, userID uuid.UUID, limit, offset i
 	return
 }
 
-func (r *siteRepo) Update(ctx context.Context, updateSiteDTO dto.PatchUpdateSiteDTO) (err error) {
+func (r *siteRepo) Update(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error) {
 	query := "UPDATE sites SET updated_at = NOW(), "
 	updates := []string{}
 	params := []interface{}{}
 	paramID := 1
 
-	if updateSiteDTO.Name != nil {
+	if patchUpdateSiteDTO.Name != nil {
 		updates = append(updates, fmt.Sprintf("name = $%d", paramID))
-		params = append(params, updateSiteDTO.Name)
+		params = append(params, patchUpdateSiteDTO.Name)
 		paramID++
 	}
-	if updateSiteDTO.Description != nil {
+	if patchUpdateSiteDTO.Description != nil {
 		updates = append(updates, fmt.Sprintf("description = $%d", paramID))
-		params = append(params, updateSiteDTO.Description)
+		params = append(params, patchUpdateSiteDTO.Description)
 		paramID++
 	}
 
@@ -163,7 +163,7 @@ func (r *siteRepo) Update(ctx context.Context, updateSiteDTO dto.PatchUpdateSite
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
-	params = append(params, updateSiteDTO.ID)
+	params = append(params, patchUpdateSiteDTO.ID)
 
 	commandTag, err := r.pool.Exec(ctx, query, params...)
 	if err != nil {
@@ -171,7 +171,7 @@ func (r *siteRepo) Update(ctx context.Context, updateSiteDTO dto.PatchUpdateSite
 		return
 	}
 	if commandTag.RowsAffected() == 0 {
-		log.Info().Msgf("no site found with the UUID: %v", updateSiteDTO.ID)
+		log.Info().Msgf("no site found with the UUID: %v", patchUpdateSiteDTO.ID)
 		return ErrNotFound
 	}
 

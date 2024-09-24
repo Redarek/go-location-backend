@@ -74,7 +74,7 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.RegisterUserDTO{
+	domainDTO := &domain_dto.RegisterUserDTO{
 		Username: dto.Username,
 		Password: dto.Password,
 	}
@@ -130,7 +130,7 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 	// TODO already login err
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.LoginUserDTO{
+	domainDTO := &domain_dto.LoginUserDTO{
 		Username: dto.Username,
 		Password: dto.Password,
 	}

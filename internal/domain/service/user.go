@@ -19,7 +19,7 @@ type UserService interface {
 	// GetAllForList(ctx context.Context) []entity.BookView
 	// GetByID(ctx context.Context, id uuid.UUID) entity.User
 	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
-	CreateUser(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
+	CreateUser(ctx context.Context, createUserDTO *dto.CreateUserDTO) (userID uuid.UUID, err error)
 
 	HashPassword(password string) (string, error)
 	CheckPasswordHash(password, hash string) bool
@@ -33,8 +33,8 @@ func NewUserService(repository repository.UserRepo) *userService {
 	return &userService{repository: repository}
 }
 
-func (s userService) CreateUser(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
-	userID, err = s.repository.Create(ctx, userCreate)
+func (s userService) CreateUser(ctx context.Context, createUserDTO *dto.CreateUserDTO) (userID uuid.UUID, err error) {
+	userID, err = s.repository.Create(ctx, createUserDTO)
 	if err != nil {
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to create user")

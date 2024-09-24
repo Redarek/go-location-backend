@@ -14,7 +14,7 @@ import (
 )
 
 type UserRepo interface {
-	Create(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error)
+	Create(ctx context.Context, dto *dto.CreateUserDTO) (userID uuid.UUID, err error)
 	GetOneByName(ctx context.Context, username string) (user *entity.User, err error)
 	// GetOneByName(username string) entity.User
 	// GetAll(limit, offset int) []entity.User
@@ -29,11 +29,11 @@ func NewUserRepo(pool *pgxpool.Pool) *userRepo {
 	return &userRepo{pool: pool}
 }
 
-func (r *userRepo) Create(ctx context.Context, userCreate dto.CreateUserDTO) (userID uuid.UUID, err error) {
+func (r *userRepo) Create(ctx context.Context, dto *dto.CreateUserDTO) (userID uuid.UUID, err error) {
 	query := `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`
 	row := r.pool.QueryRow(ctx, query,
-		userCreate.Username,
-		userCreate.PasswordHash,
+		dto.Username,
+		dto.PasswordHash,
 	)
 	var user entity.User
 	err = row.Scan(&user.ID)

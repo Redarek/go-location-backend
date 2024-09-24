@@ -31,7 +31,7 @@ func NewRoleHandler(usecase usecase.RoleUsecase) *roleHandler {
 // Регистрирует маршруты для user
 func (h *roleHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
-	router.Get(getRoleByNameURL, h.GetRoleByName)
+	router.Get(getRoleByNameURL, h.GetRoleByIDorName)
 	router.Post(createRoleURL, h.CreateRole)
 
 	return router
@@ -53,7 +53,7 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.CreateRoleDTO{
+	domainDTO := &domain_dto.CreateRoleDTO{
 		Name: dto.Name,
 	}
 
@@ -80,11 +80,11 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"id": roleID})
 }
 
-func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
+func (h *roleHandler) GetRoleByIDorName(ctx *fiber.Ctx) error {
 	var role *domain_dto.RoleDTO
 
 	if ctx.Query("id") != "" {
-		uuid, err := uuid.Parse(ctx.Query("id"))
+		roleID, err := uuid.Parse(ctx.Query("id"))
 		if err != nil {
 			log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
 			return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -95,18 +95,18 @@ func (h *roleHandler) GetRoleByName(ctx *fiber.Ctx) error {
 			))
 		}
 
-		var dto http_dto.GetRoleDTO = http_dto.GetRoleDTO{
-			ID: uuid,
-		}
+		// var dto http_dto.GetRoleDTO = http_dto.GetRoleDTO{
+		// 	ID: uuid,
+		// }
 
 		// TODO validate
 
 		// Mapping http DTO -> domain DTO
-		domainDTO := domain_dto.GetRoleDTO{
-			ID: dto.ID,
-		}
+		// domainDTO := &domain_dto.GetRoleDTO{
+		// 	ID: dto.ID,
+		// }
 
-		role, err = h.usecase.GetRole(context.Background(), domainDTO)
+		role, err = h.usecase.GetRole(context.Background(), roleID)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
 				ctx.Status(fiber.StatusNoContent)

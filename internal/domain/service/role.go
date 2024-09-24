@@ -13,7 +13,7 @@ import (
 )
 
 type RoleService interface {
-	CreateRole(ctx context.Context, userCreate dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	CreateRole(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
 	GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
 	GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
@@ -26,7 +26,7 @@ func NewRoleService(repository repository.RoleRepo) *roleService {
 	return &roleService{repository: repository}
 }
 
-func (s *roleService) CreateRole(ctx context.Context, createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+func (s *roleService) CreateRole(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	roleID, err = s.repository.Create(ctx, createRoleDTO)
 	if err != nil {
 		// TODO улучшить лог

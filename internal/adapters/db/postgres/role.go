@@ -14,7 +14,7 @@ import (
 )
 
 type RoleRepo interface {
-	Create(ctx context.Context, createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	Create(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
 	GetOne(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
 	GetOneByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
@@ -27,7 +27,7 @@ func NewRoleRepo(pool *pgxpool.Pool) *roleRepo {
 	return &roleRepo{pool: pool}
 }
 
-func (r *roleRepo) Create(ctx context.Context, createRoleDTO dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+func (r *roleRepo) Create(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	query := `INSERT INTO roles (name) VALUES ($1) RETURNING id`
 	row := r.pool.QueryRow(ctx, query,
 		createRoleDTO.Name,

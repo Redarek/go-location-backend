@@ -13,12 +13,12 @@ import (
 )
 
 type BuildingService interface {
-	CreateBuilding(ctx context.Context, userCreate dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
+	CreateBuilding(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
 	GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
 	// TODO get building list detailed
 
-	UpdateBuilding(ctx context.Context, updateBuildingDTO dto.PatchUpdateBuildingDTO) (err error)
+	UpdateBuilding(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error)
 
 	IsBuildingSoftDeleted(ctx context.Context, buildingID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
@@ -33,7 +33,7 @@ func NewBuildingService(repository repository.BuildingRepo) *buildingService {
 	return &buildingService{repository: repository}
 }
 
-func (s *buildingService) CreateBuilding(ctx context.Context, createBuildingDTO dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
+func (s *buildingService) CreateBuilding(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
 	buildingID, err = s.repository.Create(ctx, createBuildingDTO)
 	if err != nil {
 		// TODO улучшить лог
@@ -73,7 +73,7 @@ func (s *buildingService) GetBuildings(ctx context.Context, dto dto.GetBuildings
 }
 
 // TODO PUT update
-func (s *buildingService) UpdateBuilding(ctx context.Context, updateBuildingDTO dto.PatchUpdateBuildingDTO) (err error) {
+func (s *buildingService) UpdateBuilding(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error) {
 	err = s.repository.Update(ctx, updateBuildingDTO)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {

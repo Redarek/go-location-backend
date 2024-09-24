@@ -23,16 +23,12 @@ var (
 //? Здесь был интерфейс сервиса (Перенесён в в сервисы)
 
 type UserUsecase interface {
-	Register(ctx context.Context, dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
-	Login(ctx context.Context, dto domain_dto.LoginUserDTO) (signedString string, err error)
+	Register(ctx context.Context, dto *domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
+	Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (signedString string, err error)
 	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
 	// ListAllBooks(ctx context.Context) []entity.BookView
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
-
-// type AuthorService interface {
-// 	GetByID(ctx context.Context, id string) entity.User
-// }
 
 // type GenreService interface {
 // 	GetByID(ctx context.Context, id string) entity.User
@@ -50,7 +46,7 @@ func NewUserUsecase(userService service.UserService) *userUsecase {
 }
 
 // ? Нужен ли ctx *fiber.Ctx
-func (u userUsecase) Register(ctx context.Context, dto domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
+func (u userUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
 	_, err = u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// If error except ErrNotFound
@@ -73,7 +69,7 @@ func (u userUsecase) Register(ctx context.Context, dto domain_dto.RegisterUserDT
 		PasswordHash: hash,
 	}
 
-	userID, err = u.userService.CreateUser(ctx, createUserDTO)
+	userID, err = u.userService.CreateUser(ctx, &createUserDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create user")
 		return
@@ -84,7 +80,7 @@ func (u userUsecase) Register(ctx context.Context, dto domain_dto.RegisterUserDT
 	return
 }
 
-func (u userUsecase) Login(ctx context.Context, dto domain_dto.LoginUserDTO) (signedString string, err error) {
+func (u userUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (signedString string, err error) {
 	user, err := u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// Return ErrBadLogin if user not found
@@ -106,7 +102,7 @@ func (u userUsecase) Login(ctx context.Context, dto domain_dto.LoginUserDTO) (si
 	claims := jwt.MapClaims{
 		"id":       user.ID,
 		"username": user.Username,
-		"exp":      time.Now().Add(time.Hour * 72).Unix(),
+		"exp":      time.Now().Add(time.Hour * 72).Unix(), // TODO вынести в конфиг
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -78,7 +78,7 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 	}
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.CreateSiteDTO{
+	domainDTO := &domain_dto.CreateSiteDTO{
 		Name:        dto.Name,
 		Description: dto.Description,
 		UserID:      userID,
@@ -231,7 +231,7 @@ func (h *siteHandler) PatchUpdateSite(c *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.PatchUpdateSiteDTO{
+	domainDTO := &domain_dto.PatchUpdateSiteDTO{
 		ID:          dto.ID,
 		Name:        dto.Name,
 		Description: dto.Description,

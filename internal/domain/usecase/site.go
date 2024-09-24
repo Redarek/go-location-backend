@@ -12,12 +12,12 @@ import (
 )
 
 type SiteUsecase interface {
-	CreateSite(ctx context.Context, dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	CreateSite(ctx context.Context, dto *domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
 	GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *domain_dto.SiteDTO, err error)
 	GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error)
 	// TODO GetSitesDetailed
 
-	PatchUpdateSite(ctx context.Context, patchUpdateDTO domain_dto.PatchUpdateSiteDTO) (err error)
+	PatchUpdateSite(ctx context.Context, dto *domain_dto.PatchUpdateSiteDTO) (err error)
 	SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error)
 	RestoreSite(ctx context.Context, siteID uuid.UUID) (err error)
 }
@@ -30,14 +30,8 @@ func NewSiteUsecase(siteService service.SiteService) *siteUsecase {
 	return &siteUsecase{siteService: siteService}
 }
 
-func (u *siteUsecase) CreateSite(ctx context.Context, dto domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
-	var createSiteDTO domain_dto.CreateSiteDTO = domain_dto.CreateSiteDTO{
-		Name:        dto.Name,
-		Description: dto.Description,
-		UserID:      dto.UserID,
-	}
-
-	siteID, err = u.siteService.CreateSite(ctx, createSiteDTO)
+func (u *siteUsecase) CreateSite(ctx context.Context, dto *domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
+	siteID, err = u.siteService.CreateSite(ctx, dto)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create site")
 		return
@@ -101,8 +95,8 @@ func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) 
 	return
 }
 
-func (u *siteUsecase) PatchUpdateSite(ctx context.Context, patchUpdateDTO domain_dto.PatchUpdateSiteDTO) (err error) {
-	_, err = u.siteService.GetSite(ctx, patchUpdateDTO.ID)
+func (u *siteUsecase) PatchUpdateSite(ctx context.Context, dto *domain_dto.PatchUpdateSiteDTO) (err error) {
+	_, err = u.siteService.GetSite(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check site existing")
@@ -110,7 +104,7 @@ func (u *siteUsecase) PatchUpdateSite(ctx context.Context, patchUpdateDTO domain
 		}
 	}
 
-	err = u.siteService.UpdateSite(ctx, patchUpdateDTO)
+	err = u.siteService.UpdateSite(ctx, dto)
 	if err != nil {
 		if errors.Is(err, service.ErrNotUpdated) {
 			log.Info().Err(err).Msg("site was not updated")

@@ -66,7 +66,7 @@ func (h *buildingHandler) CreateBuilding(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.CreateBuildingDTO{
+	domainDTO := &domain_dto.CreateBuildingDTO{
 		Name:        dto.Name,
 		Description: dto.Description,
 		Country:     dto.Country,
@@ -237,7 +237,7 @@ func (h *buildingHandler) PatchUpdateBuilding(c *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.PatchUpdateBuildingDTO{
+	domainDTO := &domain_dto.PatchUpdateBuildingDTO{
 		ID:          dto.ID,
 		Name:        dto.Name,
 		Description: dto.Description,
