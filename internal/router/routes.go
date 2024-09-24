@@ -47,6 +47,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	building := v1.Group("/building", middleware.Auth)
 	handlerComposite.BuildingHandler.Register(&building)
+
+	floor := v1.Group("/floor", middleware.Auth)
+	handlerComposite.FloorHandler.Register(&floor)
 }
 
 // import (

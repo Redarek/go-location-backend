@@ -10,6 +10,7 @@ type ServiceComposite struct {
 	roleService     service.RoleService
 	siteService     service.SiteService
 	buildingService service.BuildingService
+	floorService    service.FloorService
 }
 
 func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *ServiceComposite) {
@@ -19,5 +20,6 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		roleService:     service.NewRoleService(composite.roleRepo),
 		siteService:     service.NewSiteService(composite.siteRepo),
 		buildingService: service.NewBuildingService(composite.buildingRepo),
+		floorService:    service.NewFloorService(composite.floorRepo),
 	}
 }

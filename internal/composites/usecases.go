@@ -10,6 +10,7 @@ type UsecaseComposite struct {
 	roleUsecase     usecase.RoleUsecase
 	siteUsecase     usecase.SiteUsecase
 	buildingUsecase usecase.BuildingUsecase
+	floorUsecase    usecase.FloorUsecase
 }
 
 func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *UsecaseComposite) {
@@ -19,5 +20,6 @@ func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *Usecase
 		roleUsecase:     usecase.NewRoleUsecase(composite.roleService),
 		siteUsecase:     usecase.NewSiteUsecase(composite.siteService),
 		buildingUsecase: usecase.NewBuildingUsecase(composite.buildingService, composite.siteService),
+		floorUsecase:    usecase.NewFloorUsecase(composite.floorService, composite.buildingService),
 	}
 }
