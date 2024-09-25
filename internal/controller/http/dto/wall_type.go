@@ -6,11 +6,17 @@ import (
 )
 
 type WallTypeDTO struct {
-	ID uuid.UUID `json:"id"`
-	CreateWallTypeDTO
-	CreatedAt pgtype.Timestamptz  `json:"createdAt"`
-	UpdatedAt pgtype.Timestamptz  `json:"updatedAt"`
-	DeletedAt *pgtype.Timestamptz `json:"deletedAt"`
+	ID            uuid.UUID           `json:"id"`
+	Name          string              `json:"name"`
+	Color         string              `json:"color"`
+	Attenuation24 float64             `json:"attenuation24"`
+	Attenuation5  float64             `json:"attenuation5"`
+	Attenuation6  float64             `json:"attenuation6"`
+	Thickness     float64             `json:"thickness"`
+	SiteID        uuid.UUID           `json:"siteId"`
+	CreatedAt     pgtype.Timestamptz  `json:"createdAt"`
+	UpdatedAt     pgtype.Timestamptz  `json:"updatedAt"`
+	DeletedAt     *pgtype.Timestamptz `json:"deletedAt"`
 }
 
 type CreateWallTypeDTO struct {

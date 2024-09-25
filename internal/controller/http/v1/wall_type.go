@@ -139,14 +139,12 @@ func (h *wallTypeHandler) GetWallType(ctx *fiber.Ctx) error {
 
 	// Mapping domain DTO -> http DTO
 	wallTypeDTO := http_dto.WallTypeDTO{
-		ID: wallType.ID,
-		CreateWallTypeDTO: http_dto.CreateWallTypeDTO{
-			Name:          wallType.Name,
-			Color:         wallType.Color,
-			Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-			Thickness: wallType.Thickness,
-			SiteID:    wallType.SiteID,
-		},
+		ID:            wallType.ID,
+		Name:          wallType.Name,
+		Color:         wallType.Color,
+		Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
+		Thickness: wallType.Thickness,
+		SiteID:    wallType.SiteID,
 		CreatedAt: wallType.CreatedAt,
 		UpdatedAt: wallType.UpdatedAt,
 		DeletedAt: wallType.DeletedAt,
@@ -203,14 +201,12 @@ func (h *wallTypeHandler) GetWallTypes(c *fiber.Ctx) error {
 	for _, wallType := range wallTypes {
 		// Mapping domain DTO -> http DTO
 		wallTypeDTO := http_dto.WallTypeDTO{
-			ID: wallType.ID,
-			CreateWallTypeDTO: http_dto.CreateWallTypeDTO{
-				Name:          wallType.Name,
-				Color:         wallType.Color,
-				Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-				Thickness: wallType.Thickness,
-				SiteID:    wallType.SiteID,
-			},
+			ID:            wallType.ID,
+			Name:          wallType.Name,
+			Color:         wallType.Color,
+			Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
+			Thickness: wallType.Thickness,
+			SiteID:    wallType.SiteID,
 			CreatedAt: wallType.CreatedAt,
 			UpdatedAt: wallType.UpdatedAt,
 			DeletedAt: wallType.DeletedAt,

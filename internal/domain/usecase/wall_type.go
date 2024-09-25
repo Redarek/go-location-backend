@@ -70,14 +70,12 @@ func (u *wallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 
 	// Mapping domain entity -> domain DTO
 	wallTypeDTO = &domain_dto.WallTypeDTO{
-		ID: wallType.ID,
-		CreateWallTypeDTO: domain_dto.CreateWallTypeDTO{
-			Name:          wallType.Name,
-			Color:         wallType.Color,
-			Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-			Thickness: wallType.Thickness,
-			SiteID:    wallType.SiteID,
-		},
+		ID:            wallType.ID,
+		Name:          wallType.Name,
+		Color:         wallType.Color,
+		Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
+		Thickness: wallType.Thickness,
+		SiteID:    wallType.SiteID,
 		CreatedAt: wallType.CreatedAt,
 		UpdatedAt: wallType.UpdatedAt,
 		DeletedAt: wallType.DeletedAt,
@@ -100,14 +98,12 @@ func (u *wallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWa
 	for _, wallType := range wallTypes {
 		// Mapping domain entity -> domain DTO
 		wallTypeDTO := &domain_dto.WallTypeDTO{
-			ID: wallType.ID,
-			CreateWallTypeDTO: domain_dto.CreateWallTypeDTO{
-				Name:          wallType.Name,
-				Color:         wallType.Color,
-				Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-				Thickness: wallType.Thickness,
-				SiteID:    wallType.SiteID,
-			},
+			ID:            wallType.ID,
+			Name:          wallType.Name,
+			Color:         wallType.Color,
+			Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
+			Thickness: wallType.Thickness,
+			SiteID:    wallType.SiteID,
 			CreatedAt: wallType.CreatedAt,
 			UpdatedAt: wallType.UpdatedAt,
 			DeletedAt: wallType.DeletedAt,
