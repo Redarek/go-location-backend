@@ -19,6 +19,8 @@ import (
 type BuildingRepo interface {
 	Create(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetOne(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
+	// GetOneDetailed(ctx context.Context, buildingID uuid.UUID) (building *entity.BuildingDetailed, err error) // TODO
+
 	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (buildings []*entity.Building, err error)
 
 	Update(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error)
@@ -100,6 +102,10 @@ func (r *buildingRepo) GetOne(ctx context.Context, buildingID uuid.UUID) (buildi
 	return
 }
 
+// func (r *buildingRepo) GetOneDetailed(ctx context.Context, buildingID uuid.UUID) (building *entity.BuildingDetailed, err error) {
+
+// }
+
 func (r *buildingRepo) GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (buildings []*entity.Building, err error) {
 	query := `SELECT
 			id, 
@@ -110,7 +116,8 @@ func (r *buildingRepo) GetAll(ctx context.Context, siteID uuid.UUID, limit, offs
 			address,
 			site_id,
 			created_at, updated_at, deleted_at
-		FROM buildings WHERE site_id = $1 AND deleted_at IS NULL
+		FROM buildings 
+		WHERE site_id = $1 AND deleted_at IS NULL
 		LIMIT $2 OFFSET $3`
 	rows, err := r.pool.Query(ctx, query, siteID, limit, offset)
 	if err != nil {

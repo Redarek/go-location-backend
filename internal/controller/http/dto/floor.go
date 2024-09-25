@@ -20,7 +20,7 @@ type CreateFloorDTO struct {
 	Heatmap              *string   `json:"heatmap"`
 	WidthInPixels        int       `json:"widthInPixels"`
 	HeightInPixels       int       `json:"heightInPixels"`
-	Scale                float64   `json:"scale" db:"scale"`
+	Scale                float64   `json:"scale"`
 	CellSizeMeter        float64   `json:"cellSizeMeter"`
 	NorthAreaIndentMeter float64   `json:"northAreaIndentMeter"`
 	SouthAreaIndentMeter float64   `json:"southAreaIndentMeter"`

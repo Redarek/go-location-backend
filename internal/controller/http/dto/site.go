@@ -25,7 +25,7 @@ type GetSiteDTO struct {
 }
 
 type GetSitesDTO struct {
-	UserID uuid.UUID `json:"user_id"`
+	UserID uuid.UUID `json:"userId"`
 	Page   int       `json:"page"`
 	Size   int       `json:"size"`
 }

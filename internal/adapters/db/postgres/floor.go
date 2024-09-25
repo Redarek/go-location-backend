@@ -130,7 +130,8 @@ func (r *floorRepo) GetAll(ctx context.Context, buildingID uuid.UUID, limit, off
 			cell_size_meter,
 			north_area_indent_meter, south_area_indent_meter, west_area_indent_meter, east_area_indent_meter,
 			created_at, updated_at, deleted_at
-		FROM floors WHERE building_id = $1 AND deleted_at IS NULL
+		FROM floors 
+		WHERE building_id = $1 AND deleted_at IS NULL
 		LIMIT $2 OFFSET $3`
 	rows, err := r.pool.Query(ctx, query, buildingID, limit, offset)
 	if err != nil {
