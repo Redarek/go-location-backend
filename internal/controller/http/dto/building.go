@@ -6,8 +6,8 @@ import (
 )
 
 type BuildingDTO struct {
-	ID          uuid.UUID           `json:"id" db:"id"`
-	Name        string              `json:"name" db:"name"`
+	ID          uuid.UUID           `json:"id"`
+	Name        string              `json:"name"`
 	Description *string             `json:"description"`
 	Country     string              `json:"country"`
 	City        string              `json:"city"`

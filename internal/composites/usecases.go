@@ -11,6 +11,7 @@ type UsecaseComposite struct {
 	siteUsecase     usecase.SiteUsecase
 	buildingUsecase usecase.BuildingUsecase
 	floorUsecase    usecase.FloorUsecase
+	wallTypeUsecase usecase.WallTypeUsecase
 }
 
 func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *UsecaseComposite) {
@@ -21,5 +22,6 @@ func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *Usecase
 		siteUsecase:     usecase.NewSiteUsecase(composite.siteService),
 		buildingUsecase: usecase.NewBuildingUsecase(composite.buildingService, composite.siteService),
 		floorUsecase:    usecase.NewFloorUsecase(composite.floorService, composite.buildingService),
+		wallTypeUsecase: usecase.NewWallTypeUsecase(composite.wallTypeService, composite.siteService),
 	}
 }

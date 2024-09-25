@@ -11,6 +11,7 @@ type ServiceComposite struct {
 	siteService     service.SiteService
 	buildingService service.BuildingService
 	floorService    service.FloorService
+	wallTypeService service.WallTypeService
 }
 
 func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *ServiceComposite) {
@@ -21,5 +22,6 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		siteService:     service.NewSiteService(composite.siteRepo),
 		buildingService: service.NewBuildingService(composite.buildingRepo),
 		floorService:    service.NewFloorService(composite.floorRepo),
+		wallTypeService: service.NewWallTypeService(composite.wallTypeRepo),
 	}
 }
