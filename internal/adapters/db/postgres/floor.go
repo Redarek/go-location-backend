@@ -37,9 +37,14 @@ func NewFloorRepo(pool *pgxpool.Pool) *floorRepo {
 }
 
 func (r *floorRepo) Create(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error) {
+	// inserts := []string{}
+	// params := []interface{}{}
+	// numbers := []int{}
+	// paramID := 4 // Количество параметров перед динамическим добавлением
+
 	query := `INSERT INTO floors (
 			name,
-			number,
+			number, 
 			image,
 			heatmap,
 			width_in_pixels,
@@ -196,6 +201,11 @@ func (r *floorRepo) Update(ctx context.Context, patchUpdateFloorDTO *dto.PatchUp
 	if patchUpdateFloorDTO.Image != nil {
 		updates = append(updates, fmt.Sprintf("image = $%d", paramID))
 		params = append(params, patchUpdateFloorDTO.Image)
+		paramID++
+	}
+	if patchUpdateFloorDTO.Heatmap != nil {
+		updates = append(updates, fmt.Sprintf("heatmap = $%d", paramID))
+		params = append(params, patchUpdateFloorDTO.Heatmap)
 		paramID++
 	}
 	if patchUpdateFloorDTO.WidthInPixels != nil {

@@ -121,7 +121,7 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         heatmap VARCHAR(1024),
         width_in_pixels INTEGER NOT NULL DEFAULT 0,
         height_in_pixels INTEGER NOT NULL DEFAULT 0,
-        scale FLOAT NOT NULL CHECK (scale > 0),
+        scale FLOAT NOT NULL CHECK (scale > 0) DEFAULT 0.1,
         cell_size_meter FLOAT NOT NULL DEFAULT 0.25 CHECK (cell_size_meter > 0),
         north_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (north_area_indent_meter >= 0),
         south_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (south_area_indent_meter >= 0),

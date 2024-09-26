@@ -30,14 +30,14 @@ type CreateFloorDTO struct {
 	Number               int       `db:"number"`
 	Image                *string   `db:"image"`
 	Heatmap              *string   `db:"heatmap"`
-	WidthInPixels        *int      `db:"width_in_pixels"`
-	HeightInPixels       *int      `db:"height_in_pixels"`
+	WidthInPixels        int       `db:"width_in_pixels"`
+	HeightInPixels       int       `db:"height_in_pixels"`
 	Scale                float64   `db:"scale"`
-	CellSizeMeter        *float64  `db:"cell_size_meter"`
-	NorthAreaIndentMeter *float64  `db:"north_area_indent_meter"`
-	SouthAreaIndentMeter *float64  `db:"south_area_indent_meter"`
-	WestAreaIndentMeter  *float64  `db:"west_area_indent_meter"`
-	EastAreaIndentMeter  *float64  `db:"east_area_indent_meter"`
+	CellSizeMeter        float64   `db:"cell_size_meter"`
+	NorthAreaIndentMeter float64   `db:"north_area_indent_meter"`
+	SouthAreaIndentMeter float64   `db:"south_area_indent_meter"`
+	WestAreaIndentMeter  float64   `db:"west_area_indent_meter"`
+	EastAreaIndentMeter  float64   `db:"east_area_indent_meter"`
 	BuildingID           uuid.UUID `db:"building_id"`
 }
 
