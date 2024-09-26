@@ -30,14 +30,14 @@ type CreateFloorDTO struct {
 	Number               int       `json:"number"`
 	Image                *string   `json:"image"`
 	Heatmap              *string   `json:"heatmap"`
-	WidthInPixels        *int      `json:"widthInPixels"`
-	HeightInPixels       *int      `json:"heightInPixels"`
+	WidthInPixels        int       `json:"widthInPixels"`
+	HeightInPixels       int       `json:"heightInPixels"`
 	Scale                float64   `json:"scale"`
-	CellSizeMeter        *float64  `json:"cellSizeMeter"`
-	NorthAreaIndentMeter *float64  `json:"northAreaIndentMeter"`
-	SouthAreaIndentMeter *float64  `json:"southAreaIndentMeter"`
-	WestAreaIndentMeter  *float64  `json:"westAreaIndentMeter"`
-	EastAreaIndentMeter  *float64  `json:"eastAreaIndentMeter"`
+	CellSizeMeter        float64   `json:"cellSizeMeter"`
+	NorthAreaIndentMeter float64   `json:"northAreaIndentMeter"`
+	SouthAreaIndentMeter float64   `json:"southAreaIndentMeter"`
+	WestAreaIndentMeter  float64   `json:"westAreaIndentMeter"`
+	EastAreaIndentMeter  float64   `json:"eastAreaIndentMeter"`
 	BuildingID           uuid.UUID `json:"buildingId"`
 }
 
@@ -46,7 +46,7 @@ type PatchUpdateFloorDTO struct {
 	Name                 *string   `json:"name"`
 	Number               *int      `json:"number"`
 	Image                *string   `json:"image"`
-	Heatmap              *string   `json:"heatmap"`
+	Heatmap              *string   `json:"heatmap"` // ? Нужно ли давать возможность редактировать?
 	WidthInPixels        *int      `json:"widthInPixels"`
 	HeightInPixels       *int      `json:"heightInPixels"`
 	Scale                *float64  `json:"scale"`
