@@ -46,5 +46,5 @@ type Sensor struct {
 type SensorDetailed struct {
 	Sensor
 	SensorType SensorType     `json:"sensorType"`
-	Radios     []*SensorRadio `json:"sensorRadios"`
+	Radios     []*SensorRadio `json:"radios"`
 }

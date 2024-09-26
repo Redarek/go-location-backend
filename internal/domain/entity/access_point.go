@@ -22,5 +22,5 @@ type AccessPoint struct {
 type AccessPointDetailed struct {
 	AccessPoint
 	AccessPointType AccessPointType     `json:"accessPointType"`
-	Radios          []*AccessPointRadio `json:"accessPointRadios"`
+	Radios          []*AccessPointRadio `json:"radios"`
 }

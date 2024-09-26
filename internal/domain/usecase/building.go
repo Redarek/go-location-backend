@@ -53,7 +53,7 @@ func (u *buildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.Cr
 		return
 	}
 
-	log.Info().Msgf("building %v successfully created", dto.Name)
+	log.Info().Msgf("building %v successfully created", buildingID)
 	return
 }
 
