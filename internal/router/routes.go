@@ -53,6 +53,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	wallType := v1.Group("/wallType", middleware.Auth)
 	handlerComposite.WallTypeHandler.Register(&wallType)
+
+	wall := v1.Group("/wall", middleware.Auth)
+	handlerComposite.WallHandler.Register(&wall)
 }
 
 // import (

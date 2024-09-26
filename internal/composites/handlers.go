@@ -12,6 +12,7 @@ type HandlerComposite struct {
 	BuildingHandler handler.Handler
 	FloorHandler    handler.Handler
 	WallTypeHandler handler.Handler
+	WallHandler     handler.Handler
 }
 
 func NewHandlerComposite(composite *UsecaseComposite) (serviceComposite *HandlerComposite) {
@@ -23,5 +24,6 @@ func NewHandlerComposite(composite *UsecaseComposite) (serviceComposite *Handler
 		BuildingHandler: handler.NewBuildingHandler(composite.buildingUsecase),
 		FloorHandler:    handler.NewFloorHandler(composite.floorUsecase),
 		WallTypeHandler: handler.NewWallTypeHandler(composite.wallTypeUsecase),
+		WallHandler:     handler.NewWallHandler(composite.wallUsecase),
 	}
 }

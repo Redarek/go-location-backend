@@ -12,6 +12,7 @@ type RepositoryComposite struct {
 	buildingRepo repository.BuildingRepo
 	floorRepo    repository.FloorRepo
 	wallTypeRepo repository.WallTypeRepo
+	wallRepo     repository.WallRepo
 }
 
 func NewRepositoryComposite(composite *PostgresComposite) (repositoryComposite *RepositoryComposite) {
@@ -23,5 +24,6 @@ func NewRepositoryComposite(composite *PostgresComposite) (repositoryComposite *
 		buildingRepo: repository.NewBuildingRepo(composite.pool),
 		floorRepo:    repository.NewFloorRepo(composite.pool),
 		wallTypeRepo: repository.NewWallTypeRepo(composite.pool),
+		wallRepo:     repository.NewWallRepo(composite.pool),
 	}
 }
