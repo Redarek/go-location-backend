@@ -12,6 +12,20 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
+type BuildingRepo interface {
+	Create(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
+	GetOne(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
+	// GetOneDetailed(ctx context.Context, buildingID uuid.UUID) (building *entity.BuildingDetailed, err error) // TODO
+
+	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (buildings []*entity.Building, err error)
+
+	Update(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error)
+
+	IsBuildingSoftDeleted(ctx context.Context, buildingID uuid.UUID) (isDeleted bool, err error)
+	SoftDelete(ctx context.Context, buildingID uuid.UUID) (err error)
+	Restore(ctx context.Context, buildingID uuid.UUID) (err error)
+}
+
 type BuildingService interface {
 	CreateBuilding(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
@@ -26,10 +40,10 @@ type BuildingService interface {
 }
 
 type buildingService struct {
-	repository repository.BuildingRepo
+	repository BuildingRepo
 }
 
-func NewBuildingService(repository repository.BuildingRepo) *buildingService {
+func NewBuildingService(repository BuildingRepo) *buildingService {
 	return &buildingService{repository: repository}
 }
 

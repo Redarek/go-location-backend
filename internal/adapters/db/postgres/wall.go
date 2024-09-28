@@ -16,19 +16,6 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type WallRepo interface {
-	Create(ctx context.Context, dto *dto.CreateWallDTO) (wallID uuid.UUID, err error)
-	GetOne(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
-
-	GetAll(ctx context.Context, floorID uuid.UUID, limit, offset int) (walls []*entity.Wall, err error)
-
-	Update(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error)
-
-	IsWallSoftDeleted(ctx context.Context, wallID uuid.UUID) (isDeleted bool, err error)
-	SoftDelete(ctx context.Context, wallID uuid.UUID) (err error)
-	Restore(ctx context.Context, wallID uuid.UUID) (err error)
-}
-
 type wallRepo struct {
 	pool *pgxpool.Pool
 }

@@ -8,10 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type HealthRepo interface {
-	Health(ctx context.Context) (err error)
-}
-
 type healthRepo struct {
 	pool *pgxpool.Pool
 }

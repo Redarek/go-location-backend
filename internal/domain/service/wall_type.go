@@ -12,6 +12,20 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
+type WallTypeRepo interface {
+	Create(ctx context.Context, dto *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
+	GetOne(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
+	// GetOneDetailed(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallTypeDetailed, err error) // TODO
+
+	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (wallTypes []*entity.WallType, err error)
+
+	Update(ctx context.Context, updateWallTypeDTO *dto.PatchUpdateWallTypeDTO) (err error)
+
+	IsWallTypeSoftDeleted(ctx context.Context, wallTypeID uuid.UUID) (isDeleted bool, err error)
+	SoftDelete(ctx context.Context, wallTypeID uuid.UUID) (err error)
+	Restore(ctx context.Context, wallTypeID uuid.UUID) (err error)
+}
+
 type WallTypeService interface {
 	CreateWallType(ctx context.Context, createWallTypeDTO *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
 	GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
@@ -26,10 +40,10 @@ type WallTypeService interface {
 }
 
 type wallTypeService struct {
-	repository repository.WallTypeRepo
+	repository WallTypeRepo
 }
 
-func NewWallTypeService(repository repository.WallTypeRepo) *wallTypeService {
+func NewWallTypeService(repository WallTypeRepo) *wallTypeService {
 	return &wallTypeService{repository: repository}
 }
 

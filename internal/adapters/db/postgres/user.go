@@ -13,14 +13,6 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type UserRepo interface {
-	Create(ctx context.Context, dto *dto.CreateUserDTO) (userID uuid.UUID, err error)
-	GetOneByName(ctx context.Context, username string) (user *entity.User, err error)
-	// GetOneByName(username string) entity.User
-	// GetAll(limit, offset int) []entity.User
-	// Delete(book entity.Book) error
-}
-
 type userRepo struct {
 	pool *pgxpool.Pool
 }

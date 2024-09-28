@@ -12,6 +12,12 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
+type RoleRepo interface {
+	Create(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetOne(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
+	GetOneByName(ctx context.Context, name string) (role *entity.Role, err error)
+}
+
 type RoleService interface {
 	CreateRole(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
 	GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
@@ -19,10 +25,10 @@ type RoleService interface {
 }
 
 type roleService struct {
-	repository repository.RoleRepo
+	repository RoleRepo
 }
 
-func NewRoleService(repository repository.RoleRepo) *roleService {
+func NewRoleService(repository RoleRepo) *roleService {
 	return &roleService{repository: repository}
 }
 

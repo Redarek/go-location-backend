@@ -16,18 +16,6 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type FloorRepo interface {
-	Create(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error)
-	GetOne(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error)
-	GetAll(ctx context.Context, buildingID uuid.UUID, limit, offset int) (floors []*entity.Floor, err error)
-
-	Update(ctx context.Context, patchUpdateFloorDTO *dto.PatchUpdateFloorDTO) (err error)
-
-	IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error)
-	SoftDelete(ctx context.Context, floorID uuid.UUID) (err error)
-	Restore(ctx context.Context, floorID uuid.UUID) (err error)
-}
-
 type floorRepo struct {
 	pool *pgxpool.Pool
 }

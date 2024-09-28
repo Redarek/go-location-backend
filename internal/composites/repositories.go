@@ -2,17 +2,18 @@ package composites
 
 import (
 	repository "location-backend/internal/adapters/db/postgres"
+	"location-backend/internal/domain/service"
 )
 
 type RepositoryComposite struct {
-	healthRepo   repository.HealthRepo
-	userRepo     repository.UserRepo
-	roleRepo     repository.RoleRepo
-	siteRepo     repository.SiteRepo
-	buildingRepo repository.BuildingRepo
-	floorRepo    repository.FloorRepo
-	wallTypeRepo repository.WallTypeRepo
-	wallRepo     repository.WallRepo
+	healthRepo   service.HealthRepo
+	userRepo     service.UserRepo
+	roleRepo     service.RoleRepo
+	siteRepo     service.SiteRepo
+	buildingRepo service.BuildingRepo
+	floorRepo    service.FloorRepo
+	wallTypeRepo service.WallTypeRepo
+	wallRepo     service.WallRepo
 }
 
 func NewRepositoryComposite(composite *PostgresComposite) (repositoryComposite *RepositoryComposite) {

@@ -12,6 +12,18 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
+type SiteRepo interface {
+	Create(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	GetOne(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
+	GetAll(ctx context.Context, userID uuid.UUID, limit, offset int) (sites []*entity.Site, err error)
+
+	Update(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error)
+
+	IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error)
+	SoftDelete(ctx context.Context, siteID uuid.UUID) (err error)
+	Restore(ctx context.Context, siteID uuid.UUID) (err error)
+}
+
 type SiteService interface {
 	CreateSite(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
 	GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
@@ -26,10 +38,10 @@ type SiteService interface {
 }
 
 type siteService struct {
-	repository repository.SiteRepo
+	repository SiteRepo
 }
 
-func NewSiteService(repository repository.SiteRepo) *siteService {
+func NewSiteService(repository SiteRepo) *siteService {
 	return &siteService{repository: repository}
 }
 
