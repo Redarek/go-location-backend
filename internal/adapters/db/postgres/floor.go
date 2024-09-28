@@ -46,7 +46,6 @@ func (r *floorRepo) Create(ctx context.Context, createFloorDTO *dto.CreateFloorD
 			name,
 			number, 
 			image,
-			heatmap,
 			width_in_pixels,
 			height_in_pixels,
 			scale,
@@ -54,13 +53,12 @@ func (r *floorRepo) Create(ctx context.Context, createFloorDTO *dto.CreateFloorD
 			cell_size_meter,
 			north_area_indent_meter, south_area_indent_meter, west_area_indent_meter, east_area_indent_meter
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		RETURNING id`
 	row := r.pool.QueryRow(ctx, query,
 		&createFloorDTO.Name,
 		&createFloorDTO.Number,
 		&createFloorDTO.Image,
-		&createFloorDTO.Heatmap,
 		&createFloorDTO.WestAreaIndentMeter,
 		&createFloorDTO.HeightInPixels,
 		&createFloorDTO.Scale,
@@ -203,11 +201,11 @@ func (r *floorRepo) Update(ctx context.Context, patchUpdateFloorDTO *dto.PatchUp
 		params = append(params, patchUpdateFloorDTO.Image)
 		paramID++
 	}
-	if patchUpdateFloorDTO.Heatmap != nil {
-		updates = append(updates, fmt.Sprintf("heatmap = $%d", paramID))
-		params = append(params, patchUpdateFloorDTO.Heatmap)
-		paramID++
-	}
+	// if patchUpdateFloorDTO.Heatmap != nil {
+	// 	updates = append(updates, fmt.Sprintf("heatmap = $%d", paramID))
+	// 	params = append(params, patchUpdateFloorDTO.Heatmap)
+	// 	paramID++
+	// }
 	if patchUpdateFloorDTO.WidthInPixels != nil {
 		updates = append(updates, fmt.Sprintf("width_in_pixels = $%d", paramID))
 		params = append(params, patchUpdateFloorDTO.WidthInPixels)

@@ -67,10 +67,10 @@ func (h *floorHandler) CreateFloor(ctx *fiber.Ctx) error {
 
 	// Mapping http DTO -> domain DTO
 	domainDTO := &domain_dto.CreateFloorDTO{
-		Name:                 dto.Name,
-		Number:               dto.Number,
-		Image:                dto.Image,
-		Heatmap:              dto.Heatmap,
+		Name:   dto.Name,
+		Number: dto.Number,
+		Image:  dto.Image,
+		// Heatmap:              dto.Heatmap,
 		WidthInPixels:        dto.WidthInPixels,
 		HeightInPixels:       dto.HeightInPixels,
 		Scale:                dto.Scale,
@@ -259,11 +259,11 @@ func (h *floorHandler) PatchUpdateFloor(c *fiber.Ctx) error {
 
 	// Mapping http DTO -> domain DTO
 	domainDTO := &domain_dto.PatchUpdateFloorDTO{
-		ID:                   dto.ID,
-		Name:                 dto.Name,
-		Number:               dto.Number,
-		Image:                dto.Image,
-		Heatmap:              dto.Heatmap,
+		ID:     dto.ID,
+		Name:   dto.Name,
+		Number: dto.Number,
+		Image:  dto.Image,
+		// Heatmap:              dto.Heatmap,
 		WidthInPixels:        dto.WidthInPixels,
 		HeightInPixels:       dto.HeightInPixels,
 		Scale:                dto.Scale,

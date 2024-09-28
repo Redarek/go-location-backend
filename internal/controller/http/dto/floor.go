@@ -26,10 +26,10 @@ type FloorDTO struct {
 }
 
 type CreateFloorDTO struct {
-	Name                 string    `json:"name"`
-	Number               int       `json:"number"`
-	Image                *string   `json:"image"`
-	Heatmap              *string   `json:"heatmap"`
+	Name   string  `json:"name"`
+	Number int     `json:"number"`
+	Image  *string `json:"image"`
+	// Heatmap              *string   `json:"heatmap"`
 	WidthInPixels        int       `json:"widthInPixels"`
 	HeightInPixels       int       `json:"heightInPixels"`
 	Scale                float64   `json:"scale"`
@@ -42,19 +42,19 @@ type CreateFloorDTO struct {
 }
 
 type PatchUpdateFloorDTO struct {
-	ID                   uuid.UUID `json:"id"`
-	Name                 *string   `json:"name"`
-	Number               *int      `json:"number"`
-	Image                *string   `json:"image"`
-	Heatmap              *string   `json:"heatmap"` // ? Нужно ли давать возможность редактировать?
-	WidthInPixels        *int      `json:"widthInPixels"`
-	HeightInPixels       *int      `json:"heightInPixels"`
-	Scale                *float64  `json:"scale"`
-	CellSizeMeter        *float64  `json:"cellSizeMeter"`
-	NorthAreaIndentMeter *float64  `json:"northAreaIndentMeter"`
-	SouthAreaIndentMeter *float64  `json:"southAreaIndentMeter"`
-	WestAreaIndentMeter  *float64  `json:"westAreaIndentMeter"`
-	EastAreaIndentMeter  *float64  `json:"eastAreaIndentMeter"`
+	ID     uuid.UUID `json:"id"`
+	Name   *string   `json:"name"`
+	Number *int      `json:"number"`
+	Image  *string   `json:"image"`
+	// Heatmap              *string   `json:"heatmap"` // ? Нужно ли давать возможность редактировать?
+	WidthInPixels        *int     `json:"widthInPixels"`
+	HeightInPixels       *int     `json:"heightInPixels"`
+	Scale                *float64 `json:"scale"`
+	CellSizeMeter        *float64 `json:"cellSizeMeter"`
+	NorthAreaIndentMeter *float64 `json:"northAreaIndentMeter"`
+	SouthAreaIndentMeter *float64 `json:"southAreaIndentMeter"`
+	WestAreaIndentMeter  *float64 `json:"westAreaIndentMeter"`
+	EastAreaIndentMeter  *float64 `json:"eastAreaIndentMeter"`
 	// BuildingID           uuid.UUID `json:"buildingId" db:"building_id"`
 }
 
