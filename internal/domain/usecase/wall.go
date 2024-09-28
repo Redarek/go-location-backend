@@ -24,31 +24,19 @@ type WallService interface {
 	RestoreWall(ctx context.Context, wallID uuid.UUID) (err error)
 }
 
-type WallUsecase interface {
-	CreateWall(ctx context.Context, dto *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error)
-	GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *domain_dto.WallDTO, err error)
-	GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailedDTO *domain_dto.WallDetailedDTO, err error)
-	GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) (wallsDTO []*domain_dto.WallDTO, err error)
-
-	PatchUpdateWall(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallDTO) (err error)
-
-	SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error)
-	RestoreWall(ctx context.Context, wallID uuid.UUID) (err error)
-}
-
-type wallUsecase struct {
+type WallUsecase struct {
 	wallService  WallService
 	floorService FloorService
 }
 
-func NewWallUsecase(wallService WallService, floorService FloorService) *wallUsecase {
-	return &wallUsecase{
+func NewWallUsecase(wallService WallService, floorService FloorService) *WallUsecase {
+	return &WallUsecase{
 		wallService:  wallService,
 		floorService: floorService,
 	}
 }
 
-func (u *wallUsecase) CreateWall(ctx context.Context, dto *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error) {
+func (u *WallUsecase) CreateWall(ctx context.Context, dto *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error) {
 	_, err = u.floorService.GetFloor(ctx, dto.FloorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -70,7 +58,7 @@ func (u *wallUsecase) CreateWall(ctx context.Context, dto *domain_dto.CreateWall
 	return
 }
 
-func (u *wallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *domain_dto.WallDTO, err error) {
+func (u *WallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *domain_dto.WallDTO, err error) {
 	wall, err := u.wallService.GetWall(ctx, wallID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -98,7 +86,7 @@ func (u *wallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *d
 	return
 }
 
-func (u *wallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailedDTO *domain_dto.WallDetailedDTO, err error) {
+func (u *WallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailedDTO *domain_dto.WallDetailedDTO, err error) {
 	wallDetailed, err := u.wallService.GetWallDetailed(ctx, wallID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -141,7 +129,7 @@ func (u *wallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 	return
 }
 
-func (u *wallUsecase) GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) (wallsDTO []*domain_dto.WallDTO, err error) {
+func (u *WallUsecase) GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) (wallsDTO []*domain_dto.WallDTO, err error) {
 	walls, err := u.wallService.GetWalls(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -173,7 +161,7 @@ func (u *wallUsecase) GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) 
 	return
 }
 
-func (u *wallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallDTO) (err error) {
+func (u *WallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallDTO) (err error) {
 	_, err = u.wallService.GetWall(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -195,7 +183,7 @@ func (u *wallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *domai
 	return
 }
 
-func (u *wallUsecase) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error) {
+func (u *WallUsecase) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error) {
 	isDeleted, err := u.wallService.IsWallSoftDeleted(ctx, wallID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -219,7 +207,7 @@ func (u *wallUsecase) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err
 	return
 }
 
-func (u *wallUsecase) RestoreWall(ctx context.Context, wallID uuid.UUID) (err error) {
+func (u *WallUsecase) RestoreWall(ctx context.Context, wallID uuid.UUID) (err error) {
 	isDeleted, err := u.wallService.IsWallSoftDeleted(ctx, wallID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

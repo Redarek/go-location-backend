@@ -24,26 +24,15 @@ type SiteService interface {
 	RestoreSite(ctx context.Context, siteID uuid.UUID) (err error)
 }
 
-type SiteUsecase interface {
-	CreateSite(ctx context.Context, dto *domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
-	GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *domain_dto.SiteDTO, err error)
-	GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error)
-	// TODO GetSitesDetailed
-
-	PatchUpdateSite(ctx context.Context, dto *domain_dto.PatchUpdateSiteDTO) (err error)
-	SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error)
-	RestoreSite(ctx context.Context, siteID uuid.UUID) (err error)
-}
-
-type siteUsecase struct {
+type SiteUsecase struct {
 	siteService SiteService
 }
 
-func NewSiteUsecase(siteService SiteService) *siteUsecase {
-	return &siteUsecase{siteService: siteService}
+func NewSiteUsecase(siteService SiteService) *SiteUsecase {
+	return &SiteUsecase{siteService: siteService}
 }
 
-func (u *siteUsecase) CreateSite(ctx context.Context, dto *domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
+func (u *SiteUsecase) CreateSite(ctx context.Context, dto *domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error) {
 	siteID, err = u.siteService.CreateSite(ctx, dto)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create site")
@@ -54,7 +43,7 @@ func (u *siteUsecase) CreateSite(ctx context.Context, dto *domain_dto.CreateSite
 	return
 }
 
-func (u *siteUsecase) GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *domain_dto.SiteDTO, err error) {
+func (u *SiteUsecase) GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *domain_dto.SiteDTO, err error) {
 	site, err := u.siteService.GetSite(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -79,7 +68,7 @@ func (u *siteUsecase) GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *d
 	return
 }
 
-func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error) {
+func (u *SiteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error) {
 	sites, err := u.siteService.GetSites(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -108,7 +97,7 @@ func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) 
 	return
 }
 
-func (u *siteUsecase) PatchUpdateSite(ctx context.Context, dto *domain_dto.PatchUpdateSiteDTO) (err error) {
+func (u *SiteUsecase) PatchUpdateSite(ctx context.Context, dto *domain_dto.PatchUpdateSiteDTO) (err error) {
 	_, err = u.siteService.GetSite(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -130,7 +119,7 @@ func (u *siteUsecase) PatchUpdateSite(ctx context.Context, dto *domain_dto.Patch
 	return
 }
 
-func (u *siteUsecase) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error) {
+func (u *SiteUsecase) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error) {
 	isDeleted, err := u.siteService.IsSiteSoftDeleted(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -154,7 +143,7 @@ func (u *siteUsecase) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err
 	return
 }
 
-func (u *siteUsecase) RestoreSite(ctx context.Context, siteID uuid.UUID) (err error) {
+func (u *SiteUsecase) RestoreSite(ctx context.Context, siteID uuid.UUID) (err error) {
 	isDeleted, err := u.siteService.IsSiteSoftDeleted(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

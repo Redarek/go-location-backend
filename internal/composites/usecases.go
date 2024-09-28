@@ -5,14 +5,14 @@ import (
 )
 
 type UsecaseComposite struct {
-	healthUsecase   usecase.HealthUsecase
-	userUsecase     usecase.UserUsecase
-	roleUsecase     usecase.RoleUsecase
-	siteUsecase     usecase.SiteUsecase
-	buildingUsecase usecase.BuildingUsecase
-	floorUsecase    usecase.FloorUsecase
-	wallTypeUsecase usecase.WallTypeUsecase
-	wallUsecase     usecase.WallUsecase
+	healthUsecase   *usecase.HealthUsecase
+	userUsecase     *usecase.UserUsecase
+	roleUsecase     *usecase.RoleUsecase
+	siteUsecase     *usecase.SiteUsecase
+	buildingUsecase *usecase.BuildingUsecase
+	floorUsecase    *usecase.FloorUsecase
+	wallTypeUsecase *usecase.WallTypeUsecase
+	wallUsecase     *usecase.WallUsecase
 }
 
 func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *UsecaseComposite) {

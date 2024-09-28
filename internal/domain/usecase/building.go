@@ -24,31 +24,19 @@ type BuildingService interface {
 	RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
 }
 
-type BuildingUsecase interface {
-	CreateBuilding(ctx context.Context, dto *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
-	GetBuilding(ctx context.Context, buildingID uuid.UUID) (buildingDTO *domain_dto.BuildingDTO, err error)
-	GetBuildings(ctx context.Context, dto domain_dto.GetBuildingsDTO) (buildingsDTO []*domain_dto.BuildingDTO, err error)
-	// TODO GetBuildingsDetailed
-
-	PatchUpdateBuilding(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateBuildingDTO) (err error)
-
-	SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
-	RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
-}
-
-type buildingUsecase struct {
+type BuildingUsecase struct {
 	buildingService BuildingService
 	siteService     SiteService
 }
 
-func NewBuildingUsecase(buildingService BuildingService, siteService SiteService) *buildingUsecase {
-	return &buildingUsecase{
+func NewBuildingUsecase(buildingService BuildingService, siteService SiteService) *BuildingUsecase {
+	return &BuildingUsecase{
 		buildingService: buildingService,
 		siteService:     siteService,
 	}
 }
 
-func (u *buildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
+func (u *BuildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
 	_, err = u.siteService.GetSite(ctx, dto.SiteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -70,7 +58,7 @@ func (u *buildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.Cr
 	return
 }
 
-func (u *buildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID) (buildingDTO *domain_dto.BuildingDTO, err error) {
+func (u *BuildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID) (buildingDTO *domain_dto.BuildingDTO, err error) {
 	building, err := u.buildingService.GetBuilding(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -98,7 +86,7 @@ func (u *buildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID)
 	return
 }
 
-func (u *buildingUsecase) GetBuildings(ctx context.Context, dto domain_dto.GetBuildingsDTO) (buildingsDTO []*domain_dto.BuildingDTO, err error) {
+func (u *BuildingUsecase) GetBuildings(ctx context.Context, dto domain_dto.GetBuildingsDTO) (buildingsDTO []*domain_dto.BuildingDTO, err error) {
 	buildings, err := u.buildingService.GetBuildings(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -130,7 +118,7 @@ func (u *buildingUsecase) GetBuildings(ctx context.Context, dto domain_dto.GetBu
 	return
 }
 
-func (u *buildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateBuildingDTO) (err error) {
+func (u *BuildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateBuildingDTO) (err error) {
 	_, err = u.buildingService.GetBuilding(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -152,7 +140,7 @@ func (u *buildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDT
 	return
 }
 
-func (u *buildingUsecase) SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
+func (u *BuildingUsecase) SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
 	isDeleted, err := u.buildingService.IsBuildingSoftDeleted(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -176,7 +164,7 @@ func (u *buildingUsecase) SoftDeleteBuilding(ctx context.Context, buildingID uui
 	return
 }
 
-func (u *buildingUsecase) RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
+func (u *BuildingUsecase) RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
 	isDeleted, err := u.buildingService.IsBuildingSoftDeleted(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

@@ -18,10 +18,10 @@ const (
 // }
 
 type healthHandler struct {
-	healthUsecase usecase.HealthUsecase
+	healthUsecase *usecase.HealthUsecase
 }
 
-func NewHealthHandler(healthUsecase usecase.HealthUsecase) *healthHandler {
+func NewHealthHandler(healthUsecase *usecase.HealthUsecase) *healthHandler {
 	return &healthHandler{healthUsecase: healthUsecase}
 }
 

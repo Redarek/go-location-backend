@@ -8,20 +8,16 @@ type HealthService interface {
 	Health(ctx context.Context) (err error)
 }
 
-type HealthUsecase interface {
-	Health(ctx context.Context) (err error)
-}
-
-type healthUsecase struct {
+type HealthUsecase struct {
 	healthService HealthService
 }
 
-func NewHealthUsecase(healthService HealthService) *healthUsecase {
-	return &healthUsecase{healthService: healthService}
+func NewHealthUsecase(healthService HealthService) *HealthUsecase {
+	return &HealthUsecase{healthService: healthService}
 }
 
 // Health pings database
-func (u *healthUsecase) Health(ctx context.Context) (err error) {
+func (u *HealthUsecase) Health(ctx context.Context) (err error) {
 	err = u.healthService.Health(ctx)
 	return
 }

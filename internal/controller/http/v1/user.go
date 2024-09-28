@@ -25,11 +25,11 @@ const (
 )
 
 type userHandler struct {
-	usecase usecase.UserUsecase
+	usecase *usecase.UserUsecase
 }
 
 // Регистрирует новый handler
-func NewUserHandler(usecase usecase.UserUsecase) *userHandler {
+func NewUserHandler(usecase *usecase.UserUsecase) *userHandler {
 	return &userHandler{usecase: usecase}
 }
 

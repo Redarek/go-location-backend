@@ -24,31 +24,19 @@ type FloorService interface {
 	RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error)
 }
 
-type FloorUsecase interface {
-	CreateFloor(ctx context.Context, dto *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error)
-	GetFloor(ctx context.Context, floorID uuid.UUID) (floorDTO *domain_dto.FloorDTO, err error)
-	GetFloors(ctx context.Context, dto domain_dto.GetFloorsDTO) (floorsDTO []*domain_dto.FloorDTO, err error)
-	// TODO GetFloorsDetailed
-
-	PatchUpdateFloor(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateFloorDTO) (err error)
-
-	SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error)
-	RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error)
-}
-
-type floorUsecase struct {
+type FloorUsecase struct {
 	floorService    FloorService
 	buildingService BuildingService
 }
 
-func NewFloorUsecase(floorService FloorService, buildingService BuildingService) *floorUsecase {
-	return &floorUsecase{
+func NewFloorUsecase(floorService FloorService, buildingService BuildingService) *FloorUsecase {
+	return &FloorUsecase{
 		floorService:    floorService,
 		buildingService: buildingService,
 	}
 }
 
-func (u *floorUsecase) CreateFloor(ctx context.Context, dto *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error) {
+func (u *FloorUsecase) CreateFloor(ctx context.Context, dto *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error) {
 	_, err = u.buildingService.GetBuilding(ctx, dto.BuildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -70,7 +58,7 @@ func (u *floorUsecase) CreateFloor(ctx context.Context, dto *domain_dto.CreateFl
 	return
 }
 
-func (u *floorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floorDTO *domain_dto.FloorDTO, err error) {
+func (u *FloorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floorDTO *domain_dto.FloorDTO, err error) {
 	floor, err := u.floorService.GetFloor(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -105,7 +93,7 @@ func (u *floorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floorDT
 	return
 }
 
-func (u *floorUsecase) GetFloors(ctx context.Context, dto domain_dto.GetFloorsDTO) (floorsDTO []*domain_dto.FloorDTO, err error) {
+func (u *FloorUsecase) GetFloors(ctx context.Context, dto domain_dto.GetFloorsDTO) (floorsDTO []*domain_dto.FloorDTO, err error) {
 	floors, err := u.floorService.GetFloors(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -144,7 +132,7 @@ func (u *floorUsecase) GetFloors(ctx context.Context, dto domain_dto.GetFloorsDT
 	return
 }
 
-func (u *floorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateFloorDTO) (err error) {
+func (u *FloorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateFloorDTO) (err error) {
 	_, err = u.floorService.GetFloor(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -166,7 +154,7 @@ func (u *floorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *dom
 	return
 }
 
-func (u *floorUsecase) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error) {
+func (u *FloorUsecase) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error) {
 	isDeleted, err := u.floorService.IsFloorSoftDeleted(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -190,7 +178,7 @@ func (u *floorUsecase) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (
 	return
 }
 
-func (u *floorUsecase) RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error) {
+func (u *FloorUsecase) RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error) {
 	isDeleted, err := u.floorService.IsFloorSoftDeleted(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

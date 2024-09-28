@@ -26,11 +26,11 @@ const (
 )
 
 type siteHandler struct {
-	usecase usecase.SiteUsecase
+	usecase *usecase.SiteUsecase
 }
 
 // Регистрирует новый handler
-func NewSiteHandler(usecase usecase.SiteUsecase) *siteHandler {
+func NewSiteHandler(usecase *usecase.SiteUsecase) *siteHandler {
 	return &siteHandler{usecase: usecase}
 }
 

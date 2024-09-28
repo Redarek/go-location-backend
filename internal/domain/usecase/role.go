@@ -17,21 +17,15 @@ type RoleService interface {
 	GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
 
-type RoleUsecase interface {
-	CreateRole(ctx context.Context, dto *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
-	GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *domain_dto.RoleDTO, err error)
-	GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error)
-}
-
-type roleUsecase struct {
+type RoleUsecase struct {
 	roleService RoleService
 }
 
-func NewRoleUsecase(roleService RoleService) *roleUsecase {
-	return &roleUsecase{roleService: roleService}
+func NewRoleUsecase(roleService RoleService) *RoleUsecase {
+	return &RoleUsecase{roleService: roleService}
 }
 
-func (u *roleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+func (u *RoleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	_, err = u.roleService.GetRoleByName(ctx, dto.Name)
 	if err != nil {
 		// If error except ErrNotFound
@@ -53,7 +47,7 @@ func (u *roleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRole
 	return
 }
 
-func (u *roleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *domain_dto.RoleDTO, err error) {
+func (u *RoleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *domain_dto.RoleDTO, err error) {
 	role, err := u.roleService.GetRole(ctx, roleID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -76,7 +70,7 @@ func (u *roleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *d
 	return
 }
 
-func (u *roleUsecase) GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error) {
+func (u *RoleUsecase) GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error) {
 	role, err := u.roleService.GetRoleByName(ctx, name)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

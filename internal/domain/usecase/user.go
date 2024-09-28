@@ -24,27 +24,19 @@ type UserService interface {
 	CheckPasswordHash(password, hash string) bool
 }
 
-type UserUsecase interface {
-	Register(ctx context.Context, dto *domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
-	Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (signedString string, err error)
-	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
-	// ListAllBooks(ctx context.Context) []entity.BookView
-	// GetFullBook(ctx context.Context, id string) entity.FullBook
-}
-
-type userUsecase struct {
+type UserUsecase struct {
 	userService UserService
 	// authorService UserService
 	// genreService  GenreService
 }
 
 // ? TEST. Изначально этого не было
-func NewUserUsecase(userService UserService) *userUsecase {
-	return &userUsecase{userService: userService}
+func NewUserUsecase(userService UserService) *UserUsecase {
+	return &UserUsecase{userService: userService}
 }
 
 // ? Нужен ли ctx *fiber.Ctx
-func (u userUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
+func (u *UserUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
 	_, err = u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// If error except ErrNotFound
@@ -78,7 +70,7 @@ func (u userUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUserD
 	return
 }
 
-func (u userUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (signedString string, err error) {
+func (u *UserUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (signedString string, err error) {
 	user, err := u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// Return ErrBadLogin if user not found
@@ -117,7 +109,7 @@ func (u userUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (s
 	// return c.JSON(fiber.Map{"token": signedString})
 }
 
-func (u userUsecase) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
+func (u *UserUsecase) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
 	user, err = u.userService.GetUserByName(ctx, username)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

@@ -20,11 +20,11 @@ const (
 )
 
 type roleHandler struct {
-	usecase usecase.RoleUsecase
+	usecase *usecase.RoleUsecase
 }
 
 // Регистрирует новый handler
-func NewRoleHandler(usecase usecase.RoleUsecase) *roleHandler {
+func NewRoleHandler(usecase *usecase.RoleUsecase) *roleHandler {
 	return &roleHandler{usecase: usecase}
 }
 

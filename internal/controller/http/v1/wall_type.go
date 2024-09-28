@@ -26,11 +26,11 @@ const (
 )
 
 type wallTypeHandler struct {
-	usecase usecase.WallTypeUsecase
+	usecase *usecase.WallTypeUsecase
 }
 
 // Регистрирует новый handler
-func NewWallTypeHandler(usecase usecase.WallTypeUsecase) *wallTypeHandler {
+func NewWallTypeHandler(usecase *usecase.WallTypeUsecase) *wallTypeHandler {
 	return &wallTypeHandler{usecase: usecase}
 }
 

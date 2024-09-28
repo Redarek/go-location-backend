@@ -26,11 +26,11 @@ const (
 )
 
 type buildingHandler struct {
-	usecase usecase.BuildingUsecase
+	usecase *usecase.BuildingUsecase
 }
 
 // Регистрирует новый handler
-func NewBuildingHandler(usecase usecase.BuildingUsecase) *buildingHandler {
+func NewBuildingHandler(usecase *usecase.BuildingUsecase) *buildingHandler {
 	return &buildingHandler{usecase: usecase}
 }
 

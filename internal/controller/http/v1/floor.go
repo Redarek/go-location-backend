@@ -26,11 +26,11 @@ const (
 )
 
 type floorHandler struct {
-	usecase usecase.FloorUsecase
+	usecase *usecase.FloorUsecase
 }
 
 // Регистрирует новый handler
-func NewFloorHandler(usecase usecase.FloorUsecase) *floorHandler {
+func NewFloorHandler(usecase *usecase.FloorUsecase) *floorHandler {
 	return &floorHandler{usecase: usecase}
 }
 

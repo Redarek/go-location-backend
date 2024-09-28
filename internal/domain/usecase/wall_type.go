@@ -24,31 +24,19 @@ type WallTypeService interface {
 	RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
 }
 
-type WallTypeUsecase interface {
-	CreateWallType(ctx context.Context, dto *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
-	GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallTypeDTO *domain_dto.WallTypeDTO, err error)
-	GetWallTypes(ctx context.Context, dto domain_dto.GetWallTypesDTO) (wallTypesDTO []*domain_dto.WallTypeDTO, err error)
-	// TODO GetWallTypesDetailed
-
-	PatchUpdateWallType(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallTypeDTO) (err error)
-
-	SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
-	RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
-}
-
-type wallTypeUsecase struct {
+type WallTypeUsecase struct {
 	wallTypeService WallTypeService
 	siteService     SiteService
 }
 
-func NewWallTypeUsecase(wallTypeService WallTypeService, siteService SiteService) *wallTypeUsecase {
-	return &wallTypeUsecase{
+func NewWallTypeUsecase(wallTypeService WallTypeService, siteService SiteService) *WallTypeUsecase {
+	return &WallTypeUsecase{
 		wallTypeService: wallTypeService,
 		siteService:     siteService,
 	}
 }
 
-func (u *wallTypeUsecase) CreateWallType(ctx context.Context, dto *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error) {
+func (u *WallTypeUsecase) CreateWallType(ctx context.Context, dto *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error) {
 	_, err = u.siteService.GetSite(ctx, dto.SiteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -70,7 +58,7 @@ func (u *wallTypeUsecase) CreateWallType(ctx context.Context, dto *domain_dto.Cr
 	return
 }
 
-func (u *wallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallTypeDTO *domain_dto.WallTypeDTO, err error) {
+func (u *WallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallTypeDTO *domain_dto.WallTypeDTO, err error) {
 	wallType, err := u.wallTypeService.GetWallType(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -97,7 +85,7 @@ func (u *wallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 	return
 }
 
-func (u *wallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWallTypesDTO) (wallTypesDTO []*domain_dto.WallTypeDTO, err error) {
+func (u *WallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWallTypesDTO) (wallTypesDTO []*domain_dto.WallTypeDTO, err error) {
 	wallTypes, err := u.wallTypeService.GetWallTypes(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -128,7 +116,7 @@ func (u *wallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWa
 	return
 }
 
-func (u *wallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallTypeDTO) (err error) {
+func (u *WallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallTypeDTO) (err error) {
 	_, err = u.wallTypeService.GetWallType(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -150,7 +138,7 @@ func (u *wallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDT
 	return
 }
 
-func (u *wallTypeUsecase) SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
+func (u *WallTypeUsecase) SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
 	isDeleted, err := u.wallTypeService.IsWallTypeSoftDeleted(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -174,7 +162,7 @@ func (u *wallTypeUsecase) SoftDeleteWallType(ctx context.Context, wallTypeID uui
 	return
 }
 
-func (u *wallTypeUsecase) RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
+func (u *WallTypeUsecase) RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
 	isDeleted, err := u.wallTypeService.IsWallTypeSoftDeleted(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
