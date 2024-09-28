@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	repository "location-backend/internal/adapters/db/postgres"
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
@@ -46,7 +45,7 @@ func (s *roleService) CreateRole(ctx context.Context, createRoleDTO *dto.CreateR
 func (s *roleService) GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error) {
 	role, err = s.repository.GetOne(ctx, roleID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -60,7 +59,7 @@ func (s *roleService) GetRole(ctx context.Context, roleID uuid.UUID) (role *enti
 func (s *roleService) GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error) {
 	role, err = s.repository.GetOneByName(ctx, name)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		}
 		// TODO улучшить лог

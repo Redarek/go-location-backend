@@ -14,8 +14,10 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
+// TODO вынести в сервисы
 type AccessPointTypeRepo interface {
 	Create(ctx context.Context, createAccessPointTypeDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error)
@@ -93,7 +95,7 @@ func (r *accessPointTypeRepo) GetOne(ctx context.Context, accessPointTypeID uuid
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Err(err).Msgf("no accessPointType found with ID %v", accessPointTypeID)
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve accessPointType")
 		return
@@ -153,7 +155,7 @@ func (r *accessPointTypeRepo) GetAll(ctx context.Context, siteID uuid.UUID, limi
 	length := len(accessPointTypes)
 	if length == 0 {
 		log.Info().Msgf("accessPointTypes for site ID %v were not found", siteID)
-		return nil, ErrNotFound
+		return nil, service.ErrNotFound
 	}
 
 	log.Debug().Msgf("retrieved %d accessPointTypes", length)
@@ -195,7 +197,7 @@ func (r *accessPointTypeRepo) Update(ctx context.Context, updateAccessPointTypeD
 
 	if len(updates) == 0 {
 		log.Info().Msg("no fields provided for update")
-		return ErrNotUpdated
+		return service.ErrNotUpdated
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
@@ -208,7 +210,7 @@ func (r *accessPointTypeRepo) Update(ctx context.Context, updateAccessPointTypeD
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no accessPointType found with the UUID: %v", updateAccessPointTypeDTO.ID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	return
@@ -223,7 +225,7 @@ func (r *accessPointTypeRepo) IsAccessPointTypeSoftDeleted(ctx context.Context, 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Err(err).Msgf("no accessPointType found with UUID %v", accessPointTypeID)
-			return false, ErrNotFound
+			return false, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve accessPointType")
 		return
@@ -243,7 +245,7 @@ func (r *accessPointTypeRepo) SoftDelete(ctx context.Context, accessPointTypeID 
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no accessPointType found with the UUID: %v", accessPointTypeID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("accessPointType deleted_at timestamp updated successfully")
@@ -259,7 +261,7 @@ func (r *accessPointTypeRepo) Restore(ctx context.Context, accessPointTypeID uui
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no accessPointType found with the UUID: %v", accessPointTypeID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("accessPointType deleted_at timestamp set NULL successfully")

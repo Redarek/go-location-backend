@@ -14,6 +14,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
 type siteRepo struct {
@@ -71,7 +72,7 @@ func (r *siteRepo) GetOne(ctx context.Context, siteID uuid.UUID) (site *entity.S
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Msgf("site with ID %v not found", siteID)
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to scan site")
 		return
@@ -121,7 +122,7 @@ func (r *siteRepo) GetAll(ctx context.Context, userID uuid.UUID, limit, offset i
 	length := len(sites)
 	if length == 0 {
 		log.Info().Msgf("sites for user ID %v were not found", userID)
-		return nil, ErrNotFound
+		return nil, service.ErrNotFound
 	}
 
 	log.Debug().Msgf("retrieved %d sites", length)
@@ -147,7 +148,7 @@ func (r *siteRepo) Update(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpda
 
 	if len(updates) == 0 {
 		log.Info().Msg("no fields provided for update")
-		return ErrNotUpdated
+		return service.ErrNotUpdated
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
@@ -160,7 +161,7 @@ func (r *siteRepo) Update(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpda
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no site found with the UUID: %v", patchUpdateSiteDTO.ID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	return
@@ -175,7 +176,7 @@ func (r *siteRepo) IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isD
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Err(err).Msgf("no site found with UUID %v", siteID)
-			return false, ErrNotFound
+			return false, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve site")
 		return
@@ -195,7 +196,7 @@ func (r *siteRepo) SoftDelete(ctx context.Context, siteID uuid.UUID) (err error)
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no site found with the UUID: %v", siteID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("site deleted_at timestamp updated successfully")
@@ -211,7 +212,7 @@ func (r *siteRepo) Restore(ctx context.Context, siteID uuid.UUID) (err error) {
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no site found with the UUID: %v", siteID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("site deleted_at timestamp set NULL successfully")

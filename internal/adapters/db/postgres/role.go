@@ -11,6 +11,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
 type roleRepo struct {
@@ -56,7 +57,7 @@ func (r *roleRepo) GetOne(ctx context.Context, roleID uuid.UUID) (role *entity.R
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Msgf("role with ID %v not found", roleID)
-			return role, ErrNotFound
+			return role, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to scan role")
 		return
@@ -85,7 +86,7 @@ func (r *roleRepo) GetOneByName(ctx context.Context, name string) (role *entity.
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Msgf("role %v not found", name)
-			return role, ErrNotFound
+			return role, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to scan role")
 		return

@@ -14,6 +14,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
 type buildingRepo struct {
@@ -79,7 +80,7 @@ func (r *buildingRepo) GetOne(ctx context.Context, buildingID uuid.UUID) (buildi
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("no building found with ID %v", buildingID)
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve building")
 		return
@@ -139,7 +140,7 @@ func (r *buildingRepo) GetAll(ctx context.Context, siteID uuid.UUID, limit, offs
 	length := len(buildings)
 	if length == 0 {
 		log.Info().Msgf("buildings for site ID %v were not found", siteID)
-		return nil, ErrNotFound
+		return nil, service.ErrNotFound
 	}
 
 	log.Debug().Msgf("retrieved %d buildings", length)
@@ -180,7 +181,7 @@ func (r *buildingRepo) Update(ctx context.Context, updateBuildingDTO *dto.PatchU
 
 	if len(updates) == 0 {
 		log.Info().Msg("no fields provided for update")
-		return ErrNotUpdated
+		return service.ErrNotUpdated
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
@@ -193,7 +194,7 @@ func (r *buildingRepo) Update(ctx context.Context, updateBuildingDTO *dto.PatchU
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no building found with the UUID: %v", updateBuildingDTO.ID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	return
@@ -208,7 +209,7 @@ func (r *buildingRepo) IsBuildingSoftDeleted(ctx context.Context, buildingID uui
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Err(err).Msgf("no building found with UUID %v", buildingID)
-			return false, ErrNotFound
+			return false, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve building")
 		return
@@ -228,7 +229,7 @@ func (r *buildingRepo) SoftDelete(ctx context.Context, buildingID uuid.UUID) (er
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no building found with the UUID: %v", buildingID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("building deleted_at timestamp updated successfully")
@@ -244,7 +245,7 @@ func (r *buildingRepo) Restore(ctx context.Context, buildingID uuid.UUID) (err e
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no building found with the UUID: %v", buildingID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("building deleted_at timestamp set NULL successfully")

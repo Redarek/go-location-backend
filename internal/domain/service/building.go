@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	repository "location-backend/internal/adapters/db/postgres"
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
@@ -61,8 +60,8 @@ func (s *buildingService) CreateBuilding(ctx context.Context, createBuildingDTO 
 func (s *buildingService) GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error) {
 	building, err = s.repository.GetOne(ctx, buildingID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return building, ErrNotFound
+		if errors.Is(err, ErrNotFound) {
+			return building, ErrNotFound // TODO import from usercase Err
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve building")
@@ -75,7 +74,7 @@ func (s *buildingService) GetBuilding(ctx context.Context, buildingID uuid.UUID)
 func (s *buildingService) GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error) {
 	buildings, err = s.repository.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return buildings, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -90,10 +89,10 @@ func (s *buildingService) GetBuildings(ctx context.Context, dto dto.GetBuildings
 func (s *buildingService) UpdateBuilding(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error) {
 	err = s.repository.Update(ctx, updateBuildingDTO)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
-		if errors.Is(err, repository.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			return ErrNotUpdated
 		}
 		// TODO улучшить лог
@@ -107,7 +106,7 @@ func (s *buildingService) UpdateBuilding(ctx context.Context, updateBuildingDTO 
 func (s *buildingService) IsBuildingSoftDeleted(ctx context.Context, buildingID uuid.UUID) (isDeleted bool, err error) {
 	isDeleted, err = s.repository.IsBuildingSoftDeleted(ctx, buildingID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return false, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -121,7 +120,7 @@ func (s *buildingService) IsBuildingSoftDeleted(ctx context.Context, buildingID 
 func (s *buildingService) SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
 	err = s.repository.SoftDelete(ctx, buildingID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог
@@ -135,7 +134,7 @@ func (s *buildingService) SoftDeleteBuilding(ctx context.Context, buildingID uui
 func (s *buildingService) RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
 	err = s.repository.Restore(ctx, buildingID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог

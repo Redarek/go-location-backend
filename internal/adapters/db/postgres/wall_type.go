@@ -14,6 +14,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
 type wallTypeRepo struct {
@@ -76,7 +77,7 @@ func (r *wallTypeRepo) GetOne(ctx context.Context, wallTypeID uuid.UUID) (wallTy
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Error().Err(err).Msgf("no wallType found with ID %v", wallTypeID)
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve wallType")
 		return
@@ -134,7 +135,7 @@ func (r *wallTypeRepo) GetAll(ctx context.Context, siteID uuid.UUID, limit, offs
 	length := len(wallTypes)
 	if length == 0 {
 		log.Info().Msgf("wallTypes for site ID %v were not found", siteID)
-		return nil, ErrNotFound
+		return nil, service.ErrNotFound
 	}
 
 	log.Debug().Msgf("retrieved %d wallTypes", length)
@@ -180,7 +181,7 @@ func (r *wallTypeRepo) Update(ctx context.Context, updateWallTypeDTO *dto.PatchU
 
 	if len(updates) == 0 {
 		log.Info().Msg("no fields provided for update")
-		return ErrNotUpdated
+		return service.ErrNotUpdated
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
@@ -193,7 +194,7 @@ func (r *wallTypeRepo) Update(ctx context.Context, updateWallTypeDTO *dto.PatchU
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no wallType found with the ID: %v", updateWallTypeDTO.ID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	return
@@ -208,7 +209,7 @@ func (r *wallTypeRepo) IsWallTypeSoftDeleted(ctx context.Context, wallTypeID uui
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Err(err).Msgf("no wallType found with UUID %v", wallTypeID)
-			return false, ErrNotFound
+			return false, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve wallType")
 		return
@@ -228,7 +229,7 @@ func (r *wallTypeRepo) SoftDelete(ctx context.Context, wallTypeID uuid.UUID) (er
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no wallType found with the UUID: %v", wallTypeID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("wallType deleted_at timestamp updated successfully")
@@ -244,7 +245,7 @@ func (r *wallTypeRepo) Restore(ctx context.Context, wallTypeID uuid.UUID) (err e
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no wallType found with the UUID: %v", wallTypeID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("wallType deleted_at timestamp set NULL successfully")

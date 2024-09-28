@@ -8,7 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
-	repository "location-backend/internal/adapters/db/postgres"
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
@@ -54,7 +53,7 @@ func (s userService) CreateUser(ctx context.Context, createUserDTO *dto.CreateUs
 func (s userService) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
 	user, err = s.repository.GetOneByName(ctx, username)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return user, ErrNotFound
 		}
 		// TODO улучшить лог

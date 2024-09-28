@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	repository "location-backend/internal/adapters/db/postgres"
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
@@ -61,7 +60,7 @@ func (s *wallTypeService) CreateWallType(ctx context.Context, createWallTypeDTO 
 func (s *wallTypeService) GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error) {
 	wallType, err = s.repository.GetOne(ctx, wallTypeID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return wallType, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -75,7 +74,7 @@ func (s *wallTypeService) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 func (s *wallTypeService) GetWallTypes(ctx context.Context, dto dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error) {
 	wallTypes, err = s.repository.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return wallTypes, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -90,10 +89,10 @@ func (s *wallTypeService) GetWallTypes(ctx context.Context, dto dto.GetWallTypes
 func (s *wallTypeService) UpdateWallType(ctx context.Context, updateWallTypeDTO *dto.PatchUpdateWallTypeDTO) (err error) {
 	err = s.repository.Update(ctx, updateWallTypeDTO)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
-		if errors.Is(err, repository.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			return ErrNotUpdated
 		}
 		// TODO улучшить лог
@@ -107,7 +106,7 @@ func (s *wallTypeService) UpdateWallType(ctx context.Context, updateWallTypeDTO 
 func (s *wallTypeService) IsWallTypeSoftDeleted(ctx context.Context, wallTypeID uuid.UUID) (isDeleted bool, err error) {
 	isDeleted, err = s.repository.IsWallTypeSoftDeleted(ctx, wallTypeID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return false, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -121,7 +120,7 @@ func (s *wallTypeService) IsWallTypeSoftDeleted(ctx context.Context, wallTypeID 
 func (s *wallTypeService) SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
 	err = s.repository.SoftDelete(ctx, wallTypeID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог
@@ -135,7 +134,7 @@ func (s *wallTypeService) SoftDeleteWallType(ctx context.Context, wallTypeID uui
 func (s *wallTypeService) RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
 	err = s.repository.Restore(ctx, wallTypeID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог

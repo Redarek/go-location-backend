@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	repository "location-backend/internal/adapters/db/postgres"
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
@@ -64,7 +63,7 @@ func (s *wallService) CreateWall(ctx context.Context, createWallDTO *dto.CreateW
 func (s *wallService) GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error) {
 	wall, err = s.wallRepo.GetOne(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return wall, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -78,7 +77,7 @@ func (s *wallService) GetWall(ctx context.Context, wallID uuid.UUID) (wall *enti
 func (s *wallService) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailed *entity.WallDetailed, err error) {
 	wall, err := s.wallRepo.GetOne(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return wallDetailed, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -88,7 +87,7 @@ func (s *wallService) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 
 	wallType, err := s.wallTypeRepo.GetOne(ctx, wall.WallTypeID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return wallDetailed, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -107,7 +106,7 @@ func (s *wallService) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 func (s *wallService) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls []*entity.Wall, err error) {
 	walls, err = s.wallRepo.GetAll(ctx, dto.FloorID, dto.Limit, dto.Offset)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return walls, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -122,10 +121,10 @@ func (s *wallService) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls 
 func (s *wallService) UpdateWall(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error) {
 	err = s.wallRepo.Update(ctx, updateWallDTO)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
-		if errors.Is(err, repository.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			return ErrNotUpdated
 		}
 		// TODO улучшить лог
@@ -139,7 +138,7 @@ func (s *wallService) UpdateWall(ctx context.Context, updateWallDTO *dto.PatchUp
 func (s *wallService) IsWallSoftDeleted(ctx context.Context, wallID uuid.UUID) (isDeleted bool, err error) {
 	isDeleted, err = s.wallRepo.IsWallSoftDeleted(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return false, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -153,7 +152,7 @@ func (s *wallService) IsWallSoftDeleted(ctx context.Context, wallID uuid.UUID) (
 func (s *wallService) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error) {
 	err = s.wallRepo.SoftDelete(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог
@@ -167,7 +166,7 @@ func (s *wallService) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err
 func (s *wallService) RestoreWall(ctx context.Context, wallID uuid.UUID) (err error) {
 	err = s.wallRepo.Restore(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог

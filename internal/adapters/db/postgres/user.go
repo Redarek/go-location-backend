@@ -11,6 +11,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
 type userRepo struct {
@@ -61,7 +62,7 @@ func (r *userRepo) GetOneByName(ctx context.Context, username string) (user *ent
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Msgf("user %v not found", username)
-			return user, ErrNotFound
+			return user, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to scan user")
 		return

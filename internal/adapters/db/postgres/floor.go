@@ -14,6 +14,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
 )
 
 type floorRepo struct {
@@ -97,7 +98,7 @@ func (r *floorRepo) GetOne(ctx context.Context, floorID uuid.UUID) (floor *entit
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Err(err).Msgf("no floor found with ID %v", floorID)
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve floor")
 		return
@@ -161,7 +162,7 @@ func (r *floorRepo) GetAll(ctx context.Context, buildingID uuid.UUID, limit, off
 	length := len(floors)
 	if length == 0 {
 		log.Info().Msgf("floors for building ID %v were not found", buildingID)
-		return nil, ErrNotFound
+		return nil, service.ErrNotFound
 	}
 
 	log.Debug().Msgf("retrieved %d floors", length)
@@ -238,7 +239,7 @@ func (r *floorRepo) Update(ctx context.Context, patchUpdateFloorDTO *dto.PatchUp
 
 	if len(updates) == 0 {
 		log.Info().Msg("no fields provided for update")
-		return ErrNotUpdated
+		return service.ErrNotUpdated
 	}
 
 	query += strings.Join(updates, ", ") + fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramID)
@@ -251,7 +252,7 @@ func (r *floorRepo) Update(ctx context.Context, patchUpdateFloorDTO *dto.PatchUp
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no floor found with the ID: %v", patchUpdateFloorDTO.ID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	return
@@ -266,7 +267,7 @@ func (r *floorRepo) IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			log.Info().Err(err).Msgf("no floor found with ID %v", floorID)
-			return false, ErrNotFound
+			return false, service.ErrNotFound
 		}
 		log.Error().Err(err).Msg("failed to retrieve floor")
 		return
@@ -286,7 +287,7 @@ func (r *floorRepo) SoftDelete(ctx context.Context, floorID uuid.UUID) (err erro
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no floor found with the UUID: %v", floorID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("floor deleted_at timestamp updated successfully")
@@ -302,7 +303,7 @@ func (r *floorRepo) Restore(ctx context.Context, floorID uuid.UUID) (err error) 
 	}
 	if commandTag.RowsAffected() == 0 {
 		log.Info().Msgf("no floor found with the UUID: %v", floorID)
-		return ErrNotFound
+		return service.ErrNotFound
 	}
 
 	log.Debug().Msg("floor deleted_at timestamp set NULL successfully")

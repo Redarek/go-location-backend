@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	repository "location-backend/internal/adapters/db/postgres"
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
@@ -59,7 +58,7 @@ func (s *siteService) CreateSite(ctx context.Context, createSiteDTO *dto.CreateS
 func (s *siteService) GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error) {
 	site, err = s.repository.GetOne(ctx, siteID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return site, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -73,7 +72,7 @@ func (s *siteService) GetSite(ctx context.Context, siteID uuid.UUID) (site *enti
 func (s *siteService) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites []*entity.Site, err error) {
 	sites, err = s.repository.GetAll(ctx, dto.UserID, dto.Limit, dto.Offset)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return sites, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -88,10 +87,10 @@ func (s *siteService) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites 
 func (s *siteService) UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error) {
 	err = s.repository.Update(ctx, patchUpdateSiteDTO)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
-		if errors.Is(err, repository.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			return ErrNotUpdated
 		}
 		// TODO улучшить лог
@@ -105,7 +104,7 @@ func (s *siteService) UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.Pa
 func (s *siteService) IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error) {
 	isDeleted, err = s.repository.IsSiteSoftDeleted(ctx, siteID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return false, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -119,7 +118,7 @@ func (s *siteService) IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (
 func (s *siteService) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error) {
 	err = s.repository.SoftDelete(ctx, siteID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог
@@ -133,7 +132,7 @@ func (s *siteService) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err
 func (s *siteService) RestoreSite(ctx context.Context, siteID uuid.UUID) (err error) {
 	err = s.repository.Restore(ctx, siteID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог

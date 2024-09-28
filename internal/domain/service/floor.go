@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	repository "location-backend/internal/adapters/db/postgres"
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
@@ -59,7 +58,7 @@ func (s *floorService) CreateFloor(ctx context.Context, createFloorDTO *dto.Crea
 func (s *floorService) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error) {
 	floor, err = s.repository.GetOne(ctx, floorID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return floor, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -73,7 +72,7 @@ func (s *floorService) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *
 func (s *floorService) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (floors []*entity.Floor, err error) {
 	floors, err = s.repository.GetAll(ctx, dto.BuildingID, dto.Limit, dto.Offset)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return floors, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -88,10 +87,10 @@ func (s *floorService) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (flo
 func (s *floorService) UpdateFloor(ctx context.Context, updateFloorDTO *dto.PatchUpdateFloorDTO) (err error) {
 	err = s.repository.Update(ctx, updateFloorDTO)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
-		if errors.Is(err, repository.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			return ErrNotUpdated
 		}
 		// TODO улучшить лог
@@ -105,7 +104,7 @@ func (s *floorService) UpdateFloor(ctx context.Context, updateFloorDTO *dto.Patc
 func (s *floorService) IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error) {
 	isDeleted, err = s.repository.IsFloorSoftDeleted(ctx, floorID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return false, ErrNotFound
 		}
 		// TODO улучшить лог
@@ -119,7 +118,7 @@ func (s *floorService) IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID
 func (s *floorService) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error) {
 	err = s.repository.SoftDelete(ctx, floorID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог
@@ -133,7 +132,7 @@ func (s *floorService) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (
 func (s *floorService) RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error) {
 	err = s.repository.Restore(ctx, floorID)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		}
 		// TODO улучшить лог
