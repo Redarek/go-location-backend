@@ -23,19 +23,6 @@ type SiteRepo interface {
 	Restore(ctx context.Context, siteID uuid.UUID) (err error)
 }
 
-type SiteService interface {
-	CreateSite(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
-	GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
-	GetSites(ctx context.Context, getSiteDTO dto.GetSitesDTO) (sites []*entity.Site, err error)
-	// TODO get site list detailed
-
-	UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error)
-
-	IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error)
-	SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error)
-	RestoreSite(ctx context.Context, siteID uuid.UUID) (err error)
-}
-
 type siteService struct {
 	repository SiteRepo
 }

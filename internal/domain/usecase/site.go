@@ -8,8 +8,22 @@ import (
 	"github.com/rs/zerolog/log"
 
 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
+
+type SiteService interface {
+	CreateSite(ctx context.Context, createSiteDTO *domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
+	GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
+	GetSites(ctx context.Context, getSiteDTO domain_dto.GetSitesDTO) (sites []*entity.Site, err error)
+	// TODO get site list detailed
+
+	UpdateSite(ctx context.Context, patchUpdateSiteDTO *domain_dto.PatchUpdateSiteDTO) (err error)
+
+	IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (isDeleted bool, err error)
+	SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error)
+	RestoreSite(ctx context.Context, siteID uuid.UUID) (err error)
+}
 
 type SiteUsecase interface {
 	CreateSite(ctx context.Context, dto *domain_dto.CreateSiteDTO) (siteID uuid.UUID, err error)
@@ -23,10 +37,10 @@ type SiteUsecase interface {
 }
 
 type siteUsecase struct {
-	siteService service.SiteService
+	siteService SiteService
 }
 
-func NewSiteUsecase(siteService service.SiteService) *siteUsecase {
+func NewSiteUsecase(siteService SiteService) *siteUsecase {
 	return &siteUsecase{siteService: siteService}
 }
 

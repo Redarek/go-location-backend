@@ -25,19 +25,6 @@ type WallTypeRepo interface {
 	Restore(ctx context.Context, wallTypeID uuid.UUID) (err error)
 }
 
-type WallTypeService interface {
-	CreateWallType(ctx context.Context, createWallTypeDTO *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
-	GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
-	GetWallTypes(ctx context.Context, dto dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error)
-	// TODO get wallType list detailed
-
-	UpdateWallType(ctx context.Context, updateWallTypeDTO *dto.PatchUpdateWallTypeDTO) (err error)
-
-	IsWallTypeSoftDeleted(ctx context.Context, wallTypeID uuid.UUID) (isDeleted bool, err error)
-	SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
-	RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
-}
-
 type wallTypeService struct {
 	repository WallTypeRepo
 }

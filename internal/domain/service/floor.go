@@ -23,19 +23,6 @@ type FloorRepo interface {
 	Restore(ctx context.Context, floorID uuid.UUID) (err error)
 }
 
-type FloorService interface {
-	CreateFloor(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error)
-	GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error)
-	GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (floors []*entity.Floor, err error)
-	// TODO get floor list detailed
-
-	UpdateFloor(ctx context.Context, updateFloorDTO *dto.PatchUpdateFloorDTO) (err error)
-
-	IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error)
-	SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error)
-	RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error)
-}
-
 type floorService struct {
 	repository FloorRepo
 }

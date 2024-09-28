@@ -8,8 +8,15 @@ import (
 	"github.com/rs/zerolog/log"
 
 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
+
+type RoleService interface {
+	CreateRole(ctx context.Context, createRoleDTO *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
+	GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error)
+}
 
 type RoleUsecase interface {
 	CreateRole(ctx context.Context, dto *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
@@ -18,10 +25,10 @@ type RoleUsecase interface {
 }
 
 type roleUsecase struct {
-	roleService service.RoleService
+	roleService RoleService
 }
 
-func NewRoleUsecase(roleService service.RoleService) *roleUsecase {
+func NewRoleUsecase(roleService RoleService) *roleUsecase {
 	return &roleUsecase{roleService: roleService}
 }
 

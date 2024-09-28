@@ -8,8 +8,22 @@ import (
 	"github.com/rs/zerolog/log"
 
 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
+
+type WallService interface {
+	CreateWall(ctx context.Context, createWallDTO *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error)
+	GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
+	GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) (walls []*entity.Wall, err error)
+	GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailed *entity.WallDetailed, err error)
+
+	UpdateWall(ctx context.Context, updateWallDTO *domain_dto.PatchUpdateWallDTO) (err error)
+
+	IsWallSoftDeleted(ctx context.Context, wallID uuid.UUID) (isDeleted bool, err error)
+	SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error)
+	RestoreWall(ctx context.Context, wallID uuid.UUID) (err error)
+}
 
 type WallUsecase interface {
 	CreateWall(ctx context.Context, dto *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error)
@@ -24,11 +38,11 @@ type WallUsecase interface {
 }
 
 type wallUsecase struct {
-	wallService  service.WallService
-	floorService service.FloorService
+	wallService  WallService
+	floorService FloorService
 }
 
-func NewWallUsecase(wallService service.WallService, floorService service.FloorService) *wallUsecase {
+func NewWallUsecase(wallService WallService, floorService FloorService) *wallUsecase {
 	return &wallUsecase{
 		wallService:  wallService,
 		floorService: floorService,

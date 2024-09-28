@@ -17,12 +17,6 @@ type RoleRepo interface {
 	GetOneByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
 
-type RoleService interface {
-	CreateRole(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
-	GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
-	GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error)
-}
-
 type roleService struct {
 	repository RoleRepo
 }

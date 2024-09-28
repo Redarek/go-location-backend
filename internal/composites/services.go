@@ -2,17 +2,18 @@ package composites
 
 import (
 	"location-backend/internal/domain/service"
+	"location-backend/internal/domain/usecase"
 )
 
 type ServiceComposite struct {
-	healthService   service.HealthService
-	userService     service.UserService
-	roleService     service.RoleService
-	siteService     service.SiteService
-	buildingService service.BuildingService
-	floorService    service.FloorService
-	wallTypeService service.WallTypeService
-	wallService     service.WallService
+	healthService   usecase.HealthService
+	userService     usecase.UserService
+	roleService     usecase.RoleService
+	siteService     usecase.SiteService
+	buildingService usecase.BuildingService
+	floorService    usecase.FloorService
+	wallTypeService usecase.WallTypeService
+	wallService     usecase.WallService
 }
 
 func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *ServiceComposite) {

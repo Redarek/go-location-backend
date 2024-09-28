@@ -8,8 +8,22 @@ import (
 	"github.com/rs/zerolog/log"
 
 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
+
+type FloorService interface {
+	CreateFloor(ctx context.Context, createFloorDTO *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error)
+	GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error)
+	GetFloors(ctx context.Context, dto domain_dto.GetFloorsDTO) (floors []*entity.Floor, err error)
+	// TODO get floor list detailed
+
+	UpdateFloor(ctx context.Context, updateFloorDTO *domain_dto.PatchUpdateFloorDTO) (err error)
+
+	IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error)
+	SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error)
+	RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error)
+}
 
 type FloorUsecase interface {
 	CreateFloor(ctx context.Context, dto *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error)
@@ -24,11 +38,11 @@ type FloorUsecase interface {
 }
 
 type floorUsecase struct {
-	floorService    service.FloorService
-	buildingService service.BuildingService
+	floorService    FloorService
+	buildingService BuildingService
 }
 
-func NewFloorUsecase(floorService service.FloorService, buildingService service.BuildingService) *floorUsecase {
+func NewFloorUsecase(floorService FloorService, buildingService BuildingService) *floorUsecase {
 	return &floorUsecase{
 		floorService:    floorService,
 		buildingService: buildingService,

@@ -8,8 +8,22 @@ import (
 	"github.com/rs/zerolog/log"
 
 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
+
+type WallTypeService interface {
+	CreateWallType(ctx context.Context, createWallTypeDTO *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
+	GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
+	GetWallTypes(ctx context.Context, dto domain_dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error)
+	// TODO get wallType list detailed
+
+	UpdateWallType(ctx context.Context, updateWallTypeDTO *domain_dto.PatchUpdateWallTypeDTO) (err error)
+
+	IsWallTypeSoftDeleted(ctx context.Context, wallTypeID uuid.UUID) (isDeleted bool, err error)
+	SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
+	RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
+}
 
 type WallTypeUsecase interface {
 	CreateWallType(ctx context.Context, dto *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
@@ -24,11 +38,11 @@ type WallTypeUsecase interface {
 }
 
 type wallTypeUsecase struct {
-	wallTypeService service.WallTypeService
-	siteService     service.SiteService
+	wallTypeService WallTypeService
+	siteService     SiteService
 }
 
-func NewWallTypeUsecase(wallTypeService service.WallTypeService, siteService service.SiteService) *wallTypeUsecase {
+func NewWallTypeUsecase(wallTypeService WallTypeService, siteService SiteService) *wallTypeUsecase {
 	return &wallTypeUsecase{
 		wallTypeService: wallTypeService,
 		siteService:     siteService,

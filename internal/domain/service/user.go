@@ -20,16 +20,6 @@ type UserRepo interface {
 	// Delete(book entity.Book) error
 }
 
-type UserService interface {
-	// GetAllForList(ctx context.Context) []entity.BookView
-	// GetByID(ctx context.Context, id uuid.UUID) entity.User
-	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
-	CreateUser(ctx context.Context, createUserDTO *dto.CreateUserDTO) (userID uuid.UUID, err error)
-
-	HashPassword(password string) (string, error)
-	CheckPasswordHash(password, hash string) bool
-}
-
 type userService struct {
 	repository UserRepo
 }

@@ -25,19 +25,6 @@ type BuildingRepo interface {
 	Restore(ctx context.Context, buildingID uuid.UUID) (err error)
 }
 
-type BuildingService interface {
-	CreateBuilding(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
-	GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
-	GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
-	// TODO get building list detailed
-
-	UpdateBuilding(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error)
-
-	IsBuildingSoftDeleted(ctx context.Context, buildingID uuid.UUID) (isDeleted bool, err error)
-	SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
-	RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
-}
-
 type buildingService struct {
 	repository BuildingRepo
 }

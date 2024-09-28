@@ -14,4 +14,7 @@ var (
 
 	// Occurs when desired entity was not updated
 	ErrNotUpdated = errors.New("entity not updated")
+
+	// Occurs when login with wrong login or password, or if user does not exist
+	ErrBadLogin = errors.New("incorrect login or password, or no such user")
 )

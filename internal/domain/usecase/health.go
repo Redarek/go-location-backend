@@ -2,19 +2,21 @@ package usecase
 
 import (
 	"context"
-
-	"location-backend/internal/domain/service"
 )
+
+type HealthService interface {
+	Health(ctx context.Context) (err error)
+}
 
 type HealthUsecase interface {
 	Health(ctx context.Context) (err error)
 }
 
 type healthUsecase struct {
-	healthService service.HealthService
+	healthService HealthService
 }
 
-func NewHealthUsecase(healthService service.HealthService) *healthUsecase {
+func NewHealthUsecase(healthService HealthService) *healthUsecase {
 	return &healthUsecase{healthService: healthService}
 }
 

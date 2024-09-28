@@ -24,19 +24,6 @@ type WallRepo interface {
 	Restore(ctx context.Context, wallID uuid.UUID) (err error)
 }
 
-type WallService interface {
-	CreateWall(ctx context.Context, createWallDTO *dto.CreateWallDTO) (wallID uuid.UUID, err error)
-	GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
-	GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls []*entity.Wall, err error)
-	GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailed *entity.WallDetailed, err error)
-
-	UpdateWall(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error)
-
-	IsWallSoftDeleted(ctx context.Context, wallID uuid.UUID) (isDeleted bool, err error)
-	SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error)
-	RestoreWall(ctx context.Context, wallID uuid.UUID) (err error)
-}
-
 type wallService struct {
 	wallRepo     WallRepo
 	wallTypeRepo WallTypeRepo

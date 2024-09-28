@@ -8,10 +8,6 @@ type HealthRepo interface {
 	Health(ctx context.Context) (err error)
 }
 
-type HealthService interface {
-	Health(ctx context.Context) (err error)
-}
-
 type healthService struct {
 	repository HealthRepo
 }

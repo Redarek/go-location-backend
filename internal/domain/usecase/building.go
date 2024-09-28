@@ -8,8 +8,22 @@ import (
 	"github.com/rs/zerolog/log"
 
 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/service"
 )
+
+type BuildingService interface {
+	CreateBuilding(ctx context.Context, createBuildingDTO *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
+	GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
+	GetBuildings(ctx context.Context, dto domain_dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
+	// TODO get building list detailed
+
+	UpdateBuilding(ctx context.Context, updateBuildingDTO *domain_dto.PatchUpdateBuildingDTO) (err error)
+
+	IsBuildingSoftDeleted(ctx context.Context, buildingID uuid.UUID) (isDeleted bool, err error)
+	SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
+	RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
+}
 
 type BuildingUsecase interface {
 	CreateBuilding(ctx context.Context, dto *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
@@ -24,11 +38,11 @@ type BuildingUsecase interface {
 }
 
 type buildingUsecase struct {
-	buildingService service.BuildingService
-	siteService     service.SiteService
+	buildingService BuildingService
+	siteService     SiteService
 }
 
-func NewBuildingUsecase(buildingService service.BuildingService, siteService service.SiteService) *buildingUsecase {
+func NewBuildingUsecase(buildingService BuildingService, siteService SiteService) *buildingUsecase {
 	return &buildingUsecase{
 		buildingService: buildingService,
 		siteService:     siteService,

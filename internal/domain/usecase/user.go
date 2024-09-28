@@ -15,12 +15,15 @@ import (
 	"location-backend/internal/domain/service"
 )
 
-var (
-	// Occurs when login with wrong login or password, or if user does not exist
-	ErrBadLogin = errors.New("incorrect login or password, or no such user")
-)
+type UserService interface {
+	// GetAllForList(ctx context.Context) []entity.BookView
+	// GetByID(ctx context.Context, id uuid.UUID) entity.User
+	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
+	CreateUser(ctx context.Context, createUserDTO *domain_dto.CreateUserDTO) (userID uuid.UUID, err error)
 
-//? Здесь был интерфейс сервиса (Перенесён в в сервисы)
+	HashPassword(password string) (string, error)
+	CheckPasswordHash(password, hash string) bool
+}
 
 type UserUsecase interface {
 	Register(ctx context.Context, dto *domain_dto.RegisterUserDTO) (userID uuid.UUID, err error)
@@ -30,18 +33,14 @@ type UserUsecase interface {
 	// GetFullBook(ctx context.Context, id string) entity.FullBook
 }
 
-// type GenreService interface {
-// 	GetByID(ctx context.Context, id string) entity.User
-// }
-
 type userUsecase struct {
-	userService service.UserService
+	userService UserService
 	// authorService UserService
 	// genreService  GenreService
 }
 
 // ? TEST. Изначально этого не было
-func NewUserUsecase(userService service.UserService) *userUsecase {
+func NewUserUsecase(userService UserService) *userUsecase {
 	return &userUsecase{userService: userService}
 }
 
