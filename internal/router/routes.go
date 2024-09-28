@@ -29,7 +29,7 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 	}))
 
 	// Public route
-	router.App.Static("/public", "/public")
+	router.App.Static("/static", "/public")
 
 	api := router.App.Group("/api")
 	v1 := api.Group("/v1")
