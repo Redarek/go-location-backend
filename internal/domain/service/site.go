@@ -9,6 +9,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/usecase"
 )
 
 type SiteRepo interface {
@@ -46,7 +47,7 @@ func (s *siteService) GetSite(ctx context.Context, siteID uuid.UUID) (site *enti
 	site, err = s.repository.GetOne(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return site, ErrNotFound
+			return site, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve site")
@@ -60,7 +61,7 @@ func (s *siteService) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites 
 	sites, err = s.repository.GetAll(ctx, dto.UserID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return sites, ErrNotFound
+			return sites, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve site")
@@ -75,13 +76,13 @@ func (s *siteService) UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.Pa
 	err = s.repository.Update(ctx, patchUpdateSiteDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		if errors.Is(err, ErrNotUpdated) {
-			return ErrNotUpdated
+			return usecase.ErrNotUpdated
 		}
 		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to update site")
+		log.Error().Msg("failed to update site")
 		return
 	}
 
@@ -92,10 +93,10 @@ func (s *siteService) IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (
 	isDeleted, err = s.repository.IsSiteSoftDeleted(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return false, ErrNotFound
+			return false, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve site")
+		log.Error().Msg("failed to retrieve site")
 		return
 	}
 
@@ -106,7 +107,7 @@ func (s *siteService) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err
 	err = s.repository.SoftDelete(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to soft delete site")
@@ -120,7 +121,7 @@ func (s *siteService) RestoreSite(ctx context.Context, siteID uuid.UUID) (err er
 	err = s.repository.Restore(ctx, siteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to restore site")

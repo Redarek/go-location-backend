@@ -9,7 +9,6 @@ import (
 
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
-	"location-backend/internal/domain/service"
 )
 
 type WallTypeService interface {
@@ -52,7 +51,7 @@ func NewWallTypeUsecase(wallTypeService WallTypeService, siteService SiteService
 func (u *wallTypeUsecase) CreateWallType(ctx context.Context, dto *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error) {
 	_, err = u.siteService.GetSite(ctx, dto.SiteID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Info().Err(err).Msg("failed to create wallType: the site with provided site ID does not exist")
 			return wallTypeID, ErrNotFound
 		}
@@ -74,7 +73,7 @@ func (u *wallTypeUsecase) CreateWallType(ctx context.Context, dto *domain_dto.Cr
 func (u *wallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallTypeDTO *domain_dto.WallTypeDTO, err error) {
 	wallType, err := u.wallTypeService.GetWallType(ctx, wallTypeID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get wallType")
@@ -101,7 +100,7 @@ func (u *wallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 func (u *wallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWallTypesDTO) (wallTypesDTO []*domain_dto.WallTypeDTO, err error) {
 	wallTypes, err := u.wallTypeService.GetWallTypes(ctx, dto)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get wallTypes")
@@ -132,7 +131,7 @@ func (u *wallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWa
 func (u *wallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallTypeDTO) (err error) {
 	_, err = u.wallTypeService.GetWallType(ctx, patchUpdateDTO.ID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check wallType existing")
 			return ErrNotFound
 		}
@@ -140,7 +139,7 @@ func (u *wallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDT
 
 	err = u.wallTypeService.UpdateWallType(ctx, patchUpdateDTO)
 	if err != nil {
-		if errors.Is(err, service.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			log.Info().Err(err).Msg("wallType was not updated")
 			return ErrNotUpdated
 		}
@@ -154,7 +153,7 @@ func (u *wallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDT
 func (u *wallTypeUsecase) SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
 	isDeleted, err := u.wallTypeService.IsWallTypeSoftDeleted(ctx, wallTypeID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if wallType is soft deleted")
@@ -178,7 +177,7 @@ func (u *wallTypeUsecase) SoftDeleteWallType(ctx context.Context, wallTypeID uui
 func (u *wallTypeUsecase) RestoreWallType(ctx context.Context, wallTypeID uuid.UUID) (err error) {
 	isDeleted, err := u.wallTypeService.IsWallTypeSoftDeleted(ctx, wallTypeID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if wallType is soft deleted")

@@ -9,7 +9,6 @@ import (
 
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
-	"location-backend/internal/domain/service"
 )
 
 type RoleService interface {
@@ -36,7 +35,7 @@ func (u *roleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRole
 	_, err = u.roleService.GetRoleByName(ctx, dto.Name)
 	if err != nil {
 		// If error except ErrNotFound
-		if !errors.Is(err, service.ErrNotFound) {
+		if !errors.Is(err, ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check user existing")
 			return
 		}
@@ -57,7 +56,7 @@ func (u *roleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRole
 func (u *roleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *domain_dto.RoleDTO, err error) {
 	role, err := u.roleService.GetRole(ctx, roleID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get role")
@@ -80,7 +79,7 @@ func (u *roleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *d
 func (u *roleUsecase) GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error) {
 	role, err := u.roleService.GetRoleByName(ctx, name)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get role")

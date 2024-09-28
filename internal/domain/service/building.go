@@ -9,6 +9,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/usecase"
 )
 
 type BuildingRepo interface {
@@ -48,7 +49,7 @@ func (s *buildingService) GetBuilding(ctx context.Context, buildingID uuid.UUID)
 	building, err = s.repository.GetOne(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return building, ErrNotFound // TODO import from usercase Err
+			return building, usecase.ErrNotFound // TODO import from usercase Err
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve building")
@@ -62,7 +63,7 @@ func (s *buildingService) GetBuildings(ctx context.Context, dto dto.GetBuildings
 	buildings, err = s.repository.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return buildings, ErrNotFound
+			return buildings, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve building")
@@ -77,10 +78,10 @@ func (s *buildingService) UpdateBuilding(ctx context.Context, updateBuildingDTO 
 	err = s.repository.Update(ctx, updateBuildingDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		if errors.Is(err, ErrNotUpdated) {
-			return ErrNotUpdated
+			return usecase.ErrNotUpdated
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to update building")
@@ -94,7 +95,7 @@ func (s *buildingService) IsBuildingSoftDeleted(ctx context.Context, buildingID 
 	isDeleted, err = s.repository.IsBuildingSoftDeleted(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return false, ErrNotFound
+			return false, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve building")
@@ -108,7 +109,7 @@ func (s *buildingService) SoftDeleteBuilding(ctx context.Context, buildingID uui
 	err = s.repository.SoftDelete(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to soft delete building")
@@ -122,7 +123,7 @@ func (s *buildingService) RestoreBuilding(ctx context.Context, buildingID uuid.U
 	err = s.repository.Restore(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to restore building")

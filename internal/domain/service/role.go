@@ -9,6 +9,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/usecase"
 )
 
 type RoleRepo interface {
@@ -40,7 +41,7 @@ func (s *roleService) GetRole(ctx context.Context, roleID uuid.UUID) (role *enti
 	role, err = s.repository.GetOne(ctx, roleID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return nil, ErrNotFound
+			return nil, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve role")
@@ -54,7 +55,7 @@ func (s *roleService) GetRoleByName(ctx context.Context, name string) (role *ent
 	role, err = s.repository.GetOneByName(ctx, name)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return nil, ErrNotFound
+			return nil, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve role")

@@ -9,7 +9,6 @@ import (
 
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
-	"location-backend/internal/domain/service"
 )
 
 type WallService interface {
@@ -52,7 +51,7 @@ func NewWallUsecase(wallService WallService, floorService FloorService) *wallUse
 func (u *wallUsecase) CreateWall(ctx context.Context, dto *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error) {
 	_, err = u.floorService.GetFloor(ctx, dto.FloorID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Info().Msg("failed to create wall: the floor with provided site ID does not exist")
 			return wallID, ErrNotFound
 		}
@@ -74,7 +73,7 @@ func (u *wallUsecase) CreateWall(ctx context.Context, dto *domain_dto.CreateWall
 func (u *wallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *domain_dto.WallDTO, err error) {
 	wall, err := u.wallService.GetWall(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Msg("failed to get wall")
@@ -102,7 +101,7 @@ func (u *wallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *d
 func (u *wallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailedDTO *domain_dto.WallDetailedDTO, err error) {
 	wallDetailed, err := u.wallService.GetWallDetailed(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Msg("failed to get wall")
@@ -145,7 +144,7 @@ func (u *wallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 func (u *wallUsecase) GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) (wallsDTO []*domain_dto.WallDTO, err error) {
 	walls, err := u.wallService.GetWalls(ctx, dto)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Msg("failed to get walls")
@@ -177,7 +176,7 @@ func (u *wallUsecase) GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) 
 func (u *wallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallDTO) (err error) {
 	_, err = u.wallService.GetWall(ctx, patchUpdateDTO.ID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Error().Msg("failed to check wall existing")
 			return ErrNotFound
 		}
@@ -185,7 +184,7 @@ func (u *wallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *domai
 
 	err = u.wallService.UpdateWall(ctx, patchUpdateDTO)
 	if err != nil {
-		if errors.Is(err, service.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			log.Info().Err(err).Msg("wall was not updated")
 			return ErrNotUpdated
 		}
@@ -199,7 +198,7 @@ func (u *wallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *domai
 func (u *wallUsecase) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error) {
 	isDeleted, err := u.wallService.IsWallSoftDeleted(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Msg("failed to check if wall is soft deleted")
@@ -223,7 +222,7 @@ func (u *wallUsecase) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err
 func (u *wallUsecase) RestoreWall(ctx context.Context, wallID uuid.UUID) (err error) {
 	isDeleted, err := u.wallService.IsWallSoftDeleted(ctx, wallID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Msg("failed to check if wall is soft deleted")

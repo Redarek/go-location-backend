@@ -12,7 +12,6 @@ import (
 	"location-backend/internal/config"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
-	"location-backend/internal/domain/service"
 )
 
 type UserService interface {
@@ -49,7 +48,7 @@ func (u userUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUserD
 	_, err = u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// If error except ErrNotFound
-		if !errors.Is(err, service.ErrNotFound) {
+		if !errors.Is(err, ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check user existing")
 			return
 		}
@@ -83,7 +82,7 @@ func (u userUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (s
 	user, err := u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// Return ErrBadLogin if user not found
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return "", ErrBadLogin
 		} else {
 			log.Error().Err(err).Msg("failed to check user existing")
@@ -121,7 +120,7 @@ func (u userUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (s
 func (u userUsecase) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
 	user, err = u.userService.GetUserByName(ctx, username)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get user")

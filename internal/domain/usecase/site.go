@@ -9,7 +9,6 @@ import (
 
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
-	"location-backend/internal/domain/service"
 )
 
 type SiteService interface {
@@ -58,7 +57,7 @@ func (u *siteUsecase) CreateSite(ctx context.Context, dto *domain_dto.CreateSite
 func (u *siteUsecase) GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *domain_dto.SiteDTO, err error) {
 	site, err := u.siteService.GetSite(ctx, siteID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get site")
@@ -83,7 +82,7 @@ func (u *siteUsecase) GetSite(ctx context.Context, siteID uuid.UUID) (siteDTO *d
 func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) (sitesDTO []*domain_dto.SiteDTO, err error) {
 	sites, err := u.siteService.GetSites(ctx, dto)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get sites")
@@ -112,7 +111,7 @@ func (u *siteUsecase) GetSites(ctx context.Context, dto domain_dto.GetSitesDTO) 
 func (u *siteUsecase) PatchUpdateSite(ctx context.Context, dto *domain_dto.PatchUpdateSiteDTO) (err error) {
 	_, err = u.siteService.GetSite(ctx, dto.ID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check site existing")
 			return ErrNotFound
 		}
@@ -120,7 +119,7 @@ func (u *siteUsecase) PatchUpdateSite(ctx context.Context, dto *domain_dto.Patch
 
 	err = u.siteService.UpdateSite(ctx, dto)
 	if err != nil {
-		if errors.Is(err, service.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			log.Info().Err(err).Msg("site was not updated")
 			return ErrNotUpdated
 		}
@@ -134,7 +133,7 @@ func (u *siteUsecase) PatchUpdateSite(ctx context.Context, dto *domain_dto.Patch
 func (u *siteUsecase) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err error) {
 	isDeleted, err := u.siteService.IsSiteSoftDeleted(ctx, siteID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if site is soft deleted")
@@ -158,7 +157,7 @@ func (u *siteUsecase) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err
 func (u *siteUsecase) RestoreSite(ctx context.Context, siteID uuid.UUID) (err error) {
 	isDeleted, err := u.siteService.IsSiteSoftDeleted(ctx, siteID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if site is soft deleted")

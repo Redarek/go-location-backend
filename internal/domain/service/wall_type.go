@@ -9,6 +9,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/usecase"
 )
 
 type WallTypeRepo interface {
@@ -48,7 +49,7 @@ func (s *wallTypeService) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 	wallType, err = s.repository.GetOne(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return wallType, ErrNotFound
+			return wallType, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve wallType")
@@ -62,7 +63,7 @@ func (s *wallTypeService) GetWallTypes(ctx context.Context, dto dto.GetWallTypes
 	wallTypes, err = s.repository.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return wallTypes, ErrNotFound
+			return wallTypes, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve wallType")
@@ -77,10 +78,10 @@ func (s *wallTypeService) UpdateWallType(ctx context.Context, updateWallTypeDTO 
 	err = s.repository.Update(ctx, updateWallTypeDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		if errors.Is(err, ErrNotUpdated) {
-			return ErrNotUpdated
+			return usecase.ErrNotUpdated
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to update wallType")
@@ -94,7 +95,7 @@ func (s *wallTypeService) IsWallTypeSoftDeleted(ctx context.Context, wallTypeID 
 	isDeleted, err = s.repository.IsWallTypeSoftDeleted(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return false, ErrNotFound
+			return false, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve wallType")
@@ -108,7 +109,7 @@ func (s *wallTypeService) SoftDeleteWallType(ctx context.Context, wallTypeID uui
 	err = s.repository.SoftDelete(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to soft delete wallType")
@@ -122,7 +123,7 @@ func (s *wallTypeService) RestoreWallType(ctx context.Context, wallTypeID uuid.U
 	err = s.repository.Restore(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to restore wallType")

@@ -9,7 +9,6 @@ import (
 
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
-	"location-backend/internal/domain/service"
 )
 
 type FloorService interface {
@@ -52,7 +51,7 @@ func NewFloorUsecase(floorService FloorService, buildingService BuildingService)
 func (u *floorUsecase) CreateFloor(ctx context.Context, dto *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error) {
 	_, err = u.buildingService.GetBuilding(ctx, dto.BuildingID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Info().Err(err).Msg("failed to create floor: the building with provided building ID does not exist")
 			return floorID, ErrNotFound
 		}
@@ -74,7 +73,7 @@ func (u *floorUsecase) CreateFloor(ctx context.Context, dto *domain_dto.CreateFl
 func (u *floorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floorDTO *domain_dto.FloorDTO, err error) {
 	floor, err := u.floorService.GetFloor(ctx, floorID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get floor")
@@ -109,7 +108,7 @@ func (u *floorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floorDT
 func (u *floorUsecase) GetFloors(ctx context.Context, dto domain_dto.GetFloorsDTO) (floorsDTO []*domain_dto.FloorDTO, err error) {
 	floors, err := u.floorService.GetFloors(ctx, dto)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get floors")
@@ -148,7 +147,7 @@ func (u *floorUsecase) GetFloors(ctx context.Context, dto domain_dto.GetFloorsDT
 func (u *floorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateFloorDTO) (err error) {
 	_, err = u.floorService.GetFloor(ctx, patchUpdateDTO.ID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check floor existing")
 			return ErrNotFound
 		}
@@ -156,7 +155,7 @@ func (u *floorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *dom
 
 	err = u.floorService.UpdateFloor(ctx, patchUpdateDTO)
 	if err != nil {
-		if errors.Is(err, service.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			log.Info().Err(err).Msg("floor was not updated")
 			return ErrNotUpdated
 		}
@@ -170,7 +169,7 @@ func (u *floorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *dom
 func (u *floorUsecase) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error) {
 	isDeleted, err := u.floorService.IsFloorSoftDeleted(ctx, floorID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if floor is soft deleted")
@@ -194,7 +193,7 @@ func (u *floorUsecase) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (
 func (u *floorUsecase) RestoreFloor(ctx context.Context, floorID uuid.UUID) (err error) {
 	isDeleted, err := u.floorService.IsFloorSoftDeleted(ctx, floorID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if floor is soft deleted")

@@ -9,7 +9,6 @@ import (
 
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
-	"location-backend/internal/domain/service"
 )
 
 type BuildingService interface {
@@ -52,7 +51,7 @@ func NewBuildingUsecase(buildingService BuildingService, siteService SiteService
 func (u *buildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
 	_, err = u.siteService.GetSite(ctx, dto.SiteID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Info().Err(err).Msg("failed to create building: the site with provided site ID does not exist")
 			return buildingID, ErrNotFound
 		}
@@ -74,7 +73,7 @@ func (u *buildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.Cr
 func (u *buildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID) (buildingDTO *domain_dto.BuildingDTO, err error) {
 	building, err := u.buildingService.GetBuilding(ctx, buildingID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get building")
@@ -102,7 +101,7 @@ func (u *buildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID)
 func (u *buildingUsecase) GetBuildings(ctx context.Context, dto domain_dto.GetBuildingsDTO) (buildingsDTO []*domain_dto.BuildingDTO, err error) {
 	buildings, err := u.buildingService.GetBuildings(ctx, dto)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get buildings")
@@ -134,7 +133,7 @@ func (u *buildingUsecase) GetBuildings(ctx context.Context, dto domain_dto.GetBu
 func (u *buildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateBuildingDTO) (err error) {
 	_, err = u.buildingService.GetBuilding(ctx, patchUpdateDTO.ID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			log.Error().Err(err).Msg("failed to check building existing")
 			return ErrNotFound
 		}
@@ -142,7 +141,7 @@ func (u *buildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDT
 
 	err = u.buildingService.UpdateBuilding(ctx, patchUpdateDTO)
 	if err != nil {
-		if errors.Is(err, service.ErrNotUpdated) {
+		if errors.Is(err, ErrNotUpdated) {
 			log.Info().Err(err).Msg("building was not updated")
 			return ErrNotUpdated
 		}
@@ -156,7 +155,7 @@ func (u *buildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDT
 func (u *buildingUsecase) SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
 	isDeleted, err := u.buildingService.IsBuildingSoftDeleted(ctx, buildingID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if building is soft deleted")
@@ -180,7 +179,7 @@ func (u *buildingUsecase) SoftDeleteBuilding(ctx context.Context, buildingID uui
 func (u *buildingUsecase) RestoreBuilding(ctx context.Context, buildingID uuid.UUID) (err error) {
 	isDeleted, err := u.buildingService.IsBuildingSoftDeleted(ctx, buildingID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to check if building is soft deleted")

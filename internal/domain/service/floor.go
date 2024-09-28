@@ -9,6 +9,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/usecase"
 )
 
 type FloorRepo interface {
@@ -46,7 +47,7 @@ func (s *floorService) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *
 	floor, err = s.repository.GetOne(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return floor, ErrNotFound
+			return floor, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve floor")
@@ -60,7 +61,7 @@ func (s *floorService) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (flo
 	floors, err = s.repository.GetAll(ctx, dto.BuildingID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return floors, ErrNotFound
+			return floors, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve floor")
@@ -75,10 +76,10 @@ func (s *floorService) UpdateFloor(ctx context.Context, updateFloorDTO *dto.Patc
 	err = s.repository.Update(ctx, updateFloorDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		if errors.Is(err, ErrNotUpdated) {
-			return ErrNotUpdated
+			return usecase.ErrNotUpdated
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to update floor")
@@ -92,7 +93,7 @@ func (s *floorService) IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID
 	isDeleted, err = s.repository.IsFloorSoftDeleted(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return false, ErrNotFound
+			return false, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve floor")
@@ -106,7 +107,7 @@ func (s *floorService) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (
 	err = s.repository.SoftDelete(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to soft delete floor")
@@ -120,7 +121,7 @@ func (s *floorService) RestoreFloor(ctx context.Context, floorID uuid.UUID) (err
 	err = s.repository.Restore(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to restore floor")

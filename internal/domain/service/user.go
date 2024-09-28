@@ -10,6 +10,7 @@ import (
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/usecase"
 )
 
 type UserRepo interface {
@@ -44,7 +45,7 @@ func (s userService) GetUserByName(ctx context.Context, username string) (user *
 	user, err = s.repository.GetOneByName(ctx, username)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return user, ErrNotFound
+			return user, usecase.ErrNotFound
 		}
 		// TODO улучшить лог
 		log.Error().Err(err).Msg("failed to retrieve user")
