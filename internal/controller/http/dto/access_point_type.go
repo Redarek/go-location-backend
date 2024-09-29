@@ -12,7 +12,7 @@ type AccessPointTypeDTO struct {
 	Color     string              `json:"color"`
 	Z         float64             `json:"z"`
 	IsVirtual bool                `json:"isVirtual"`
-	SiteID    uuid.UUID           `json:"site_id"`
+	SiteID    uuid.UUID           `json:"siteId"`
 	CreatedAt pgtype.Timestamptz  `json:"createdAt"`
 	UpdatedAt pgtype.Timestamptz  `json:"updatedAt"`
 	DeletedAt *pgtype.Timestamptz `json:"deletedAt"`
@@ -28,7 +28,7 @@ type CreateAccessPointTypeDTO struct {
 }
 
 type GetAccessPointTypesDTO struct {
-	SiteID uuid.UUID `json:"site_id"`
+	SiteID uuid.UUID `json:"siteId"`
 	Page   int
 	Size   int
 }
