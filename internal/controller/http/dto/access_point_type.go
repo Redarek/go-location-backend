@@ -18,6 +18,11 @@ type AccessPointTypeDTO struct {
 	DeletedAt *pgtype.Timestamptz `json:"deletedAt"`
 }
 
+type AccessPointTypeDetailedDTO struct {
+	AccessPointTypeDTO
+	RadioTemplatesDTO []*AccessPointRadioTemplateDTO `json:"radioTemplates"`
+}
+
 type CreateAccessPointTypeDTO struct {
 	Name      string    `json:"name"`
 	Model     string    `json:"model"`
@@ -31,6 +36,12 @@ type GetAccessPointTypesDTO struct {
 	SiteID uuid.UUID `json:"siteId"`
 	Page   int
 	Size   int
+}
+
+type GetAccessPointTypeDetailedDTO struct {
+	AccessPointTypeID uuid.UUID `db:"access_point_type_id"`
+	Page              int
+	Size              int
 }
 
 type PatchUpdateAccessPointTypeDTO struct {

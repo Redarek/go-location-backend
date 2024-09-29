@@ -15,8 +15,6 @@ import (
 type AccessPointTypeRepo interface {
 	Create(ctx context.Context, createAccessPointTypeDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error)
-	// GetOneDetailed(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointTypeDetailed, err error) // TODO
-
 	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (accessPointTypes []*entity.AccessPointType, err error)
 
 	Update(ctx context.Context, updateAccessPointTypeDTO *dto.PatchUpdateAccessPointTypeDTO) (err error)
@@ -27,15 +25,19 @@ type AccessPointTypeRepo interface {
 }
 
 type accessPointTypeService struct {
-	repository AccessPointTypeRepo
+	accessPointTypeRepo          AccessPointTypeRepo
+	accessPointRadioTemplateRepo AccessPointRadioTemplateRepo
 }
 
-func NewAccessPointTypeService(repository AccessPointTypeRepo) *accessPointTypeService {
-	return &accessPointTypeService{repository: repository}
+func NewAccessPointTypeService(accessPointTypeRepo AccessPointTypeRepo, accessPointRadioTemplateRepo AccessPointRadioTemplateRepo) *accessPointTypeService {
+	return &accessPointTypeService{
+		accessPointTypeRepo:          accessPointTypeRepo,
+		accessPointRadioTemplateRepo: accessPointRadioTemplateRepo,
+	}
 }
 
 func (s *accessPointTypeService) CreateAccessPointType(ctx context.Context, createAccessPointTypeDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error) {
-	accessPointTypeID, err = s.repository.Create(ctx, createAccessPointTypeDTO)
+	accessPointTypeID, err = s.accessPointTypeRepo.Create(ctx, createAccessPointTypeDTO)
 	if err != nil {
 		// TODO улучшить лог
 		log.Error().Msg("failed to create accessPointType")
@@ -46,7 +48,7 @@ func (s *accessPointTypeService) CreateAccessPointType(ctx context.Context, crea
 }
 
 func (s *accessPointTypeService) GetAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error) {
-	accessPointType, err = s.repository.GetOne(ctx, accessPointTypeID)
+	accessPointType, err = s.accessPointTypeRepo.GetOne(ctx, accessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPointType, usecase.ErrNotFound
@@ -59,8 +61,35 @@ func (s *accessPointTypeService) GetAccessPointType(ctx context.Context, accessP
 	return
 }
 
+func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context, dto dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
+	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, dto.AccessPointTypeID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return accessPointTypeDetailed, usecase.ErrNotFound
+		}
+		// TODO улучшить лог
+		log.Error().Msg("failed to retrieve access point type")
+		return
+	}
+
+	accessPointRadioTemplates, err := s.accessPointRadioTemplateRepo.GetAll(ctx, dto.AccessPointTypeID, dto.Limit, dto.Offset)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return accessPointTypeDetailed, usecase.ErrNotFound
+		}
+		return
+	}
+
+	accessPointTypeDetailed = &entity.AccessPointTypeDetailed{
+		AccessPointType: *accessPointType,
+		RadioTemplates:  accessPointRadioTemplates,
+	}
+
+	return
+}
+
 func (s *accessPointTypeService) GetAccessPointTypes(ctx context.Context, dto dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error) {
-	accessPointTypes, err = s.repository.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
+	accessPointTypes, err = s.accessPointTypeRepo.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPointTypes, usecase.ErrNotFound
@@ -75,7 +104,7 @@ func (s *accessPointTypeService) GetAccessPointTypes(ctx context.Context, dto dt
 
 // TODO PUT update
 func (s *accessPointTypeService) UpdateAccessPointType(ctx context.Context, updateAccessPointTypeDTO *dto.PatchUpdateAccessPointTypeDTO) (err error) {
-	err = s.repository.Update(ctx, updateAccessPointTypeDTO)
+	err = s.accessPointTypeRepo.Update(ctx, updateAccessPointTypeDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
@@ -92,7 +121,7 @@ func (s *accessPointTypeService) UpdateAccessPointType(ctx context.Context, upda
 }
 
 func (s *accessPointTypeService) IsAccessPointTypeSoftDeleted(ctx context.Context, accessPointTypeID uuid.UUID) (isDeleted bool, err error) {
-	isDeleted, err = s.repository.IsAccessPointTypeSoftDeleted(ctx, accessPointTypeID)
+	isDeleted, err = s.accessPointTypeRepo.IsAccessPointTypeSoftDeleted(ctx, accessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return false, usecase.ErrNotFound
@@ -106,7 +135,7 @@ func (s *accessPointTypeService) IsAccessPointTypeSoftDeleted(ctx context.Contex
 }
 
 func (s *accessPointTypeService) SoftDeleteAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (err error) {
-	err = s.repository.SoftDelete(ctx, accessPointTypeID)
+	err = s.accessPointTypeRepo.SoftDelete(ctx, accessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
@@ -120,7 +149,7 @@ func (s *accessPointTypeService) SoftDeleteAccessPointType(ctx context.Context, 
 }
 
 func (s *accessPointTypeService) RestoreAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (err error) {
-	err = s.repository.Restore(ctx, accessPointTypeID)
+	err = s.accessPointTypeRepo.Restore(ctx, accessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound

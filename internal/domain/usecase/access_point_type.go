@@ -14,8 +14,8 @@ import (
 type AccessPointTypeService interface {
 	CreateAccessPointType(ctx context.Context, createAccessPointTypeDTO *domain_dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
 	GetAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error)
+	GetAccessPointTypeDetailed(ctx context.Context, dto domain_dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error)
 	GetAccessPointTypes(ctx context.Context, dto domain_dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error)
-	// TODO get accessPointType list detailed
 
 	UpdateAccessPointType(ctx context.Context, updateAccessPointTypeDTO *domain_dto.PatchUpdateAccessPointTypeDTO) (err error)
 
@@ -25,14 +25,20 @@ type AccessPointTypeService interface {
 }
 
 type AccessPointTypeUsecase struct {
-	accessPointTypeService AccessPointTypeService
-	siteService            SiteService
+	accessPointTypeService          AccessPointTypeService
+	accessPointRadioTemplateService AccessPointRadioTemplateService
+	siteService                     SiteService
 }
 
-func NewAccessPointTypeUsecase(accessPointTypeService AccessPointTypeService, siteService SiteService) *AccessPointTypeUsecase {
+func NewAccessPointTypeUsecase(
+	accessPointTypeService AccessPointTypeService,
+	accessPointRadioTemplateService AccessPointRadioTemplateService,
+	siteService SiteService,
+) *AccessPointTypeUsecase {
 	return &AccessPointTypeUsecase{
-		accessPointTypeService: accessPointTypeService,
-		siteService:            siteService,
+		accessPointTypeService:          accessPointTypeService,
+		accessPointRadioTemplateService: accessPointRadioTemplateService,
+		siteService:                     siteService,
 	}
 }
 
@@ -81,6 +87,33 @@ func (u *AccessPointTypeUsecase) GetAccessPointType(ctx context.Context, accessP
 		CreatedAt: accessPointType.CreatedAt,
 		UpdatedAt: accessPointType.UpdatedAt,
 		DeletedAt: accessPointType.DeletedAt,
+	}
+
+	return
+}
+
+func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context, dto domain_dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
+	accessPointType, err := u.accessPointTypeService.GetAccessPointType(ctx, dto.AccessPointTypeID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNotFound
+		} else {
+			// log.Error().Msg("failed to get access point type detailed")
+			return
+		}
+	}
+
+	getAccessPointRadioTemplatesDTO := domain_dto.GetAccessPointRadioTemplatesDTO{
+		AccessPointTypeID: dto.AccessPointTypeID,
+		Limit:             dto.Limit,
+		Offset:            dto.Offset,
+	}
+
+	accessPointRadioTemplates, err := u.accessPointRadioTemplateService.GetAccessPointRadioTemplates(ctx, getAccessPointRadioTemplatesDTO)
+
+	accessPointTypeDetailed = &entity.AccessPointTypeDetailed{
+		AccessPointType: *accessPointType,
+		RadioTemplates:  accessPointRadioTemplates,
 	}
 
 	return

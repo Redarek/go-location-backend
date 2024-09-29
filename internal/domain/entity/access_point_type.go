@@ -20,5 +20,5 @@ type AccessPointType struct {
 
 type AccessPointTypeDetailed struct {
 	AccessPointType
-	RadioTemplates []*AccessPointRadioTemplate `json:"accessPointRadioTemplates"`
+	RadioTemplates []*AccessPointRadioTemplate `json:"radioTemplates"`
 }

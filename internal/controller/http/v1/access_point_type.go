@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	createAccessPointTypeURL = "/"
-	getAccessPointTypeURL    = "/"
-	getAccessPointTypesURL   = "/all"
+	createAccessPointTypeURL      = "/"
+	getAccessPointTypeURL         = "/"
+	getAccessPointTypeDetailedURL = "/detailed"
+	getAccessPointTypesURL        = "/all"
 
 	patchUpdateAccessPointTypeURL = "/"
 
@@ -39,6 +40,7 @@ func (h *accessPointTypeHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
 	router.Post(createAccessPointTypeURL, h.CreateAccessPointType)
 	router.Get(getAccessPointTypeURL, h.GetAccessPointType)
+	router.Get(getAccessPointTypeDetailedURL, h.GetAccessPointTypeDetailed)
 	router.Get(getAccessPointTypesURL, h.GetAccessPointTypes)
 
 	router.Patch(patchUpdateAccessPointTypeURL, h.PatchUpdateAccessPointType)
@@ -153,6 +155,97 @@ func (h *accessPointTypeHandler) GetAccessPointType(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointTypeDTO})
+}
+
+func (h *accessPointTypeHandler) GetAccessPointTypeDetailed(ctx *fiber.Ctx) error {
+	accessPointTypeID, err := uuid.Parse(ctx.Query("id"))
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid ID",
+			"Failed to parse 'id' as UUID",
+			nil,
+		))
+	}
+
+	// var dto http_dto.GetAccessPointTypeDTO = http_dto.GetAccessPointTypeDTO{
+	// 	ID: accessPointTypeID,
+	// }
+
+	// TODO реализовать передачу page и size
+	var dto http_dto.GetAccessPointTypeDetailedDTO = http_dto.GetAccessPointTypeDetailedDTO{
+		AccessPointTypeID: accessPointTypeID,
+		Page:              1,
+		Size:              100,
+	}
+
+	// TODO validate
+
+	// Mapping http DTO -> domain DTO
+	// domainDTO := domain_dto.GetAccessPointTypeDTO{
+	// 	ID: dto.ID,
+	// }
+
+	domainDTO := domain_dto.GetAccessPointTypeDetailedDTO{
+		AccessPointTypeID: dto.AccessPointTypeID,
+		Limit:             dto.Size,
+		Offset:            (dto.Page - 1) * dto.Size,
+	}
+
+	accessPointTypeDetailed, err := h.usecase.GetAccessPointTypeDetailed(context.Background(), domainDTO)
+	if err != nil {
+		if errors.Is(err, usecase.ErrNotFound) {
+			ctx.Status(fiber.StatusNoContent)
+			return nil
+		}
+
+		log.Error().Msg("an unexpected error has occurred while trying to retrieve the access point type detailed")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to retrieve the access point type detailed",
+			"",
+			nil,
+		))
+	}
+
+	var accessPointRadioTemplateDTO []*http_dto.AccessPointRadioTemplateDTO
+	for _, radioTemplate := range accessPointTypeDetailed.RadioTemplates {
+		accessPointRadioTemplateDTO = append(accessPointRadioTemplateDTO, &http_dto.AccessPointRadioTemplateDTO{
+			ID:                radioTemplate.ID,
+			Number:            radioTemplate.Number,
+			Channel:           radioTemplate.Channel,
+			Channel2:          radioTemplate.Channel2,
+			ChannelWidth:      radioTemplate.ChannelWidth,
+			WiFi:              radioTemplate.WiFi,
+			Power:             radioTemplate.Power,
+			Bandwidth:         radioTemplate.Bandwidth,
+			GuardInterval:     radioTemplate.GuardInterval,
+			AccessPointTypeID: radioTemplate.AccessPointTypeID,
+			CreatedAt:         radioTemplate.CreatedAt,
+			UpdatedAt:         radioTemplate.UpdatedAt,
+			DeletedAt:         radioTemplate.DeletedAt,
+		})
+	}
+
+	// Mapping domain DTO -> http DTO
+	accessPointTypeDetailedDTO := http_dto.AccessPointTypeDetailedDTO{
+		AccessPointTypeDTO: http_dto.AccessPointTypeDTO{
+			ID:        accessPointTypeDetailed.ID,
+			Name:      accessPointTypeDetailed.Name,
+			Model:     accessPointTypeDetailed.Model,
+			Color:     accessPointTypeDetailed.Color,
+			Z:         accessPointTypeDetailed.Z,
+			IsVirtual: accessPointTypeDetailed.IsVirtual,
+			SiteID:    accessPointTypeDetailed.SiteID,
+			CreatedAt: accessPointTypeDetailed.CreatedAt,
+			UpdatedAt: accessPointTypeDetailed.UpdatedAt,
+			DeletedAt: accessPointTypeDetailed.DeletedAt,
+		},
+		RadioTemplatesDTO: accessPointRadioTemplateDTO,
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointTypeDetailedDTO})
 }
 
 func (h *accessPointTypeHandler) GetAccessPointTypes(c *fiber.Ctx) error {
