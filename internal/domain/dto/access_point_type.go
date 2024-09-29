@@ -28,7 +28,7 @@ type CreateAccessPointTypeDTO struct {
 }
 
 type GetAccessPointTypesDTO struct {
-	SiteID uuid.UUID `db:"id"`
+	SiteID uuid.UUID `db:"site_id"`
 	Limit  int
 	Offset int
 }

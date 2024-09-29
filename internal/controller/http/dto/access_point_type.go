@@ -28,9 +28,9 @@ type CreateAccessPointTypeDTO struct {
 }
 
 type GetAccessPointTypesDTO struct {
-	SiteID uuid.UUID `json:"id"`
-	Limit  int
-	Offset int
+	SiteID uuid.UUID `json:"site_id"`
+	Page   int
+	Size   int
 }
 
 type PatchUpdateAccessPointTypeDTO struct {

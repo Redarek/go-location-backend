@@ -17,21 +17,6 @@ import (
 	"location-backend/internal/domain/service"
 )
 
-// TODO вынести в сервисы
-type AccessPointTypeRepo interface {
-	Create(ctx context.Context, createAccessPointTypeDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
-	GetOne(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error)
-	// GetOneDetailed(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointTypeDetailed, err error) // TODO
-
-	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (accessPointTypes []*entity.AccessPointType, err error)
-
-	Update(ctx context.Context, updateAccessPointTypeDTO *dto.PatchUpdateAccessPointTypeDTO) (err error)
-
-	IsAccessPointTypeSoftDeleted(ctx context.Context, accessPointTypeID uuid.UUID) (isDeleted bool, err error)
-	SoftDelete(ctx context.Context, accessPointTypeID uuid.UUID) (err error)
-	Restore(ctx context.Context, accessPointTypeID uuid.UUID) (err error)
-}
-
 type accessPointTypeRepo struct {
 	pool *pgxpool.Pool
 }

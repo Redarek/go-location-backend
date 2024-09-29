@@ -56,6 +56,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	wall := v1.Group("/wall", middleware.Auth)
 	handlerComposite.WallHandler.Register(&wall)
+
+	accessPointType := v1.Group("/apt", middleware.Auth)
+	handlerComposite.AccessPointTypeHandler.Register(&accessPointType)
 }
 
 // import (
