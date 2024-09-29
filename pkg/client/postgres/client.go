@@ -150,7 +150,8 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
-        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
         wifi VARCHAR(64) NOT NULL, -- TODO fix
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
@@ -179,7 +180,8 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
-        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
         wifi VARCHAR(64) NOT NULL, -- TODO fix
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
@@ -208,7 +210,8 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
-        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
         wifi VARCHAR(64) NOT NULL, -- TODO fix
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
@@ -247,7 +250,8 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
-        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
         wifi VARCHAR(64) NOT NULL, -- TODO fix
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
