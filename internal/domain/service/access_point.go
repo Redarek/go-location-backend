@@ -75,9 +75,10 @@ func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto
 	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, accessPoint.AccessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			log.Debug().Msg("access point type was not found")
-			return accessPointDetailed, usecase.ErrNotFound
+			log.Error().Msg("access point type was not found")
+			return
 		}
+
 		// TODO улучшить лог
 		log.Error().Msg("failed to retrieve access point type")
 		return
@@ -87,11 +88,12 @@ func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			log.Debug().Msg("access point radios were not found")
-			return accessPointDetailed, usecase.ErrNotFound
+			err = nil
+		} else {
+			// TODO улучшить лог
+			log.Error().Msg("failed to retrieve access point radios")
+			return
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve access point radios")
-		return
 	}
 
 	accessPointDetailed = &entity.AccessPointDetailed{

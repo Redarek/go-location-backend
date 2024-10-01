@@ -77,10 +77,10 @@ func (u *WallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
-		} else {
-			log.Error().Msg("failed to get wall")
-			return
 		}
+
+		log.Error().Msg("failed to get wall")
+		return
 	}
 
 	return

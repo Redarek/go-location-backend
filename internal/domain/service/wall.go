@@ -76,7 +76,8 @@ func (s *wallService) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 	wallType, err := s.wallTypeRepo.GetOne(ctx, wall.WallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return wallDetailed, usecase.ErrNotFound
+			log.Error().Msg("wall type was not found")
+			return
 		}
 		// TODO улучшить лог
 		log.Error().Msg("failed to retrieve wallType")

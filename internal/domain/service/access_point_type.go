@@ -75,9 +75,11 @@ func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context,
 	accessPointRadioTemplates, err := s.accessPointRadioTemplateRepo.GetAll(ctx, dto.ID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return accessPointTypeDetailed, usecase.ErrNotFound
+			err = nil
+		} else {
+			log.Error().Msg("failed to retrieve access point radio template")
+			return
 		}
-		return
 	}
 
 	accessPointTypeDetailed = &entity.AccessPointTypeDetailed{
