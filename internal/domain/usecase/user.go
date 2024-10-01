@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/bcrypt"
 
 	"location-backend/internal/config"
 	"location-backend/internal/domain/dto"
@@ -19,9 +20,6 @@ type UserService interface {
 	// GetByID(ctx context.Context, id uuid.UUID) entity.User
 	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
 	CreateUser(ctx context.Context, createUserDTO *dto.CreateUserDTO) (userID uuid.UUID, err error)
-
-	HashPassword(password string) (string, error)
-	CheckPasswordHash(password, hash string) bool
 }
 
 type UserUsecase struct {
@@ -48,7 +46,7 @@ func (u *UserUsecase) Register(ctx context.Context, registerDTO *dto.RegisterUse
 		return userID, ErrAlreadyExists
 	}
 
-	hash, err := u.userService.HashPassword(registerDTO.Password)
+	hash, err := hashPassword(registerDTO.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to hash user password")
 		return
@@ -82,7 +80,7 @@ func (u *UserUsecase) Login(ctx context.Context, dto *dto.LoginUserDTO) (signedS
 		}
 	}
 
-	if !u.userService.CheckPasswordHash(dto.Password, user.PasswordHash) {
+	if !checkPasswordHash(dto.Password, user.PasswordHash) {
 		log.Info().Msg("wrong password")
 		return "", ErrBadLogin
 	}
@@ -121,6 +119,24 @@ func (u *UserUsecase) GetUserByName(ctx context.Context, username string) (user 
 	}
 
 	return
+}
+
+// Хэширует пароль
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	// log.Debug().Msgf("Password: %v", password)
+	// log.Debug().Msgf("HashPassword: %v", bytes)
+	return string(bytes), err
+}
+
+// Сравнивает пароль и его хэш. Если верно – true, иначе – false.
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		log.Debug().Msgf("failed to compare hash and password (password: '%v' \t hash: '%v')", password, hash)
+	}
+
+	return err == nil
 }
 
 // func (u userUsecase) ListAllBooks(ctx context.Context) []entity.BookView {

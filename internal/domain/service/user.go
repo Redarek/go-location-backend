@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/crypto/bcrypt"
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
@@ -53,24 +52,6 @@ func (s userService) GetUserByName(ctx context.Context, username string) (user *
 	}
 
 	return
-}
-
-// Хэширует пароль
-func (s userService) HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	// log.Debug().Msgf("Password: %v", password)
-	// log.Debug().Msgf("HashPassword: %v", bytes)
-	return string(bytes), err
-}
-
-// Сравнивает пароль и его хэш. Если верно – true, иначе – false.
-func (s userService) CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	if err != nil {
-		log.Debug().Msgf("failed to compare hash and password (password: '%v' \t hash: '%v')", password, hash)
-	}
-
-	return err == nil
 }
 
 // func (s userService) GetByID(ctx context.Context, id uuid.UUID) entity.User {
