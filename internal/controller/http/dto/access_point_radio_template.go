@@ -45,7 +45,7 @@ type PatchUpdateAccessPointRadioTemplateDTO struct {
 	Power             *int       `json:"power"`
 	Bandwidth         *string    `json:"bandwidth"`
 	GuardInterval     *int       `json:"guardInterval"`
-	IsActive          bool       `json:"isActive"`
+	IsActive          *bool      `json:"isActive"`
 	AccessPointTypeID *uuid.UUID `json:"accessPointTypeId"`
 }
 
