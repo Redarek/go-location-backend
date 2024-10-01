@@ -27,6 +27,7 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		buildingService:                 service.NewBuildingService(composite.buildingRepo),
 		floorService:                    service.NewFloorService(composite.floorRepo),
 		wallTypeService:                 service.NewWallTypeService(composite.wallTypeRepo),
+		wallService:                     service.NewWallService(composite.wallRepo, composite.wallTypeRepo),
 		accessPointTypeService:          service.NewAccessPointTypeService(composite.accessPointTypeRepo, composite.accessPointRadioTemplateRepo),
 		accessPointRadioTemplateService: service.NewAccessPointRadioTemplateService(composite.accessPointRadioTemplateRepo),
 	}
