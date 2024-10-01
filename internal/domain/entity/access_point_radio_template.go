@@ -15,6 +15,7 @@ type AccessPointRadioTemplate struct {
 	Power             int                 `db:"power"`
 	Bandwidth         string              `db:"bandwidth"`
 	GuardInterval     int                 `db:"guard_interval"`
+	IsActive          bool                `db:"is_active"`
 	AccessPointTypeID uuid.UUID           `db:"access_point_type_id"`
 	CreatedAt         pgtype.Timestamptz  `db:"created_at"`
 	UpdatedAt         pgtype.Timestamptz  `db:"updated_at"`

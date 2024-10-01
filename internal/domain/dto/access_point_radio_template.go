@@ -15,6 +15,7 @@ type AccessPointRadioTemplateDTO struct {
 	Power             int                 `db:"power"`
 	Bandwidth         string              `db:"bandwidth"`
 	GuardInterval     int                 `db:"guard_interval"`
+	IsActive          bool                `db:"is_active"`
 	AccessPointTypeID uuid.UUID           `db:"access_point_type_id"`
 	CreatedAt         pgtype.Timestamptz  `db:"createdAt"`
 	UpdatedAt         pgtype.Timestamptz  `db:"updatedAt"`
@@ -30,6 +31,7 @@ type CreateAccessPointRadioTemplateDTO struct {
 	Power             int       `db:"power"`
 	Bandwidth         string    `db:"bandwidth"`
 	GuardInterval     int       `db:"guard_interval"`
+	IsActive          bool      `db:"is_active"`
 	AccessPointTypeID uuid.UUID `db:"access_point_type_id"`
 }
 
@@ -43,6 +45,7 @@ type PatchUpdateAccessPointRadioTemplateDTO struct {
 	Power             *int       `db:"power"`
 	Bandwidth         *string    `db:"bandwidth"`
 	GuardInterval     *int       `db:"guard_interval"`
+	IsActive          *bool      `db:"is_active"`
 	AccessPointTypeID *uuid.UUID `db:"access_point_type_id"`
 }
 

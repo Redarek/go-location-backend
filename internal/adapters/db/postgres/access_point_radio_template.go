@@ -35,9 +35,10 @@ func (r *accessPointRadioTemplateRepo) Create(ctx context.Context, createAccessP
 			power,
 			bandwidth,
 			guard_interval,
+			is_active,
 			access_point_type_id
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id`
 	row := r.pool.QueryRow(ctx, query,
 		createAccessPointRadioTemplateDTO.Number,
@@ -48,6 +49,7 @@ func (r *accessPointRadioTemplateRepo) Create(ctx context.Context, createAccessP
 		createAccessPointRadioTemplateDTO.Power,
 		createAccessPointRadioTemplateDTO.Bandwidth,
 		createAccessPointRadioTemplateDTO.GuardInterval,
+		createAccessPointRadioTemplateDTO.IsActive,
 		createAccessPointRadioTemplateDTO.AccessPointTypeID,
 	)
 	err = row.Scan(&accessPointRadioTemplateID)
@@ -70,6 +72,7 @@ func (r *accessPointRadioTemplateRepo) GetOne(ctx context.Context, accessPointRa
 			power,
 			bandwidth,
 			guard_interval,
+			is_active,
 			access_point_type_id,
 			created_at, updated_at, deleted_at
 		FROM access_point_radio_templates WHERE id = $1 AND deleted_at IS NULL`
@@ -86,6 +89,7 @@ func (r *accessPointRadioTemplateRepo) GetOne(ctx context.Context, accessPointRa
 		&accessPointRadioTemplate.Power,
 		&accessPointRadioTemplate.Bandwidth,
 		&accessPointRadioTemplate.GuardInterval,
+		&accessPointRadioTemplate.IsActive,
 		&accessPointRadioTemplate.AccessPointTypeID,
 		&accessPointRadioTemplate.CreatedAt, &accessPointRadioTemplate.UpdatedAt, &accessPointRadioTemplate.DeletedAt,
 	)
@@ -116,6 +120,7 @@ func (r *accessPointRadioTemplateRepo) GetAll(ctx context.Context, accessPointTy
 			power,
 			bandwidth,
 			guard_interval,
+			is_active,
 			access_point_type_id,
 			created_at, updated_at, deleted_at
 		FROM access_point_radio_templates 
@@ -140,6 +145,7 @@ func (r *accessPointRadioTemplateRepo) GetAll(ctx context.Context, accessPointTy
 			&accessPointRadioTemplate.Power,
 			&accessPointRadioTemplate.Bandwidth,
 			&accessPointRadioTemplate.GuardInterval,
+			&accessPointRadioTemplate.IsActive,
 			&accessPointRadioTemplate.AccessPointTypeID,
 			&accessPointRadioTemplate.CreatedAt, &accessPointRadioTemplate.UpdatedAt, &accessPointRadioTemplate.DeletedAt,
 		)
@@ -209,6 +215,11 @@ func (r *accessPointRadioTemplateRepo) Update(ctx context.Context, updateAccessP
 	if updateAccessPointRadioTemplateDTO.GuardInterval != nil {
 		updates = append(updates, fmt.Sprintf("guard_interval = $%d", paramID))
 		params = append(params, updateAccessPointRadioTemplateDTO.GuardInterval)
+		paramID++
+	}
+	if updateAccessPointRadioTemplateDTO.IsActive != nil {
+		updates = append(updates, fmt.Sprintf("is_active = $%d", paramID))
+		params = append(params, updateAccessPointRadioTemplateDTO.IsActive)
 		paramID++
 	}
 	if updateAccessPointRadioTemplateDTO.AccessPointTypeID != nil {

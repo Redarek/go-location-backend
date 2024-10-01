@@ -15,6 +15,7 @@ type AccessPointRadioTemplateDTO struct {
 	Power             int                 `json:"power"`
 	Bandwidth         string              `json:"bandwidth"`
 	GuardInterval     int                 `json:"guardInterval"`
+	IsActive          bool                `json:"isActive"`
 	AccessPointTypeID uuid.UUID           `json:"accessPointTypeId"`
 	CreatedAt         pgtype.Timestamptz  `json:"createdAt"`
 	UpdatedAt         pgtype.Timestamptz  `json:"updatedAt"`
@@ -30,6 +31,7 @@ type CreateAccessPointRadioTemplateDTO struct {
 	Power             int       `json:"power"`
 	Bandwidth         string    `json:"bandwidth"`
 	GuardInterval     int       `json:"guardInterval"`
+	IsActive          bool      `json:"isActive"`
 	AccessPointTypeID uuid.UUID `json:"accessPointTypeId"`
 }
 
@@ -43,6 +45,7 @@ type PatchUpdateAccessPointRadioTemplateDTO struct {
 	Power             *int       `json:"power"`
 	Bandwidth         *string    `json:"bandwidth"`
 	GuardInterval     *int       `json:"guardInterval"`
+	IsActive          bool       `json:"isActive"`
 	AccessPointTypeID *uuid.UUID `json:"accessPointTypeId"`
 }
 

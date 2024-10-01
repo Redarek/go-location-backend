@@ -156,6 +156,7 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
         guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        is_active BOOLEAN NOT NULL,
         access_point_type_id UUID NOT NULL REFERENCES access_point_types(id) ON DELETE CASCADE ON UPDATE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
@@ -216,6 +217,7 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         power SMALLINT NOT NULL,
         bandwidth VARCHAR(64) NOT NULL, -- TODO fix
         guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        is_active BOOLEAN NOT NULL,
         sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE CASCADE ON UPDATE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,

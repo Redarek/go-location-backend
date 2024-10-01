@@ -15,6 +15,7 @@ type SensorRadioTemplate struct {
 	Power         int                `json:"power" db:"power"`
 	Bandwidth     string             `json:"bandwidth" db:"bandwidth"`
 	GuardInterval int                `json:"guardInterval" db:"guard_interval"`
+	IsActive      bool               `db:"is_active"`
 	SensorTypeID  uuid.UUID          `json:"sensorTypeId" db:"sensor_type_id"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt" db:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
