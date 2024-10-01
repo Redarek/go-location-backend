@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/config"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
@@ -18,7 +18,7 @@ type UserService interface {
 	// GetAllForList(ctx context.Context) []entity.BookView
 	// GetByID(ctx context.Context, id uuid.UUID) entity.User
 	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
-	CreateUser(ctx context.Context, createUserDTO *domain_dto.CreateUserDTO) (userID uuid.UUID, err error)
+	CreateUser(ctx context.Context, createUserDTO *dto.CreateUserDTO) (userID uuid.UUID, err error)
 
 	HashPassword(password string) (string, error)
 	CheckPasswordHash(password, hash string) bool
@@ -36,8 +36,8 @@ func NewUserUsecase(userService UserService) *UserUsecase {
 }
 
 // ? Нужен ли ctx *fiber.Ctx
-func (u *UserUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUserDTO) (userID uuid.UUID, err error) {
-	_, err = u.userService.GetUserByName(ctx, dto.Username)
+func (u *UserUsecase) Register(ctx context.Context, registerDTO *dto.RegisterUserDTO) (userID uuid.UUID, err error) {
+	_, err = u.userService.GetUserByName(ctx, registerDTO.Username)
 	if err != nil {
 		// If error except ErrNotFound
 		if !errors.Is(err, ErrNotFound) {
@@ -48,14 +48,14 @@ func (u *UserUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUser
 		return userID, ErrAlreadyExists
 	}
 
-	hash, err := u.userService.HashPassword(dto.Password)
+	hash, err := u.userService.HashPassword(registerDTO.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to hash user password")
 		return
 	}
 
-	var createUserDTO domain_dto.CreateUserDTO = domain_dto.CreateUserDTO{
-		Username:     dto.Username,
+	var createUserDTO dto.CreateUserDTO = dto.CreateUserDTO{
+		Username:     registerDTO.Username,
 		PasswordHash: hash,
 	}
 
@@ -65,12 +65,12 @@ func (u *UserUsecase) Register(ctx context.Context, dto *domain_dto.RegisterUser
 		return
 	}
 
-	log.Info().Msgf("user %v successfully registered", dto.Username)
+	log.Info().Msgf("user %v successfully registered", registerDTO.Username)
 
 	return
 }
 
-func (u *UserUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (signedString string, err error) {
+func (u *UserUsecase) Login(ctx context.Context, dto *dto.LoginUserDTO) (signedString string, err error) {
 	user, err := u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		// Return ErrBadLogin if user not found
@@ -109,8 +109,8 @@ func (u *UserUsecase) Login(ctx context.Context, dto *domain_dto.LoginUserDTO) (
 	// return c.JSON(fiber.Map{"token": signedString})
 }
 
-func (u *UserUsecase) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
-	user, err = u.userService.GetUserByName(ctx, username)
+func (u *UserUsecase) GetUserByName(ctx context.Context, username string) (userView *entity.UserView, err error) {
+	user, err := u.userService.GetUserByName(ctx, username)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -118,6 +118,14 @@ func (u *UserUsecase) GetUserByName(ctx context.Context, username string) (user 
 			log.Error().Err(err).Msg("failed to get user")
 			return
 		}
+	}
+
+	userView = &entity.UserView{
+		ID:        user.ID,
+		Username:  user.Username,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: user.DeletedAt,
 	}
 
 	return

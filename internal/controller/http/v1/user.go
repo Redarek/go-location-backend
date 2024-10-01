@@ -193,14 +193,8 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
-	userDTO := http_dto.UserDTO{
-		ID:        user.ID,
-		Username:  user.Username,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		DeletedAt: user.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	userDTO := (http_dto.UserDTO)(*user)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": userDTO})
 }

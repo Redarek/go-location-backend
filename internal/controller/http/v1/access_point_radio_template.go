@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	http_dto "location-backend/internal/controller/http/dto"
+	"location-backend/internal/controller/http/mapper"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
@@ -26,12 +27,16 @@ const (
 )
 
 type accessPointRadioTemplateHandler struct {
-	usecase *usecase.AccessPointRadioTemplateUsecase
+	usecase    *usecase.AccessPointRadioTemplateUsecase
+	aprtMapper *mapper.AccessPointRadioTemplateMapper
 }
 
 // Регистрирует новый handler
 func NewAccessPointRadioTemplateHandler(usecase *usecase.AccessPointRadioTemplateUsecase) *accessPointRadioTemplateHandler {
-	return &accessPointRadioTemplateHandler{usecase: usecase}
+	return &accessPointRadioTemplateHandler{
+		usecase:    usecase,
+		aprtMapper: &mapper.AccessPointRadioTemplateMapper{},
+	}
 }
 
 // Регистрирует маршруты для user
@@ -65,17 +70,7 @@ func (h *accessPointRadioTemplateHandler) CreateAccessPointRadioTemplate(ctx *fi
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.CreateAccessPointRadioTemplateDTO{
-		Number:            dto.Number,
-		Channel:           dto.Channel,
-		Channel2:          dto.Channel2,
-		ChannelWidth:      dto.ChannelWidth,
-		WiFi:              dto.WiFi,
-		Power:             dto.Power,
-		Bandwidth:         dto.Bandwidth,
-		GuardInterval:     dto.GuardInterval,
-		AccessPointTypeID: dto.AccessPointTypeID,
-	}
+	domainDTO := h.aprtMapper.CreateHTTPtoDomain(&dto)
 
 	accessPointRadioTemplateID, err := h.usecase.CreateAccessPointRadioTemplate(context.Background(), domainDTO)
 	if err != nil {
@@ -102,7 +97,7 @@ func (h *accessPointRadioTemplateHandler) CreateAccessPointRadioTemplate(ctx *fi
 }
 
 func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplate(ctx *fiber.Ctx) error {
-	accessPointRadioTemplateID, err := uuid.Parse(ctx.Query("id"))
+	aprtID, err := uuid.Parse(ctx.Query("id"))
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -124,7 +119,7 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplate(ctx *fiber
 	// 	ID: dto.ID,
 	// }
 
-	accessPointRadioTemplate, err := h.usecase.GetAccessPointRadioTemplate(context.Background(), accessPointRadioTemplateID)
+	aprtDomainDTO, err := h.usecase.GetAccessPointRadioTemplate(context.Background(), aprtID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -140,24 +135,10 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplate(ctx *fiber
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
-	accessPointRadioTemplateDTO := http_dto.AccessPointRadioTemplateDTO{
-		ID:                accessPointRadioTemplate.ID,
-		Number:            accessPointRadioTemplate.Number,
-		Channel:           accessPointRadioTemplate.Channel,
-		Channel2:          accessPointRadioTemplate.Channel2,
-		ChannelWidth:      accessPointRadioTemplate.ChannelWidth,
-		WiFi:              accessPointRadioTemplate.WiFi,
-		Power:             accessPointRadioTemplate.Power,
-		Bandwidth:         accessPointRadioTemplate.Bandwidth,
-		GuardInterval:     accessPointRadioTemplate.GuardInterval,
-		AccessPointTypeID: accessPointRadioTemplate.AccessPointTypeID,
-		CreatedAt:         accessPointRadioTemplate.CreatedAt,
-		UpdatedAt:         accessPointRadioTemplate.UpdatedAt,
-		DeletedAt:         accessPointRadioTemplate.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	aprtHttpDTO := h.aprtMapper.EntityDomainToHTTP(aprtDomainDTO)
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointRadioTemplateDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": aprtHttpDTO})
 }
 
 func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplates(c *fiber.Ctx) error {
@@ -204,34 +185,19 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplates(c *fiber.
 		))
 	}
 
-	var accessPointRadioTemplatesDTO []http_dto.AccessPointRadioTemplateDTO
-	for _, accessPointRadioTemplate := range accessPointRadioTemplates {
-		// Mapping domain DTO -> http DTO
-		accessPointRadioTemplateDTO := http_dto.AccessPointRadioTemplateDTO{
-			ID:                accessPointRadioTemplate.ID,
-			Number:            accessPointRadioTemplate.Number,
-			Channel:           accessPointRadioTemplate.Channel,
-			Channel2:          accessPointRadioTemplate.Channel2,
-			ChannelWidth:      accessPointRadioTemplate.ChannelWidth,
-			WiFi:              accessPointRadioTemplate.WiFi,
-			Power:             accessPointRadioTemplate.Power,
-			Bandwidth:         accessPointRadioTemplate.Bandwidth,
-			GuardInterval:     accessPointRadioTemplate.GuardInterval,
-			AccessPointTypeID: accessPointRadioTemplate.AccessPointTypeID,
-			CreatedAt:         accessPointRadioTemplate.CreatedAt,
-			UpdatedAt:         accessPointRadioTemplate.UpdatedAt,
-			DeletedAt:         accessPointRadioTemplate.DeletedAt,
-		}
-
-		accessPointRadioTemplatesDTO = append(accessPointRadioTemplatesDTO, accessPointRadioTemplateDTO)
+	var aprtHttpDTOs []*http_dto.AccessPointRadioTemplateDTO
+	for _, aprtDomainDTO := range accessPointRadioTemplates {
+		// Mapping entity -> http DTO
+		aprtHttpDTO := h.aprtMapper.EntityDomainToHTTP(aprtDomainDTO)
+		aprtHttpDTOs = append(aprtHttpDTOs, aprtHttpDTO)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointRadioTemplatesDTO})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": aprtHttpDTOs})
 }
 
 func (h *accessPointRadioTemplateHandler) PatchUpdateAccessPointRadioTemplate(c *fiber.Ctx) error {
-	var dto http_dto.PatchUpdateAccessPointRadioTemplateDTO
-	err := c.BodyParser(&dto)
+	var httpDTO http_dto.PatchUpdateAccessPointRadioTemplateDTO
+	err := c.BodyParser(&httpDTO)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse access point radio template request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -245,18 +211,7 @@ func (h *accessPointRadioTemplateHandler) PatchUpdateAccessPointRadioTemplate(c 
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.PatchUpdateAccessPointRadioTemplateDTO{
-		ID:                dto.ID,
-		Number:            dto.Number,
-		Channel:           dto.Channel,
-		Channel2:          dto.Channel2,
-		ChannelWidth:      dto.ChannelWidth,
-		WiFi:              dto.WiFi,
-		Power:             dto.Power,
-		Bandwidth:         dto.Bandwidth,
-		GuardInterval:     dto.GuardInterval,
-		AccessPointTypeID: dto.AccessPointTypeID,
-	}
+	domainDTO := h.aprtMapper.UpdateHTTPtoDomain(&httpDTO)
 
 	err = h.usecase.PatchUpdateAccessPointRadioTemplate(context.Background(), domainDTO)
 	if err != nil {

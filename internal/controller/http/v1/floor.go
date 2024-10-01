@@ -66,21 +66,7 @@ func (h *floorHandler) CreateFloor(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.CreateFloorDTO{
-		Name:   dto.Name,
-		Number: dto.Number,
-		Image:  dto.Image,
-		// Heatmap:              dto.Heatmap,
-		WidthInPixels:        dto.WidthInPixels,
-		HeightInPixels:       dto.HeightInPixels,
-		Scale:                dto.Scale,
-		CellSizeMeter:        dto.CellSizeMeter,
-		NorthAreaIndentMeter: dto.NorthAreaIndentMeter,
-		SouthAreaIndentMeter: dto.SouthAreaIndentMeter,
-		WestAreaIndentMeter:  dto.WestAreaIndentMeter,
-		EastAreaIndentMeter:  dto.EastAreaIndentMeter,
-		BuildingID:           dto.BuildingID,
-	}
+	domainDTO := (*domain_dto.CreateFloorDTO)(&dto)
 
 	floorID, err := h.usecase.CreateFloor(context.Background(), domainDTO)
 	if err != nil {
@@ -145,26 +131,8 @@ func (h *floorHandler) GetFloor(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
-	floorDTO := http_dto.FloorDTO{
-		ID:                   floor.ID,
-		Name:                 floor.Name,
-		Number:               floor.Number,
-		Image:                floor.Image,
-		Heatmap:              floor.Heatmap,
-		WidthInPixels:        floor.WidthInPixels,
-		HeightInPixels:       floor.HeightInPixels,
-		Scale:                floor.Scale,
-		CellSizeMeter:        floor.CellSizeMeter,
-		NorthAreaIndentMeter: floor.NorthAreaIndentMeter,
-		SouthAreaIndentMeter: floor.SouthAreaIndentMeter,
-		WestAreaIndentMeter:  floor.WestAreaIndentMeter,
-		EastAreaIndentMeter:  floor.EastAreaIndentMeter,
-		BuildingID:           floor.BuildingID,
-		CreatedAt:            floor.CreatedAt,
-		UpdatedAt:            floor.UpdatedAt,
-		DeletedAt:            floor.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	floorDTO := (http_dto.FloorDTO)(*floor)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": floorDTO})
 }
@@ -215,27 +183,8 @@ func (h *floorHandler) GetFloors(c *fiber.Ctx) error {
 
 	var floorsDTO []http_dto.FloorDTO
 	for _, floor := range floors {
-		// Mapping domain DTO -> http DTO
-		floorDTO := http_dto.FloorDTO{
-			ID:                   floor.ID,
-			Name:                 floor.Name,
-			Number:               floor.Number,
-			Image:                floor.Image,
-			Heatmap:              floor.Heatmap,
-			WidthInPixels:        floor.WidthInPixels,
-			HeightInPixels:       floor.HeightInPixels,
-			Scale:                floor.Scale,
-			CellSizeMeter:        floor.CellSizeMeter,
-			NorthAreaIndentMeter: floor.NorthAreaIndentMeter,
-			SouthAreaIndentMeter: floor.SouthAreaIndentMeter,
-			WestAreaIndentMeter:  floor.WestAreaIndentMeter,
-			EastAreaIndentMeter:  floor.EastAreaIndentMeter,
-			BuildingID:           floor.BuildingID,
-			CreatedAt:            floor.CreatedAt,
-			UpdatedAt:            floor.UpdatedAt,
-			DeletedAt:            floor.DeletedAt,
-		}
-
+		// Mapping entity -> http DTO
+		floorDTO := (http_dto.FloorDTO)(*floor)
 		floorsDTO = append(floorsDTO, floorDTO)
 	}
 
@@ -258,21 +207,7 @@ func (h *floorHandler) PatchUpdateFloor(c *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.PatchUpdateFloorDTO{
-		ID:     dto.ID,
-		Name:   dto.Name,
-		Number: dto.Number,
-		Image:  dto.Image,
-		// Heatmap:              dto.Heatmap,
-		WidthInPixels:        dto.WidthInPixels,
-		HeightInPixels:       dto.HeightInPixels,
-		Scale:                dto.Scale,
-		CellSizeMeter:        dto.CellSizeMeter,
-		NorthAreaIndentMeter: dto.NorthAreaIndentMeter,
-		SouthAreaIndentMeter: dto.SouthAreaIndentMeter,
-		WestAreaIndentMeter:  dto.WestAreaIndentMeter,
-		EastAreaIndentMeter:  dto.EastAreaIndentMeter,
-	}
+	domainDTO := (*domain_dto.PatchUpdateFloorDTO)(&dto)
 
 	err = h.usecase.PatchUpdateFloor(context.Background(), domainDTO)
 	if err != nil {

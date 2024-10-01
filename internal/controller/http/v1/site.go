@@ -137,16 +137,8 @@ func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
-	siteDTO := http_dto.SiteDTO{
-		ID:          site.ID,
-		Name:        site.Name,
-		Description: site.Description,
-		UserID:      site.UserID,
-		CreatedAt:   site.CreatedAt,
-		UpdatedAt:   site.UpdatedAt,
-		DeletedAt:   site.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	siteDTO := (http_dto.SiteDTO)(*site)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": siteDTO})
 }
@@ -198,17 +190,8 @@ func (h *siteHandler) GetSites(c *fiber.Ctx) error {
 
 	var sitesDTO []http_dto.SiteDTO
 	for _, site := range sites {
-		// Mapping domain DTO -> http DTO
-		siteDTO := http_dto.SiteDTO{
-			ID:          site.ID,
-			Name:        site.Name,
-			Description: site.Description,
-			UserID:      site.UserID,
-			CreatedAt:   site.CreatedAt,
-			UpdatedAt:   site.UpdatedAt,
-			DeletedAt:   site.DeletedAt,
-		}
-
+		// Mapping entity -> http DTO
+		siteDTO := (http_dto.SiteDTO)(*site)
 		sitesDTO = append(sitesDTO, siteDTO)
 	}
 
@@ -231,11 +214,7 @@ func (h *siteHandler) PatchUpdateSite(c *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.PatchUpdateSiteDTO{
-		ID:          dto.ID,
-		Name:        dto.Name,
-		Description: dto.Description,
-	}
+	domainDTO := (*domain_dto.PatchUpdateSiteDTO)(&dto)
 
 	err = h.usecase.PatchUpdateSite(context.Background(), domainDTO)
 	if err != nil {

@@ -68,14 +68,7 @@ func (h *wallHandler) CreateWall(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.CreateWallDTO{
-		X1:         dto.X1,
-		Y1:         dto.Y1,
-		X2:         dto.X2,
-		Y2:         dto.Y2,
-		WallTypeID: dto.WallTypeID,
-		FloorID:    dto.FloorID,
-	}
+	domainDTO := (*domain_dto.CreateWallDTO)(&dto)
 
 	wallID, err := h.usecase.CreateWall(context.Background(), domainDTO)
 	if err != nil {
@@ -140,19 +133,8 @@ func (h *wallHandler) GetWall(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
-	wallDTO := http_dto.WallDTO{
-		ID:         wall.ID,
-		X1:         wall.X1,
-		Y1:         wall.Y1,
-		X2:         wall.X2,
-		Y2:         wall.Y2,
-		WallTypeID: wall.WallTypeID,
-		FloorID:    wall.FloorID,
-		CreatedAt:  wall.CreatedAt,
-		UpdatedAt:  wall.UpdatedAt,
-		DeletedAt:  wall.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	wallDTO := (http_dto.WallDTO)(*wall)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallDTO})
 }
@@ -196,7 +178,7 @@ func (h *wallHandler) GetWallDetailed(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
+	// Mapping entity -> http DTO
 	wallDetailedDTO := http_dto.WallDetailedDTO{
 		WallDTO: http_dto.WallDTO{
 			ID:         wallDetailed.ID,
@@ -210,19 +192,7 @@ func (h *wallHandler) GetWallDetailed(ctx *fiber.Ctx) error {
 			UpdatedAt:  wallDetailed.UpdatedAt,
 			DeletedAt:  wallDetailed.DeletedAt,
 		},
-		WallTypeDTO: http_dto.WallTypeDTO{
-			ID:            wallDetailed.WallTypeDTO.ID,
-			Name:          wallDetailed.WallTypeDTO.Name,
-			Color:         wallDetailed.WallTypeDTO.Color,
-			Attenuation24: wallDetailed.WallTypeDTO.Attenuation24,
-			Attenuation5:  wallDetailed.WallTypeDTO.Attenuation5,
-			Attenuation6:  wallDetailed.WallTypeDTO.Attenuation6,
-			Thickness:     wallDetailed.WallTypeDTO.Thickness,
-			SiteID:        wallDetailed.WallTypeDTO.SiteID,
-			CreatedAt:     wallDetailed.WallTypeDTO.CreatedAt,
-			UpdatedAt:     wallDetailed.WallTypeDTO.UpdatedAt,
-			DeletedAt:     wallDetailed.WallTypeDTO.DeletedAt,
-		},
+		WallTypeDTO: (http_dto.WallTypeDTO)(wallDetailed.WallType),
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallDetailedDTO})
@@ -274,20 +244,8 @@ func (h *wallHandler) GetWalls(c *fiber.Ctx) error {
 
 	var wallsDTO []http_dto.WallDTO
 	for _, wall := range walls {
-		// Mapping domain DTO -> http DTO
-		wallDTO := http_dto.WallDTO{
-			ID:         wall.ID,
-			X1:         wall.X1,
-			Y1:         wall.Y1,
-			X2:         wall.X2,
-			Y2:         wall.Y2,
-			WallTypeID: wall.WallTypeID,
-			FloorID:    wall.FloorID,
-			CreatedAt:  wall.CreatedAt,
-			UpdatedAt:  wall.UpdatedAt,
-			DeletedAt:  wall.DeletedAt,
-		}
-
+		// Mapping entity -> http DTO
+		wallDTO := (http_dto.WallDTO)(*wall)
 		wallsDTO = append(wallsDTO, wallDTO)
 	}
 
@@ -310,14 +268,7 @@ func (h *wallHandler) PatchUpdateWall(c *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.PatchUpdateWallDTO{
-		ID:         dto.ID,
-		X1:         dto.X1,
-		Y1:         dto.Y1,
-		X2:         dto.X2,
-		Y2:         dto.Y2,
-		WallTypeID: dto.WallTypeID,
-	}
+	domainDTO := (*domain_dto.PatchUpdateWallDTO)(&dto)
 
 	err = h.usecase.PatchUpdateWall(context.Background(), domainDTO)
 	if err != nil {

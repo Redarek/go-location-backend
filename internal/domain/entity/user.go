@@ -14,6 +14,10 @@ type User struct {
 	DeletedAt    *pgtype.Timestamptz `db:"deleted_at"`
 }
 
-// type UserView struct {
-
-// }
+type UserView struct {
+	ID        uuid.UUID           `db:"id"`
+	Username  string              `db:"username"`
+	CreatedAt pgtype.Timestamptz  `db:"created_at"`
+	UpdatedAt pgtype.Timestamptz  `db:"updated_at"`
+	DeletedAt *pgtype.Timestamptz `db:"deleted_at"`
+}

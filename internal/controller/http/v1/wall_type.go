@@ -66,13 +66,7 @@ func (h *wallTypeHandler) CreateWallType(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.CreateWallTypeDTO{
-		Name:          dto.Name,
-		Color:         dto.Color,
-		Attenuation24: dto.Attenuation24, Attenuation5: dto.Attenuation5, Attenuation6: dto.Attenuation6,
-		Thickness: dto.Thickness,
-		SiteID:    dto.SiteID,
-	}
+	domainDTO := (*domain_dto.CreateWallTypeDTO)(&dto)
 
 	wallTypeID, err := h.usecase.CreateWallType(context.Background(), domainDTO)
 	if err != nil {
@@ -137,18 +131,8 @@ func (h *wallTypeHandler) GetWallType(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
-	wallTypeDTO := http_dto.WallTypeDTO{
-		ID:            wallType.ID,
-		Name:          wallType.Name,
-		Color:         wallType.Color,
-		Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-		Thickness: wallType.Thickness,
-		SiteID:    wallType.SiteID,
-		CreatedAt: wallType.CreatedAt,
-		UpdatedAt: wallType.UpdatedAt,
-		DeletedAt: wallType.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	wallTypeDTO := http_dto.WallTypeDTO(*wallType)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallTypeDTO})
 }
@@ -200,18 +184,7 @@ func (h *wallTypeHandler) GetWallTypes(c *fiber.Ctx) error {
 	var wallTypesDTO []http_dto.WallTypeDTO
 	for _, wallType := range wallTypes {
 		// Mapping domain DTO -> http DTO
-		wallTypeDTO := http_dto.WallTypeDTO{
-			ID:            wallType.ID,
-			Name:          wallType.Name,
-			Color:         wallType.Color,
-			Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-			Thickness: wallType.Thickness,
-			SiteID:    wallType.SiteID,
-			CreatedAt: wallType.CreatedAt,
-			UpdatedAt: wallType.UpdatedAt,
-			DeletedAt: wallType.DeletedAt,
-		}
-
+		wallTypeDTO := (http_dto.WallTypeDTO)(*wallType)
 		wallTypesDTO = append(wallTypesDTO, wallTypeDTO)
 	}
 
@@ -234,13 +207,7 @@ func (h *wallTypeHandler) PatchUpdateWallType(c *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.PatchUpdateWallTypeDTO{
-		ID:            dto.ID,
-		Name:          dto.Name,
-		Color:         dto.Color,
-		Attenuation24: dto.Attenuation24, Attenuation5: dto.Attenuation5, Attenuation6: dto.Attenuation6,
-		Thickness: dto.Thickness,
-	}
+	domainDTO := (*domain_dto.PatchUpdateWallTypeDTO)(&dto)
 
 	err = h.usecase.PatchUpdateWallType(context.Background(), domainDTO)
 	if err != nil {

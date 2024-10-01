@@ -7,17 +7,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type BuildingService interface {
-	CreateBuilding(ctx context.Context, createBuildingDTO *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
+	CreateBuilding(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
-	GetBuildings(ctx context.Context, dto domain_dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
+	GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
 	// TODO get building list detailed
 
-	UpdateBuilding(ctx context.Context, updateBuildingDTO *domain_dto.PatchUpdateBuildingDTO) (err error)
+	UpdateBuilding(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error)
 
 	IsBuildingSoftDeleted(ctx context.Context, buildingID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteBuilding(ctx context.Context, buildingID uuid.UUID) (err error)
@@ -36,7 +36,7 @@ func NewBuildingUsecase(buildingService BuildingService, siteService SiteService
 	}
 }
 
-func (u *BuildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
+func (u *BuildingUsecase) CreateBuilding(ctx context.Context, dto *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error) {
 	_, err = u.siteService.GetSite(ctx, dto.SiteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -58,8 +58,8 @@ func (u *BuildingUsecase) CreateBuilding(ctx context.Context, dto *domain_dto.Cr
 	return
 }
 
-func (u *BuildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID) (buildingDTO *domain_dto.BuildingDTO, err error) {
-	building, err := u.buildingService.GetBuilding(ctx, buildingID)
+func (u *BuildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error) {
+	building, err = u.buildingService.GetBuilding(ctx, buildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -69,25 +69,11 @@ func (u *BuildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID)
 		}
 	}
 
-	// Mapping domain entity -> domain DTO
-	buildingDTO = &domain_dto.BuildingDTO{
-		ID:          building.ID,
-		Name:        building.Name,
-		Description: building.Description,
-		Country:     building.Country,
-		City:        building.City,
-		Address:     building.Address,
-		SiteID:      building.SiteID,
-		CreatedAt:   building.CreatedAt,
-		UpdatedAt:   building.UpdatedAt,
-		DeletedAt:   building.DeletedAt,
-	}
-
 	return
 }
 
-func (u *BuildingUsecase) GetBuildings(ctx context.Context, dto domain_dto.GetBuildingsDTO) (buildingsDTO []*domain_dto.BuildingDTO, err error) {
-	buildings, err := u.buildingService.GetBuildings(ctx, dto)
+func (u *BuildingUsecase) GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error) {
+	buildings, err = u.buildingService.GetBuildings(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -97,28 +83,10 @@ func (u *BuildingUsecase) GetBuildings(ctx context.Context, dto domain_dto.GetBu
 		}
 	}
 
-	for _, building := range buildings {
-		// Mapping domain entity -> domain DTO
-		buildingDTO := &domain_dto.BuildingDTO{
-			ID:          building.ID,
-			Name:        building.Name,
-			Description: building.Description,
-			Country:     building.Country,
-			City:        building.City,
-			Address:     building.Address,
-			SiteID:      building.SiteID,
-			CreatedAt:   building.CreatedAt,
-			UpdatedAt:   building.UpdatedAt,
-			DeletedAt:   building.DeletedAt,
-		}
-
-		buildingsDTO = append(buildingsDTO, buildingDTO)
-	}
-
 	return
 }
 
-func (u *BuildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateBuildingDTO) (err error) {
+func (u *BuildingUsecase) PatchUpdateBuilding(ctx context.Context, patchUpdateDTO *dto.PatchUpdateBuildingDTO) (err error) {
 	_, err = u.buildingService.GetBuilding(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

@@ -7,17 +7,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type WallService interface {
-	CreateWall(ctx context.Context, createWallDTO *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error)
+	CreateWall(ctx context.Context, createWallDTO *dto.CreateWallDTO) (wallID uuid.UUID, err error)
 	GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
-	GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) (walls []*entity.Wall, err error)
+	GetWalls(ctx context.Context, getDTO dto.GetWallsDTO) (walls []*entity.Wall, err error)
 	GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailed *entity.WallDetailed, err error)
 
-	UpdateWall(ctx context.Context, updateWallDTO *domain_dto.PatchUpdateWallDTO) (err error)
+	UpdateWall(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error)
 
 	IsWallSoftDeleted(ctx context.Context, wallID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err error)
@@ -36,7 +36,7 @@ func NewWallUsecase(wallService WallService, floorService FloorService) *WallUse
 	}
 }
 
-func (u *WallUsecase) CreateWall(ctx context.Context, dto *domain_dto.CreateWallDTO) (wallID uuid.UUID, err error) {
+func (u *WallUsecase) CreateWall(ctx context.Context, dto *dto.CreateWallDTO) (wallID uuid.UUID, err error) {
 	_, err = u.floorService.GetFloor(ctx, dto.FloorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -58,8 +58,8 @@ func (u *WallUsecase) CreateWall(ctx context.Context, dto *domain_dto.CreateWall
 	return
 }
 
-func (u *WallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *domain_dto.WallDTO, err error) {
-	wall, err := u.wallService.GetWall(ctx, wallID)
+func (u *WallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error) {
+	wall, err = u.wallService.GetWall(ctx, wallID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -69,25 +69,11 @@ func (u *WallUsecase) GetWall(ctx context.Context, wallID uuid.UUID) (wallDTO *d
 		}
 	}
 
-	// Mapping domain entity -> domain DTO
-	wallDTO = &domain_dto.WallDTO{
-		ID:         wall.ID,
-		X1:         wall.X1,
-		Y1:         wall.Y1,
-		X2:         wall.X2,
-		Y2:         wall.Y2,
-		WallTypeID: wall.WallTypeID,
-		FloorID:    wall.FloorID,
-		CreatedAt:  wall.CreatedAt,
-		UpdatedAt:  wall.UpdatedAt,
-		DeletedAt:  wall.DeletedAt,
-	}
-
 	return
 }
 
-func (u *WallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailedDTO *domain_dto.WallDetailedDTO, err error) {
-	wallDetailed, err := u.wallService.GetWallDetailed(ctx, wallID)
+func (u *WallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailed *entity.WallDetailed, err error) {
+	wallDetailed, err = u.wallService.GetWallDetailed(ctx, wallID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -97,40 +83,11 @@ func (u *WallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 		}
 	}
 
-	// Mapping domain entity -> domain DTO
-	wallDetailedDTO = &domain_dto.WallDetailedDTO{
-		WallDTO: domain_dto.WallDTO{
-			ID:         wallDetailed.ID,
-			X1:         wallDetailed.X1,
-			Y1:         wallDetailed.Y1,
-			X2:         wallDetailed.X2,
-			Y2:         wallDetailed.Y2,
-			WallTypeID: wallDetailed.WallTypeID,
-			FloorID:    wallDetailed.FloorID,
-			CreatedAt:  wallDetailed.CreatedAt,
-			UpdatedAt:  wallDetailed.UpdatedAt,
-			DeletedAt:  wallDetailed.DeletedAt,
-		},
-		WallTypeDTO: domain_dto.WallTypeDTO{
-			ID:            wallDetailed.WallType.ID,
-			Name:          wallDetailed.WallType.Name,
-			Color:         wallDetailed.WallType.Color,
-			Attenuation24: wallDetailed.WallType.Attenuation24,
-			Attenuation5:  wallDetailed.WallType.Attenuation5,
-			Attenuation6:  wallDetailed.WallType.Attenuation6,
-			Thickness:     wallDetailed.WallType.Thickness,
-			SiteID:        wallDetailed.WallType.SiteID,
-			CreatedAt:     wallDetailed.WallType.CreatedAt,
-			UpdatedAt:     wallDetailed.WallType.UpdatedAt,
-			DeletedAt:     wallDetailed.WallType.DeletedAt,
-		},
-	}
-
 	return
 }
 
-func (u *WallUsecase) GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) (wallsDTO []*domain_dto.WallDTO, err error) {
-	walls, err := u.wallService.GetWalls(ctx, dto)
+func (u *WallUsecase) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls []*entity.Wall, err error) {
+	walls, err = u.wallService.GetWalls(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -140,28 +97,10 @@ func (u *WallUsecase) GetWalls(ctx context.Context, dto domain_dto.GetWallsDTO) 
 		}
 	}
 
-	for _, wall := range walls {
-		// Mapping domain entity -> domain DTO
-		wallDTO := &domain_dto.WallDTO{
-			ID:         wall.ID,
-			X1:         wall.X1,
-			Y1:         wall.Y1,
-			X2:         wall.X2,
-			Y2:         wall.Y2,
-			WallTypeID: wall.WallTypeID,
-			FloorID:    wall.FloorID,
-			CreatedAt:  wall.CreatedAt,
-			UpdatedAt:  wall.UpdatedAt,
-			DeletedAt:  wall.DeletedAt,
-		}
-
-		wallsDTO = append(wallsDTO, wallDTO)
-	}
-
 	return
 }
 
-func (u *WallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallDTO) (err error) {
+func (u *WallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *dto.PatchUpdateWallDTO) (err error) {
 	_, err = u.wallService.GetWall(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

@@ -7,17 +7,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type FloorService interface {
-	CreateFloor(ctx context.Context, createFloorDTO *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error)
+	CreateFloor(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error)
 	GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error)
-	GetFloors(ctx context.Context, dto domain_dto.GetFloorsDTO) (floors []*entity.Floor, err error)
+	GetFloors(ctx context.Context, getDTO dto.GetFloorsDTO) (floors []*entity.Floor, err error)
 	// TODO get floor list detailed
 
-	UpdateFloor(ctx context.Context, updateFloorDTO *domain_dto.PatchUpdateFloorDTO) (err error)
+	UpdateFloor(ctx context.Context, updateFloorDTO *dto.PatchUpdateFloorDTO) (err error)
 
 	IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error)
@@ -36,7 +36,7 @@ func NewFloorUsecase(floorService FloorService, buildingService BuildingService)
 	}
 }
 
-func (u *FloorUsecase) CreateFloor(ctx context.Context, dto *domain_dto.CreateFloorDTO) (floorID uuid.UUID, err error) {
+func (u *FloorUsecase) CreateFloor(ctx context.Context, dto *dto.CreateFloorDTO) (floorID uuid.UUID, err error) {
 	_, err = u.buildingService.GetBuilding(ctx, dto.BuildingID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -58,8 +58,8 @@ func (u *FloorUsecase) CreateFloor(ctx context.Context, dto *domain_dto.CreateFl
 	return
 }
 
-func (u *FloorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floorDTO *domain_dto.FloorDTO, err error) {
-	floor, err := u.floorService.GetFloor(ctx, floorID)
+func (u *FloorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error) {
+	floor, err = u.floorService.GetFloor(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -69,32 +69,11 @@ func (u *FloorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floorDT
 		}
 	}
 
-	// Mapping domain entity -> domain DTO
-	floorDTO = &domain_dto.FloorDTO{
-		ID:                   floor.ID,
-		Name:                 floor.Name,
-		Number:               floor.Number,
-		Image:                floor.Image,
-		Heatmap:              floor.Heatmap,
-		WidthInPixels:        floor.WidthInPixels,
-		HeightInPixels:       floor.HeightInPixels,
-		Scale:                floor.Scale,
-		CellSizeMeter:        floor.CellSizeMeter,
-		NorthAreaIndentMeter: floor.NorthAreaIndentMeter,
-		SouthAreaIndentMeter: floor.SouthAreaIndentMeter,
-		WestAreaIndentMeter:  floor.WestAreaIndentMeter,
-		EastAreaIndentMeter:  floor.EastAreaIndentMeter,
-		BuildingID:           floor.BuildingID,
-		CreatedAt:            floor.CreatedAt,
-		UpdatedAt:            floor.UpdatedAt,
-		DeletedAt:            floor.DeletedAt,
-	}
-
 	return
 }
 
-func (u *FloorUsecase) GetFloors(ctx context.Context, dto domain_dto.GetFloorsDTO) (floorsDTO []*domain_dto.FloorDTO, err error) {
-	floors, err := u.floorService.GetFloors(ctx, dto)
+func (u *FloorUsecase) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (floors []*entity.Floor, err error) {
+	floors, err = u.floorService.GetFloors(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -104,35 +83,10 @@ func (u *FloorUsecase) GetFloors(ctx context.Context, dto domain_dto.GetFloorsDT
 		}
 	}
 
-	for _, floor := range floors {
-		// Mapping domain entity -> domain DTO
-		floorDTO := &domain_dto.FloorDTO{
-			ID:                   floor.ID,
-			Name:                 floor.Name,
-			Number:               floor.Number,
-			Image:                floor.Image,
-			Heatmap:              floor.Heatmap,
-			WidthInPixels:        floor.WidthInPixels,
-			HeightInPixels:       floor.HeightInPixels,
-			Scale:                floor.Scale,
-			CellSizeMeter:        floor.CellSizeMeter,
-			NorthAreaIndentMeter: floor.NorthAreaIndentMeter,
-			SouthAreaIndentMeter: floor.SouthAreaIndentMeter,
-			WestAreaIndentMeter:  floor.WestAreaIndentMeter,
-			EastAreaIndentMeter:  floor.EastAreaIndentMeter,
-			BuildingID:           floor.BuildingID,
-			CreatedAt:            floor.CreatedAt,
-			UpdatedAt:            floor.UpdatedAt,
-			DeletedAt:            floor.DeletedAt,
-		}
-
-		floorsDTO = append(floorsDTO, floorDTO)
-	}
-
 	return
 }
 
-func (u *FloorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateFloorDTO) (err error) {
+func (u *FloorUsecase) PatchUpdateFloor(ctx context.Context, patchUpdateDTO *dto.PatchUpdateFloorDTO) (err error) {
 	_, err = u.floorService.GetFloor(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

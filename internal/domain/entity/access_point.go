@@ -6,21 +6,21 @@ import (
 )
 
 type AccessPoint struct {
-	ID                uuid.UUID          `json:"id" db:"id"`
-	Name              string             `json:"name" db:"name"`
-	X                 *int               `json:"x" db:"x"`
-	Y                 *int               `json:"y" db:"y"`
-	Z                 *float64           `json:"z" db:"z"`
-	FloorID           uuid.UUID          `json:"floorId" db:"floor_id"`
-	AccessPointTypeID uuid.UUID          `json:"accessPointTypeId" db:"access_point_type_id"`
-	IsVirtual         bool               `json:"isVirtual" db:"is_virtual"`
-	CreatedAt         pgtype.Timestamptz `json:"createdAt" db:"created_at"`
-	UpdatedAt         pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
-	DeletedAt         pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
+	ID                uuid.UUID           `db:"id"`
+	Name              string              `db:"name"`
+	X                 *int                `db:"x"`
+	Y                 *int                `db:"y"`
+	Z                 *float64            `db:"z"`
+	FloorID           uuid.UUID           `db:"floor_id"`
+	AccessPointTypeID uuid.UUID           `db:"access_point_type_id"`
+	IsVirtual         bool                `db:"is_virtual"`
+	CreatedAt         pgtype.Timestamptz  `db:"created_at"`
+	UpdatedAt         pgtype.Timestamptz  `db:"updated_at"`
+	DeletedAt         *pgtype.Timestamptz `db:"deleted_at"`
 }
 
 type AccessPointDetailed struct {
 	AccessPoint
-	AccessPointType AccessPointType     `json:"accessPointType"`
-	Radios          []*AccessPointRadio `json:"radios"`
+	AccessPointType AccessPointType
+	Radios          []*AccessPointRadio
 }

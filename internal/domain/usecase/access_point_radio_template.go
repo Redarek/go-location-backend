@@ -7,16 +7,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type AccessPointRadioTemplateService interface {
-	CreateAccessPointRadioTemplate(ctx context.Context, createAccessPointRadioTemplateDTO *domain_dto.CreateAccessPointRadioTemplateDTO) (accessPointRadioTemplateID uuid.UUID, err error)
+	CreateAccessPointRadioTemplate(ctx context.Context, createDTO *dto.CreateAccessPointRadioTemplateDTO) (accessPointRadioTemplateID uuid.UUID, err error)
 	GetAccessPointRadioTemplate(ctx context.Context, accessPointRadioTemplateID uuid.UUID) (accessPointRadioTemplate *entity.AccessPointRadioTemplate, err error)
-	GetAccessPointRadioTemplates(ctx context.Context, dto domain_dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error)
+	GetAccessPointRadioTemplates(ctx context.Context, getDTO dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error)
 
-	UpdateAccessPointRadioTemplate(ctx context.Context, updateAccessPointRadioTemplateDTO *domain_dto.PatchUpdateAccessPointRadioTemplateDTO) (err error)
+	UpdateAccessPointRadioTemplate(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointRadioTemplateDTO) (err error)
 
 	IsAccessPointRadioTemplateSoftDeleted(ctx context.Context, accessPointRadioTemplateID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteAccessPointRadioTemplate(ctx context.Context, accessPointRadioTemplateID uuid.UUID) (err error)
@@ -35,8 +35,8 @@ func NewAccessPointRadioTemplateUsecase(accessPointRadioTemplateService AccessPo
 	}
 }
 
-func (u *AccessPointRadioTemplateUsecase) CreateAccessPointRadioTemplate(ctx context.Context, dto *domain_dto.CreateAccessPointRadioTemplateDTO) (accessPointRadioTemplateID uuid.UUID, err error) {
-	_, err = u.accessPointTypeService.GetAccessPointType(ctx, dto.AccessPointTypeID)
+func (u *AccessPointRadioTemplateUsecase) CreateAccessPointRadioTemplate(ctx context.Context, createDTO *dto.CreateAccessPointRadioTemplateDTO) (accessPointRadioTemplateID uuid.UUID, err error) {
+	_, err = u.accessPointTypeService.GetAccessPointType(ctx, createDTO.AccessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			log.Info().Msg("failed to create access point radio template: the access point type with provided ID does not exist")
@@ -47,7 +47,7 @@ func (u *AccessPointRadioTemplateUsecase) CreateAccessPointRadioTemplate(ctx con
 		return
 	}
 
-	accessPointRadioTemplateID, err = u.accessPointRadioTemplateService.CreateAccessPointRadioTemplate(ctx, dto)
+	accessPointRadioTemplateID, err = u.accessPointRadioTemplateService.CreateAccessPointRadioTemplate(ctx, createDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create access point radio template")
 		return
@@ -57,8 +57,8 @@ func (u *AccessPointRadioTemplateUsecase) CreateAccessPointRadioTemplate(ctx con
 	return
 }
 
-func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplate(ctx context.Context, accessPointRadioTemplateID uuid.UUID) (accessPointRadioTemplateDTO *domain_dto.AccessPointRadioTemplateDTO, err error) {
-	accessPointRadioTemplate, err := u.accessPointRadioTemplateService.GetAccessPointRadioTemplate(ctx, accessPointRadioTemplateID)
+func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplate(ctx context.Context, accessPointRadioTemplateID uuid.UUID) (accessPointRadioTemplate *entity.AccessPointRadioTemplate, err error) {
+	accessPointRadioTemplate, err = u.accessPointRadioTemplateService.GetAccessPointRadioTemplate(ctx, accessPointRadioTemplateID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -68,28 +68,11 @@ func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplate(ctx contex
 		}
 	}
 
-	// Mapping domain entity -> domain DTO
-	accessPointRadioTemplateDTO = &domain_dto.AccessPointRadioTemplateDTO{
-		ID:                accessPointRadioTemplate.ID,
-		Number:            accessPointRadioTemplate.Number,
-		Channel:           accessPointRadioTemplate.Channel,
-		Channel2:          accessPointRadioTemplate.Channel2,
-		ChannelWidth:      accessPointRadioTemplate.ChannelWidth,
-		WiFi:              accessPointRadioTemplate.WiFi,
-		Power:             accessPointRadioTemplate.Power,
-		Bandwidth:         accessPointRadioTemplate.Bandwidth,
-		GuardInterval:     accessPointRadioTemplate.GuardInterval,
-		AccessPointTypeID: accessPointRadioTemplate.AccessPointTypeID,
-		CreatedAt:         accessPointRadioTemplate.CreatedAt,
-		UpdatedAt:         accessPointRadioTemplate.UpdatedAt,
-		DeletedAt:         accessPointRadioTemplate.DeletedAt,
-	}
-
 	return
 }
 
-func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplates(ctx context.Context, dto domain_dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplatesDTO []*domain_dto.AccessPointRadioTemplateDTO, err error) {
-	accessPointRadioTemplates, err := u.accessPointRadioTemplateService.GetAccessPointRadioTemplates(ctx, dto)
+func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplates(ctx context.Context, getDTO dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error) {
+	accessPointRadioTemplates, err = u.accessPointRadioTemplateService.GetAccessPointRadioTemplates(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -99,31 +82,10 @@ func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplates(ctx conte
 		}
 	}
 
-	for _, accessPointRadioTemplate := range accessPointRadioTemplates {
-		// Mapping domain entity -> domain DTO
-		accessPointRadioTemplateDTO := &domain_dto.AccessPointRadioTemplateDTO{
-			ID:                accessPointRadioTemplate.ID,
-			Number:            accessPointRadioTemplate.Number,
-			Channel:           accessPointRadioTemplate.Channel,
-			Channel2:          accessPointRadioTemplate.Channel2,
-			ChannelWidth:      accessPointRadioTemplate.ChannelWidth,
-			WiFi:              accessPointRadioTemplate.WiFi,
-			Power:             accessPointRadioTemplate.Power,
-			Bandwidth:         accessPointRadioTemplate.Bandwidth,
-			GuardInterval:     accessPointRadioTemplate.GuardInterval,
-			AccessPointTypeID: accessPointRadioTemplate.AccessPointTypeID,
-			CreatedAt:         accessPointRadioTemplate.CreatedAt,
-			UpdatedAt:         accessPointRadioTemplate.UpdatedAt,
-			DeletedAt:         accessPointRadioTemplate.DeletedAt,
-		}
-
-		accessPointRadioTemplatesDTO = append(accessPointRadioTemplatesDTO, accessPointRadioTemplateDTO)
-	}
-
 	return
 }
 
-func (u *AccessPointRadioTemplateUsecase) PatchUpdateAccessPointRadioTemplate(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateAccessPointRadioTemplateDTO) (err error) {
+func (u *AccessPointRadioTemplateUsecase) PatchUpdateAccessPointRadioTemplate(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointRadioTemplateDTO) (err error) {
 	_, err = u.accessPointRadioTemplateService.GetAccessPointRadioTemplate(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

@@ -10,6 +10,7 @@ import (
 
 	http_dto "location-backend/internal/controller/http/dto"
 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -81,7 +82,7 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 }
 
 func (h *roleHandler) GetRoleByIDorName(ctx *fiber.Ctx) error {
-	var role *domain_dto.RoleDTO
+	var role *entity.Role
 
 	if ctx.Query("id") != "" {
 		roleID, err := uuid.Parse(ctx.Query("id"))
@@ -159,13 +160,8 @@ func (h *roleHandler) GetRoleByIDorName(ctx *fiber.Ctx) error {
 		))
 	}
 
-	roleDTO := http_dto.RoleDTO{
-		ID:        role.ID,
-		Name:      role.Name,
-		CreatedAt: role.CreatedAt,
-		UpdatedAt: role.UpdatedAt,
-		DeletedAt: role.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	roleDTO := (http_dto.RoleDTO)(*role)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": roleDTO})
 }

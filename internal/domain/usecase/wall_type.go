@@ -7,17 +7,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type WallTypeService interface {
-	CreateWallType(ctx context.Context, createWallTypeDTO *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
+	CreateWallType(ctx context.Context, createWallTypeDTO *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
 	GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
-	GetWallTypes(ctx context.Context, dto domain_dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error)
+	GetWallTypes(ctx context.Context, getDTO dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error)
 	// TODO get wallType list detailed
 
-	UpdateWallType(ctx context.Context, updateWallTypeDTO *domain_dto.PatchUpdateWallTypeDTO) (err error)
+	UpdateWallType(ctx context.Context, updateWallTypeDTO *dto.PatchUpdateWallTypeDTO) (err error)
 
 	IsWallTypeSoftDeleted(ctx context.Context, wallTypeID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteWallType(ctx context.Context, wallTypeID uuid.UUID) (err error)
@@ -36,7 +36,7 @@ func NewWallTypeUsecase(wallTypeService WallTypeService, siteService SiteService
 	}
 }
 
-func (u *WallTypeUsecase) CreateWallType(ctx context.Context, dto *domain_dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error) {
+func (u *WallTypeUsecase) CreateWallType(ctx context.Context, dto *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error) {
 	_, err = u.siteService.GetSite(ctx, dto.SiteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -58,8 +58,8 @@ func (u *WallTypeUsecase) CreateWallType(ctx context.Context, dto *domain_dto.Cr
 	return
 }
 
-func (u *WallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallTypeDTO *domain_dto.WallTypeDTO, err error) {
-	wallType, err := u.wallTypeService.GetWallType(ctx, wallTypeID)
+func (u *WallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error) {
+	wallType, err = u.wallTypeService.GetWallType(ctx, wallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -69,24 +69,11 @@ func (u *WallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 		}
 	}
 
-	// Mapping domain entity -> domain DTO
-	wallTypeDTO = &domain_dto.WallTypeDTO{
-		ID:            wallType.ID,
-		Name:          wallType.Name,
-		Color:         wallType.Color,
-		Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-		Thickness: wallType.Thickness,
-		SiteID:    wallType.SiteID,
-		CreatedAt: wallType.CreatedAt,
-		UpdatedAt: wallType.UpdatedAt,
-		DeletedAt: wallType.DeletedAt,
-	}
-
 	return
 }
 
-func (u *WallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWallTypesDTO) (wallTypesDTO []*domain_dto.WallTypeDTO, err error) {
-	wallTypes, err := u.wallTypeService.GetWallTypes(ctx, dto)
+func (u *WallTypeUsecase) GetWallTypes(ctx context.Context, dto dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error) {
+	wallTypes, err = u.wallTypeService.GetWallTypes(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -96,27 +83,10 @@ func (u *WallTypeUsecase) GetWallTypes(ctx context.Context, dto domain_dto.GetWa
 		}
 	}
 
-	for _, wallType := range wallTypes {
-		// Mapping domain entity -> domain DTO
-		wallTypeDTO := &domain_dto.WallTypeDTO{
-			ID:            wallType.ID,
-			Name:          wallType.Name,
-			Color:         wallType.Color,
-			Attenuation24: wallType.Attenuation24, Attenuation5: wallType.Attenuation5, Attenuation6: wallType.Attenuation6,
-			Thickness: wallType.Thickness,
-			SiteID:    wallType.SiteID,
-			CreatedAt: wallType.CreatedAt,
-			UpdatedAt: wallType.UpdatedAt,
-			DeletedAt: wallType.DeletedAt,
-		}
-
-		wallTypesDTO = append(wallTypesDTO, wallTypeDTO)
-	}
-
 	return
 }
 
-func (u *WallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateWallTypeDTO) (err error) {
+func (u *WallTypeUsecase) PatchUpdateWallType(ctx context.Context, patchUpdateDTO *dto.PatchUpdateWallTypeDTO) (err error) {
 	_, err = u.wallTypeService.GetWallType(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

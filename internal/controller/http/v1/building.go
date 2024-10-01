@@ -66,14 +66,7 @@ func (h *buildingHandler) CreateBuilding(ctx *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.CreateBuildingDTO{
-		Name:        dto.Name,
-		Description: dto.Description,
-		Country:     dto.Country,
-		City:        dto.City,
-		Address:     dto.Address,
-		SiteID:      dto.SiteID,
-	}
+	domainDTO := (*domain_dto.CreateBuildingDTO)(&dto)
 
 	buildingID, err := h.usecase.CreateBuilding(context.Background(), domainDTO)
 	if err != nil {
@@ -111,9 +104,9 @@ func (h *buildingHandler) GetBuilding(ctx *fiber.Ctx) error {
 		))
 	}
 
-	var dto http_dto.GetBuildingDTO = http_dto.GetBuildingDTO{
-		ID: buildingID,
-	}
+	// var dto http_dto.GetBuildingDTO = http_dto.GetBuildingDTO{
+	// 	ID: buildingID,
+	// }
 
 	// TODO validate
 
@@ -122,7 +115,7 @@ func (h *buildingHandler) GetBuilding(ctx *fiber.Ctx) error {
 	// 	ID: dto.ID,
 	// }
 
-	building, err := h.usecase.GetBuilding(context.Background(), dto.ID)
+	building, err := h.usecase.GetBuilding(context.Background(), buildingID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -138,19 +131,8 @@ func (h *buildingHandler) GetBuilding(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping domain DTO -> http DTO
-	buildingDTO := http_dto.BuildingDTO{
-		ID:          building.ID,
-		Name:        building.Name,
-		Description: building.Description,
-		Country:     building.Country,
-		City:        building.City,
-		Address:     building.Address,
-		SiteID:      building.SiteID,
-		CreatedAt:   building.CreatedAt,
-		UpdatedAt:   building.UpdatedAt,
-		DeletedAt:   building.DeletedAt,
-	}
+	// Mapping entity -> http DTO
+	buildingDTO := (http_dto.BuildingDTO)(*building)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": buildingDTO})
 }
@@ -201,20 +183,8 @@ func (h *buildingHandler) GetBuildings(c *fiber.Ctx) error {
 
 	var buildingsDTO []http_dto.BuildingDTO
 	for _, building := range buildings {
-		// Mapping domain DTO -> http DTO
-		buildingDTO := http_dto.BuildingDTO{
-			ID:          building.ID,
-			Name:        building.Name,
-			Description: building.Description,
-			Country:     building.Country,
-			City:        building.City,
-			Address:     building.Address,
-			SiteID:      building.SiteID,
-			CreatedAt:   building.CreatedAt,
-			UpdatedAt:   building.UpdatedAt,
-			DeletedAt:   building.DeletedAt,
-		}
-
+		// Mapping entity -> http DTO
+		buildingDTO := (http_dto.BuildingDTO)(*building)
 		buildingsDTO = append(buildingsDTO, buildingDTO)
 	}
 
@@ -237,14 +207,7 @@ func (h *buildingHandler) PatchUpdateBuilding(c *fiber.Ctx) error {
 	// TODO validate
 
 	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.PatchUpdateBuildingDTO{
-		ID:          dto.ID,
-		Name:        dto.Name,
-		Description: dto.Description,
-		Country:     dto.Country,
-		City:        dto.City,
-		Address:     dto.Address,
-	}
+	domainDTO := (*domain_dto.PatchUpdateBuildingDTO)(&dto)
 
 	err = h.usecase.PatchUpdateBuilding(context.Background(), domainDTO)
 	if err != nil {

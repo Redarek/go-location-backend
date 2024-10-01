@@ -7,12 +7,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type RoleService interface {
-	CreateRole(ctx context.Context, createRoleDTO *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error)
+	CreateRole(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
 	GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
 	GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
@@ -25,7 +25,7 @@ func NewRoleUsecase(roleService RoleService) *RoleUsecase {
 	return &RoleUsecase{roleService: roleService}
 }
 
-func (u *RoleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
+func (u *RoleUsecase) CreateRole(ctx context.Context, dto *dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	_, err = u.roleService.GetRoleByName(ctx, dto.Name)
 	if err != nil {
 		// If error except ErrNotFound
@@ -47,8 +47,8 @@ func (u *RoleUsecase) CreateRole(ctx context.Context, dto *domain_dto.CreateRole
 	return
 }
 
-func (u *RoleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *domain_dto.RoleDTO, err error) {
-	role, err := u.roleService.GetRole(ctx, roleID)
+func (u *RoleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error) {
+	role, err = u.roleService.GetRole(ctx, roleID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -56,22 +56,13 @@ func (u *RoleUsecase) GetRole(ctx context.Context, roleID uuid.UUID) (roleDTO *d
 			log.Error().Err(err).Msg("failed to get role")
 			return
 		}
-	}
-
-	// Mapping domain entity -> domain DTO
-	roleDTO = &domain_dto.RoleDTO{
-		ID:        role.ID,
-		Name:      role.Name,
-		CreatedAt: role.CreatedAt,
-		UpdatedAt: role.UpdatedAt,
-		DeletedAt: role.DeletedAt,
 	}
 
 	return
 }
 
-func (u *RoleUsecase) GetRoleByName(ctx context.Context, name string) (roleDTO *domain_dto.RoleDTO, err error) {
-	role, err := u.roleService.GetRoleByName(ctx, name)
+func (u *RoleUsecase) GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error) {
+	role, err = u.roleService.GetRoleByName(ctx, name)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -79,15 +70,6 @@ func (u *RoleUsecase) GetRoleByName(ctx context.Context, name string) (roleDTO *
 			log.Error().Err(err).Msg("failed to get role")
 			return
 		}
-	}
-
-	// Mapping domain entity -> domain DTO
-	roleDTO = &domain_dto.RoleDTO{
-		ID:        role.ID,
-		Name:      role.Name,
-		CreatedAt: role.CreatedAt,
-		UpdatedAt: role.UpdatedAt,
-		DeletedAt: role.DeletedAt,
 	}
 
 	return

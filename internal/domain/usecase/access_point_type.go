@@ -7,17 +7,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 )
 
 type AccessPointTypeService interface {
-	CreateAccessPointType(ctx context.Context, createAccessPointTypeDTO *domain_dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
+	CreateAccessPointType(ctx context.Context, createDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
 	GetAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error)
-	GetAccessPointTypeDetailed(ctx context.Context, dto domain_dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error)
-	GetAccessPointTypes(ctx context.Context, dto domain_dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error)
+	GetAccessPointTypeDetailed(ctx context.Context, getDTO dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error)
+	GetAccessPointTypes(ctx context.Context, getDTO dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error)
 
-	UpdateAccessPointType(ctx context.Context, updateAccessPointTypeDTO *domain_dto.PatchUpdateAccessPointTypeDTO) (err error)
+	UpdateAccessPointType(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointTypeDTO) (err error)
 
 	IsAccessPointTypeSoftDeleted(ctx context.Context, accessPointTypeID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (err error)
@@ -42,8 +42,8 @@ func NewAccessPointTypeUsecase(
 	}
 }
 
-func (u *AccessPointTypeUsecase) CreateAccessPointType(ctx context.Context, dto *domain_dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error) {
-	_, err = u.siteService.GetSite(ctx, dto.SiteID)
+func (u *AccessPointTypeUsecase) CreateAccessPointType(ctx context.Context, createDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error) {
+	_, err = u.siteService.GetSite(ctx, createDTO.SiteID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			log.Info().Err(err).Msg("failed to create accessPointType: the site with provided site ID does not exist")
@@ -54,7 +54,7 @@ func (u *AccessPointTypeUsecase) CreateAccessPointType(ctx context.Context, dto 
 		return
 	}
 
-	accessPointTypeID, err = u.accessPointTypeService.CreateAccessPointType(ctx, dto)
+	accessPointTypeID, err = u.accessPointTypeService.CreateAccessPointType(ctx, createDTO)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create accessPointType")
 		return
@@ -64,8 +64,8 @@ func (u *AccessPointTypeUsecase) CreateAccessPointType(ctx context.Context, dto 
 	return
 }
 
-func (u *AccessPointTypeUsecase) GetAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointTypeDTO *domain_dto.AccessPointTypeDTO, err error) {
-	accessPointType, err := u.accessPointTypeService.GetAccessPointType(ctx, accessPointTypeID)
+func (u *AccessPointTypeUsecase) GetAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error) {
+	accessPointType, err = u.accessPointTypeService.GetAccessPointType(ctx, accessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -75,25 +75,11 @@ func (u *AccessPointTypeUsecase) GetAccessPointType(ctx context.Context, accessP
 		}
 	}
 
-	// Mapping domain entity -> domain DTO
-	accessPointTypeDTO = &domain_dto.AccessPointTypeDTO{
-		ID:        accessPointType.ID,
-		Name:      accessPointType.Name,
-		Model:     accessPointType.Model,
-		Color:     accessPointType.Color,
-		Z:         accessPointType.Z,
-		IsVirtual: accessPointType.IsVirtual,
-		SiteID:    accessPointType.SiteID,
-		CreatedAt: accessPointType.CreatedAt,
-		UpdatedAt: accessPointType.UpdatedAt,
-		DeletedAt: accessPointType.DeletedAt,
-	}
-
 	return
 }
 
-func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context, dto domain_dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
-	accessPointType, err := u.accessPointTypeService.GetAccessPointType(ctx, dto.AccessPointTypeID)
+func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context, getDTO dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
+	accessPointType, err := u.accessPointTypeService.GetAccessPointType(ctx, getDTO.AccessPointTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -103,10 +89,10 @@ func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context,
 		}
 	}
 
-	getAccessPointRadioTemplatesDTO := domain_dto.GetAccessPointRadioTemplatesDTO{
-		AccessPointTypeID: dto.AccessPointTypeID,
-		Limit:             dto.Limit,
-		Offset:            dto.Offset,
+	getAccessPointRadioTemplatesDTO := dto.GetAccessPointRadioTemplatesDTO{
+		AccessPointTypeID: getDTO.AccessPointTypeID,
+		Limit:             getDTO.Limit,
+		Offset:            getDTO.Offset,
 	}
 
 	accessPointRadioTemplates, err := u.accessPointRadioTemplateService.GetAccessPointRadioTemplates(ctx, getAccessPointRadioTemplatesDTO)
@@ -119,8 +105,8 @@ func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context,
 	return
 }
 
-func (u *AccessPointTypeUsecase) GetAccessPointTypes(ctx context.Context, dto domain_dto.GetAccessPointTypesDTO) (accessPointTypesDTO []*domain_dto.AccessPointTypeDTO, err error) {
-	accessPointTypes, err := u.accessPointTypeService.GetAccessPointTypes(ctx, dto)
+func (u *AccessPointTypeUsecase) GetAccessPointTypes(ctx context.Context, getDTO dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error) {
+	accessPointTypes, err = u.accessPointTypeService.GetAccessPointTypes(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
@@ -130,28 +116,10 @@ func (u *AccessPointTypeUsecase) GetAccessPointTypes(ctx context.Context, dto do
 		}
 	}
 
-	for _, accessPointType := range accessPointTypes {
-		// Mapping domain entity -> domain DTO
-		accessPointTypeDTO := &domain_dto.AccessPointTypeDTO{
-			ID:        accessPointType.ID,
-			Name:      accessPointType.Name,
-			Model:     accessPointType.Model,
-			Color:     accessPointType.Color,
-			Z:         accessPointType.Z,
-			IsVirtual: accessPointType.IsVirtual,
-			SiteID:    accessPointType.SiteID,
-			CreatedAt: accessPointType.CreatedAt,
-			UpdatedAt: accessPointType.UpdatedAt,
-			DeletedAt: accessPointType.DeletedAt,
-		}
-
-		accessPointTypesDTO = append(accessPointTypesDTO, accessPointTypeDTO)
-	}
-
 	return
 }
 
-func (u *AccessPointTypeUsecase) PatchUpdateAccessPointType(ctx context.Context, patchUpdateDTO *domain_dto.PatchUpdateAccessPointTypeDTO) (err error) {
+func (u *AccessPointTypeUsecase) PatchUpdateAccessPointType(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointTypeDTO) (err error) {
 	_, err = u.accessPointTypeService.GetAccessPointType(ctx, patchUpdateDTO.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
