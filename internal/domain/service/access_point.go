@@ -25,12 +25,20 @@ type AccessPointRepo interface {
 }
 
 type accessPointService struct {
-	accessPointRepo AccessPointRepo
+	accessPointRepo      AccessPointRepo
+	accessPointTypeRepo  AccessPointTypeRepo
+	accessPointRadioRepo AccessPointRadioRepo
 }
 
-func NewAccessPointService(accessPointRepo AccessPointRepo) *accessPointService {
+func NewAccessPointService(
+	accessPointRepo AccessPointRepo,
+	accessPointTypeRepo AccessPointTypeRepo,
+	accessPointRadioRepo AccessPointRadioRepo,
+) *accessPointService {
 	return &accessPointService{
-		accessPointRepo: accessPointRepo,
+		accessPointRepo:      accessPointRepo,
+		accessPointTypeRepo:  accessPointTypeRepo,
+		accessPointRadioRepo: accessPointRadioRepo,
 	}
 }
 
@@ -52,32 +60,48 @@ func (s *accessPointService) GetAccessPoint(ctx context.Context, accessPointID u
 	return
 }
 
-// func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
-// 	accessPoint, err := s.accessPointRepo.GetOne(ctx, dto.AccessPointID)
-// 	if err != nil {
-// 		if errors.Is(err, ErrNotFound) {
-// 			return accessPointDetailed, usecase.ErrNotFound
-// 		}
-// 		// TODO улучшить лог
-// 		log.Error().Msg("failed to retrieve access point type")
-// 		return
-// 	}
+func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
+	accessPoint, err := s.accessPointRepo.GetOne(ctx, dto.ID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			log.Debug().Msg("access point was not found")
+			return accessPointDetailed, usecase.ErrNotFound
+		}
+		// TODO улучшить лог
+		log.Error().Msg("failed to retrieve access point")
+		return
+	}
 
-// 	accessPointRadioTemplates, err := s.accessPointRadioTemplateRepo.GetAll(ctx, dto.AccessPointID, dto.Limit, dto.Offset)
-// 	if err != nil {
-// 		if errors.Is(err, ErrNotFound) {
-// 			return accessPointDetailed, usecase.ErrNotFound
-// 		}
-// 		return
-// 	}
+	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, accessPoint.AccessPointTypeID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			log.Debug().Msg("access point type was not found")
+			return accessPointDetailed, usecase.ErrNotFound
+		}
+		// TODO улучшить лог
+		log.Error().Msg("failed to retrieve access point type")
+		return
+	}
 
-// 	accessPointDetailed = &entity.AccessPointDetailed{
-// 		AccessPoint: *accessPoint,
-// 		RadioTemplates:  accessPointRadioTemplates,
-// 	}
+	accessPointRadios, err := s.accessPointRadioRepo.GetAll(ctx, accessPoint.ID, dto.Limit, dto.Offset)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			log.Debug().Msg("access point radios were not found")
+			return accessPointDetailed, usecase.ErrNotFound
+		}
+		// TODO улучшить лог
+		log.Error().Msg("failed to retrieve access point radios")
+		return
+	}
 
-// 	return
-// }
+	accessPointDetailed = &entity.AccessPointDetailed{
+		AccessPoint:     *accessPoint,
+		AccessPointType: *accessPointType,
+		Radios:          accessPointRadios,
+	}
+
+	return
+}
 
 func (s *accessPointService) GetAccessPoints(ctx context.Context, dto dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error) {
 	accessPoints, err = s.accessPointRepo.GetAll(ctx, dto.FloorID, dto.Limit, dto.Offset)

@@ -14,7 +14,7 @@ import (
 type AccessPointService interface {
 	CreateAccessPoint(ctx context.Context, createDTO *dto.CreateAccessPointDTO) (accessPointID uuid.UUID, err error)
 	GetAccessPoint(ctx context.Context, accessPointID uuid.UUID) (accessPoint *entity.AccessPoint, err error)
-	// GetAccessPointDetailed(ctx context.Context, getDTO dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error)
+	GetAccessPointDetailed(ctx context.Context, getDTO dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error)
 	GetAccessPoints(ctx context.Context, getDTO dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error)
 
 	UpdateAccessPoint(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointDTO) (err error)
@@ -80,41 +80,28 @@ func (u *AccessPointUsecase) GetAccessPoint(ctx context.Context, accessPointID u
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
-		} else {
-			log.Error().Err(err).Msg("failed to get access point")
-			return
 		}
+
+		log.Error().Err(err).Msg("failed to get access point")
+		return
 	}
 
 	return
 }
 
-// func (u *AccessPointUsecase) GetAccessPointDetailed(ctx context.Context, getDTO dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
-// 	accessPoint, err := u.accessPointService.GetAccessPoint(ctx, getDTO.AccessPointID)
-// 	if err != nil {
-// 		if errors.Is(err, ErrNotFound) {
-// 			return nil, ErrNotFound
-// 		} else {
-// 			// log.Error().Msg("failed to get access point type detailed")
-// 			return
-// 		}
-// 	}
+func (u *AccessPointUsecase) GetAccessPointDetailed(ctx context.Context, getDTO dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
+	accessPointDetailed, err = u.accessPointService.GetAccessPointDetailed(ctx, getDTO)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNotFound
+		}
 
-// 	getAccessPointRadioTemplatesDTO := dto.GetAccessPointRadioTemplatesDTO{
-// 		AccessPointID: getDTO.AccessPointID,
-// 		Limit:             getDTO.Limit,
-// 		Offset:            getDTO.Offset,
-// 	}
+		log.Error().Err(err).Msg("failed to get access point detailed")
+		return
+	}
 
-// 	accessPointRadioTemplates, err := u.accessPointRadioTemplateService.GetAccessPointRadioTemplates(ctx, getAccessPointRadioTemplatesDTO)
-
-// 	accessPointDetailed = &entity.AccessPointDetailed{
-// 		AccessPoint: *accessPoint,
-// 		RadioTemplates:  accessPointRadioTemplates,
-// 	}
-
-// 	return
-// }
+	return
+}
 
 func (u *AccessPointUsecase) GetAccessPoints(ctx context.Context, getDTO dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error) {
 	accessPoints, err = u.accessPointService.GetAccessPoints(ctx, getDTO)

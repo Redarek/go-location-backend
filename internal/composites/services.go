@@ -32,7 +32,7 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		wallService:                     service.NewWallService(composite.wallRepo, composite.wallTypeRepo),
 		accessPointTypeService:          service.NewAccessPointTypeService(composite.accessPointTypeRepo, composite.accessPointRadioTemplateRepo),
 		accessPointRadioTemplateService: service.NewAccessPointRadioTemplateService(composite.accessPointRadioTemplateRepo),
-		accessPointService:              service.NewAccessPointService(composite.accessPointRepo),
+		accessPointService:              service.NewAccessPointService(composite.accessPointRepo, composite.accessPointTypeRepo, composite.accessPointRadioRepo),
 		accessPointRadioService:         service.NewAccessPointRadioService(composite.accessPointRadioRepo),
 	}
 }

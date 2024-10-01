@@ -14,6 +14,18 @@ type CreateAccessPointDTO struct {
 	FloorID           uuid.UUID `db:"floor_id"`
 }
 
+type GetAccessPointDetailedDTO struct {
+	ID     uuid.UUID `db:"id"`
+	Limit  int
+	Offset int
+}
+
+type GetAccessPointsDTO struct {
+	FloorID uuid.UUID `db:"floor_id"`
+	Limit   int
+	Offset  int
+}
+
 type PatchUpdateAccessPointDTO struct {
 	ID                uuid.UUID  `db:"id"`
 	Name              *string    `db:"name"`
@@ -22,10 +34,4 @@ type PatchUpdateAccessPointDTO struct {
 	Z                 *float64   `db:"z"`
 	IsVirtual         *bool      `db:"is_virtual"`
 	AccessPointTypeID *uuid.UUID `db:"access_point_type_id"`
-}
-
-type GetAccessPointsDTO struct {
-	FloorID uuid.UUID `db:"floor_id"`
-	Limit   int
-	Offset  int
 }

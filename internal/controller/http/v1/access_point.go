@@ -49,7 +49,7 @@ func (h *accessPointHandler) Register(r *fiber.Router) fiber.Router {
 
 	// Get
 	router.Get(getAccessPointURL, h.GetAccessPoint)
-	// router.Get(getAccessPointDetailedURL, h.GetAccessPointDetailed)
+	router.Get(getAccessPointDetailedURL, h.GetAccessPointDetailed)
 	router.Get(getAccessPointsURL, h.GetAccessPoints)
 
 	// Update
@@ -151,72 +151,73 @@ func (h *accessPointHandler) GetAccessPoint(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": apHttpDTO})
 }
 
-// func (h *accessPointHandler) GetAccessPointDetailed(ctx *fiber.Ctx) error {
-// 	accessPointID, err := uuid.Parse(ctx.Query("id"))
-// 	if err != nil {
-// 		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
-// 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
-// 			fiber.StatusBadRequest,
-// 			"Invalid ID",
-// 			"Failed to parse 'id' as UUID",
-// 			nil,
-// 		))
-// 	}
+func (h *accessPointHandler) GetAccessPointDetailed(ctx *fiber.Ctx) error {
+	accessPointID, err := uuid.Parse(ctx.Query("id"))
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid ID",
+			"Failed to parse 'id' as UUID",
+			nil,
+		))
+	}
 
-// 	// var dto http_dto.GetAccessPointDTO = http_dto.GetAccessPointDTO{
-// 	// 	ID: accessPointID,
-// 	// }
+	// var dto http_dto.GetAccessPointDTO = http_dto.GetAccessPointDTO{
+	// 	ID: accessPointID,
+	// }
 
-// 	// TODO реализовать передачу page и size
-// 	var dto http_dto.GetAccessPointDetailedDTO = http_dto.GetAccessPointDetailedDTO{
-// 		AccessPointID: accessPointID,
-// 		Page:              1,
-// 		Size:              100,
-// 	}
+	// TODO реализовать передачу page и size
+	var dto http_dto.GetAccessPointDetailedDTO = http_dto.GetAccessPointDetailedDTO{
+		ID:   accessPointID,
+		Page: 1,
+		Size: 100,
+	}
 
-// 	// TODO validate
+	// TODO validate
 
-// 	// Mapping http DTO -> domain DTO
-// 	// domainDTO := domain_dto.GetAccessPointDTO{
-// 	// 	ID: dto.ID,
-// 	// }
+	// Mapping http DTO -> domain DTO
+	// domainDTO := domain_dto.GetAccessPointDTO{
+	// 	ID: dto.ID,
+	// }
 
-// 	domainDTO := domain_dto.GetAccessPointDetailedDTO{
-// 		AccessPointID: dto.AccessPointID,
-// 		Limit:             dto.Size,
-// 		Offset:            (dto.Page - 1) * dto.Size,
-// 	}
+	domainDTO := domain_dto.GetAccessPointDetailedDTO{
+		ID:     dto.ID,
+		Limit:  dto.Size,
+		Offset: (dto.Page - 1) * dto.Size,
+	}
 
-// 	accessPointDetailed, err := h.usecase.GetAccessPointDetailed(context.Background(), domainDTO)
-// 	if err != nil {
-// 		if errors.Is(err, usecase.ErrNotFound) {
-// 			ctx.Status(fiber.StatusNoContent)
-// 			return nil
-// 		}
+	accessPointDetailed, err := h.usecase.GetAccessPointDetailed(context.Background(), domainDTO)
+	if err != nil {
+		if errors.Is(err, usecase.ErrNotFound) {
+			ctx.Status(fiber.StatusNoContent)
+			return nil
+		}
 
-// 		log.Error().Msg("an unexpected error has occurred while trying to retrieve the access point type detailed")
-// 		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
-// 			fiber.StatusInternalServerError,
-// 			"An unexpected error has occurred while trying to retrieve the access point type detailed",
-// 			"",
-// 			nil,
-// 		))
-// 	}
+		log.Error().Msg("an unexpected error has occurred while trying to retrieve the access point detailed")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to retrieve the access point detailed",
+			"",
+			nil,
+		))
+	}
 
-// 	// Mapping access point radio template entity -> http DTO
-// 	var aprtHttpDTOs []*http_dto.AccessPointRadioTemplateDTO
-// 	for _, aprtHttpDTO := range accessPointDetailed.RadioTemplates {
-// 		aprtHttpDTOs = append(aprtHttpDTOs, (*http_dto.AccessPointRadioTemplateDTO)(aprtHttpDTO))
-// 	}
+	// Mapping access point radio entity -> http DTO
+	var aprHttpDTOs []*http_dto.AccessPointRadioDTO
+	for _, aprHttpDTO := range accessPointDetailed.Radios {
+		aprHttpDTOs = append(aprHttpDTOs, (*http_dto.AccessPointRadioDTO)(aprHttpDTO))
+	}
 
-// 	// Mapping entity -> http DTO
-// 	accessPointDetailedDTO := http_dto.AccessPointDetailedDTO{
-// 		AccessPointDTO: (http_dto.AccessPointDTO)(accessPointDetailed.AccessPoint),
-// 		RadioTemplatesDTO:  ([]*http_dto.AccessPointRadioTemplateDTO)(aprtHttpDTOs),
-// 	}
+	// Mapping entity -> http DTO
+	accessPointDetailedDTO := http_dto.AccessPointDetailedDTO{
+		AccessPointDTO:  (http_dto.AccessPointDTO)(accessPointDetailed.AccessPoint),
+		AccessPointType: (http_dto.AccessPointTypeDTO)(accessPointDetailed.AccessPointType),
+		Radios:          aprHttpDTOs,
+	}
 
-// 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointDetailedDTO})
-// }
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointDetailedDTO})
+}
 
 func (h *accessPointHandler) GetAccessPoints(c *fiber.Ctx) error {
 	floorID, err := uuid.Parse(c.Query("id"))

@@ -18,6 +18,11 @@ type AccessPointDTO struct {
 	UpdatedAt         pgtype.Timestamptz  `json:"updatedAt"`
 	DeletedAt         *pgtype.Timestamptz `json:"deletedAt"`
 }
+type AccessPointDetailedDTO struct {
+	AccessPointDTO
+	AccessPointType AccessPointTypeDTO     `json:"accessPointType"`
+	Radios          []*AccessPointRadioDTO `json:"radios"`
+}
 
 type CreateAccessPointDTO struct {
 	Name              string    `json:"name"`
@@ -33,6 +38,12 @@ type GetAccessPointsDTO struct {
 	FloorID uuid.UUID `json:"floorId"`
 	Page    int
 	Size    int
+}
+
+type GetAccessPointDetailedDTO struct {
+	ID   uuid.UUID `json:"id"`
+	Page int
+	Size int
 }
 
 type PatchUpdateAccessPointDTO struct {
