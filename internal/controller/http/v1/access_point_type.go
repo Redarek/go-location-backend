@@ -209,7 +209,7 @@ func (h *accessPointTypeHandler) GetAccessPointTypeDetailed(ctx *fiber.Ctx) erro
 	// Mapping entity -> http DTO
 	accessPointTypeDetailedDTO := http_dto.AccessPointTypeDetailedDTO{
 		AccessPointTypeDTO: (http_dto.AccessPointTypeDTO)(accessPointTypeDetailed.AccessPointType),
-		RadioTemplatesDTO:  ([]*http_dto.AccessPointRadioTemplateDTO)(aprtHttpDTOs),
+		RadioTemplatesDTO:  aprtHttpDTOs,
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointTypeDetailedDTO})
