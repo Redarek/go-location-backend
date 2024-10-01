@@ -9,11 +9,12 @@ import (
 
 // User без пароля
 type UserDTO struct {
-	ID        uuid.UUID           `json:"id"`
-	Username  string              `json:"username"`
-	CreatedAt pgtype.Timestamptz  `json:"createdAt"`
-	UpdatedAt pgtype.Timestamptz  `json:"updatedAt"`
-	DeletedAt *pgtype.Timestamptz `json:"deletedAt"`
+	ID           uuid.UUID           `json:"id"`
+	Username     string              `json:"username"`
+	PasswordHash string              `json:"-"`
+	CreatedAt    pgtype.Timestamptz  `json:"createdAt"`
+	UpdatedAt    pgtype.Timestamptz  `json:"updatedAt"`
+	DeletedAt    *pgtype.Timestamptz `json:"deletedAt"`
 }
 
 type RegisterUserDTO struct {
