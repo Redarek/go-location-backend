@@ -11,9 +11,9 @@ type AccessPoint struct {
 	X                 *int                `db:"x"`
 	Y                 *int                `db:"y"`
 	Z                 *float64            `db:"z"`
-	FloorID           uuid.UUID           `db:"floor_id"`
-	AccessPointTypeID uuid.UUID           `db:"access_point_type_id"`
 	IsVirtual         bool                `db:"is_virtual"`
+	AccessPointTypeID uuid.UUID           `db:"access_point_type_id"`
+	FloorID           uuid.UUID           `db:"floor_id"`
 	CreatedAt         pgtype.Timestamptz  `db:"created_at"`
 	UpdatedAt         pgtype.Timestamptz  `db:"updated_at"`
 	DeletedAt         *pgtype.Timestamptz `db:"deleted_at"`

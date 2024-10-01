@@ -16,6 +16,7 @@ type ServiceComposite struct {
 	wallService                     usecase.WallService
 	accessPointTypeService          usecase.AccessPointTypeService
 	accessPointRadioTemplateService usecase.AccessPointRadioTemplateService
+	accessPointService              usecase.AccessPointService
 }
 
 func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *ServiceComposite) {
@@ -30,5 +31,6 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		wallService:                     service.NewWallService(composite.wallRepo, composite.wallTypeRepo),
 		accessPointTypeService:          service.NewAccessPointTypeService(composite.accessPointTypeRepo, composite.accessPointRadioTemplateRepo),
 		accessPointRadioTemplateService: service.NewAccessPointRadioTemplateService(composite.accessPointRadioTemplateRepo),
+		accessPointService:              service.NewAccessPointService(composite.accessPointRepo),
 	}
 }
