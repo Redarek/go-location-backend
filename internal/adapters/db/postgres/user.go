@@ -70,11 +70,3 @@ func (r *userRepo) GetOneByName(ctx context.Context, username string) (user *ent
 	log.Debug().Msgf("retrieved user: %v", user)
 	return
 }
-
-//	func (bs *userRepo) GetAll(limit, offset int) []*entity.User {
-//		return nil
-//	}
-
-// func (bs *userRepo) Delete(user *entity.User) error {
-// 	return nil
-// }

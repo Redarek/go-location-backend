@@ -16,8 +16,8 @@ import (
 )
 
 type UserService interface {
-	// GetAllForList(ctx context.Context) []entity.BookView
-	// GetByID(ctx context.Context, id uuid.UUID) entity.User
+	// TODO GetByID(ctx context.Context, id uuid.UUID) entity.User
+
 	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
 	CreateUser(ctx context.Context, createUserDTO *dto.CreateUserDTO) (userID uuid.UUID, err error)
 }
@@ -138,27 +138,3 @@ func checkPasswordHash(password, hash string) bool {
 
 	return err == nil
 }
-
-// func (u userUsecase) ListAllBooks(ctx context.Context) []entity.BookView {
-// 	// отобразить список книг с именем Жанра и именем Автора
-// 	return u.userService.GetAllForList(ctx)
-// }
-
-// func (u bookUsecase) GetFullBook(ctx context.Context, id string) entity.FullBook {
-// 	book := u.bookService.GetByID(ctx, id)
-// 	author := u.authorService.GetByID(ctx, book.AuthorID)
-// 	genre := u.genreService.GetByID(ctx, book.GenreID)
-
-// 	return entity.FullBook{
-// 		Book:   book,
-// 		Author: author,
-// 		Genre:  genre,
-// 	}
-// }
-
-// // pagination
-// func (u bookUsecase) GetBooksWithAllAuthors(ctx context.Context, id string) []entity.BookView {
-// 	// Book{Authors: [all authors]}
-// 	// book, author(book_id) -=-
-// 	return nil
-// }
