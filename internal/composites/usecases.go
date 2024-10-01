@@ -29,7 +29,7 @@ func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *Usecase
 		floorUsecase:                    usecase.NewFloorUsecase(composite.floorService, composite.buildingService),
 		wallTypeUsecase:                 usecase.NewWallTypeUsecase(composite.wallTypeService, composite.siteService),
 		wallUsecase:                     usecase.NewWallUsecase(composite.wallService, composite.floorService),
-		accessPointTypeUsecase:          usecase.NewAccessPointTypeUsecase(composite.accessPointTypeService, composite.accessPointRadioTemplateService, composite.siteService),
+		accessPointTypeUsecase:          usecase.NewAccessPointTypeUsecase(composite.accessPointTypeService, composite.siteService),
 		accessPointRadioTemplateUsecase: usecase.NewAccessPointRadioTemplateUsecase(composite.accessPointRadioTemplateService, composite.accessPointTypeService),
 		accessPointUsecase:              usecase.NewAccessPointUsecase(composite.accessPointService, composite.accessPointTypeService, composite.floorService),
 		accessPointRadioUsecase:         usecase.NewAccessPointRadioUsecase(composite.accessPointRadioService, composite.accessPointService),

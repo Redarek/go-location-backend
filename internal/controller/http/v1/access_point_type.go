@@ -179,9 +179,9 @@ func (h *accessPointTypeHandler) GetAccessPointTypeDetailed(ctx *fiber.Ctx) erro
 	// }
 
 	domainDTO := domain_dto.GetAccessPointTypeDetailedDTO{
-		AccessPointTypeID: dto.AccessPointTypeID,
-		Limit:             dto.Size,
-		Offset:            (dto.Page - 1) * dto.Size,
+		ID:     dto.AccessPointTypeID,
+		Limit:  dto.Size,
+		Offset: (dto.Page - 1) * dto.Size,
 	}
 
 	accessPointTypeDetailed, err := h.usecase.GetAccessPointTypeDetailed(context.Background(), domainDTO)

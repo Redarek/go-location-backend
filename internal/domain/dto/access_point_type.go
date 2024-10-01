@@ -39,9 +39,9 @@ type GetAccessPointTypesDTO struct {
 }
 
 type GetAccessPointTypeDetailedDTO struct {
-	AccessPointTypeID uuid.UUID `db:"access_point_type_id"`
-	Limit             int
-	Offset            int
+	ID     uuid.UUID `db:"id"`
+	Limit  int
+	Offset int
 }
 
 type PatchUpdateAccessPointTypeDTO struct {

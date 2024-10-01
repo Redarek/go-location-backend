@@ -62,7 +62,7 @@ func (s *accessPointTypeService) GetAccessPointType(ctx context.Context, accessP
 }
 
 func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context, dto dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
-	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, dto.AccessPointTypeID)
+	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPointTypeDetailed, usecase.ErrNotFound
@@ -72,7 +72,7 @@ func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context,
 		return
 	}
 
-	accessPointRadioTemplates, err := s.accessPointRadioTemplateRepo.GetAll(ctx, dto.AccessPointTypeID, dto.Limit, dto.Offset)
+	accessPointRadioTemplates, err := s.accessPointRadioTemplateRepo.GetAll(ctx, dto.ID, dto.Limit, dto.Offset)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPointTypeDetailed, usecase.ErrNotFound

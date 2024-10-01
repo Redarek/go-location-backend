@@ -25,20 +25,20 @@ type AccessPointTypeService interface {
 }
 
 type AccessPointTypeUsecase struct {
-	accessPointTypeService          AccessPointTypeService
-	accessPointRadioTemplateService AccessPointRadioTemplateService
-	siteService                     SiteService
+	accessPointTypeService AccessPointTypeService
+	// accessPointRadioTemplateService AccessPointRadioTemplateService
+	siteService SiteService
 }
 
 func NewAccessPointTypeUsecase(
 	accessPointTypeService AccessPointTypeService,
-	accessPointRadioTemplateService AccessPointRadioTemplateService,
+	// accessPointRadioTemplateService AccessPointRadioTemplateService,
 	siteService SiteService,
 ) *AccessPointTypeUsecase {
 	return &AccessPointTypeUsecase{
-		accessPointTypeService:          accessPointTypeService,
-		accessPointRadioTemplateService: accessPointRadioTemplateService,
-		siteService:                     siteService,
+		accessPointTypeService: accessPointTypeService,
+		// accessPointRadioTemplateService: accessPointRadioTemplateService,
+		siteService: siteService,
 	}
 }
 
@@ -79,27 +79,14 @@ func (u *AccessPointTypeUsecase) GetAccessPointType(ctx context.Context, accessP
 }
 
 func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context, getDTO dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
-	accessPointType, err := u.accessPointTypeService.GetAccessPointType(ctx, getDTO.AccessPointTypeID)
+	accessPointTypeDetailed, err = u.accessPointTypeService.GetAccessPointTypeDetailed(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
-		} else {
-			// log.Error().Msg("failed to get access point type detailed")
-			return
 		}
-	}
 
-	getAccessPointRadioTemplatesDTO := dto.GetAccessPointRadioTemplatesDTO{
-		AccessPointTypeID: getDTO.AccessPointTypeID,
-		Limit:             getDTO.Limit,
-		Offset:            getDTO.Offset,
-	}
-
-	accessPointRadioTemplates, err := u.accessPointRadioTemplateService.GetAccessPointRadioTemplates(ctx, getAccessPointRadioTemplatesDTO)
-
-	accessPointTypeDetailed = &entity.AccessPointTypeDetailed{
-		AccessPointType: *accessPointType,
-		RadioTemplates:  accessPointRadioTemplates,
+		log.Error().Err(err).Msg("failed to get access point type detailed")
+		return
 	}
 
 	return
@@ -110,10 +97,10 @@ func (u *AccessPointTypeUsecase) GetAccessPointTypes(ctx context.Context, getDTO
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
-		} else {
-			log.Error().Err(err).Msg("failed to get accessPointTypes")
-			return
 		}
+
+		log.Error().Err(err).Msg("failed to get access point types")
+		return
 	}
 
 	return
