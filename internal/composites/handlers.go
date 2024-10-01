@@ -16,6 +16,7 @@ type HandlerComposite struct {
 	AccessPointTypeHandler          handler.Handler
 	AccessPointRadioTemplateHandler handler.Handler
 	AccessPointHandler              handler.Handler
+	AccessPointRadioHandler         handler.Handler
 }
 
 func NewHandlerComposite(composite *UsecaseComposite) (serviceComposite *HandlerComposite) {
@@ -31,5 +32,6 @@ func NewHandlerComposite(composite *UsecaseComposite) (serviceComposite *Handler
 		AccessPointTypeHandler:          handler.NewAccessPointTypeHandler(composite.accessPointTypeUsecase),
 		AccessPointRadioTemplateHandler: handler.NewAccessPointRadioTemplateHandler(composite.accessPointRadioTemplateUsecase),
 		AccessPointHandler:              handler.NewAccessPointHandler(composite.accessPointUsecase),
+		AccessPointRadioHandler:         handler.NewAccessPointRadioHandler(composite.accessPointRadioUsecase),
 	}
 }

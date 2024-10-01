@@ -65,6 +65,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	accessPoint := v1.Group("/ap", middleware.Auth)
 	handlerComposite.AccessPointHandler.Register(&accessPoint)
+
+	accessPointRadio := v1.Group("/ap-radio", middleware.Auth)
+	handlerComposite.AccessPointRadioHandler.Register(&accessPointRadio)
 }
 
 // import (

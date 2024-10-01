@@ -16,6 +16,7 @@ type UsecaseComposite struct {
 	accessPointTypeUsecase          *usecase.AccessPointTypeUsecase
 	accessPointRadioTemplateUsecase *usecase.AccessPointRadioTemplateUsecase
 	accessPointUsecase              *usecase.AccessPointUsecase
+	accessPointRadioUsecase         *usecase.AccessPointRadioUsecase
 }
 
 func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *UsecaseComposite) {
@@ -31,5 +32,6 @@ func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *Usecase
 		accessPointTypeUsecase:          usecase.NewAccessPointTypeUsecase(composite.accessPointTypeService, composite.accessPointRadioTemplateService, composite.siteService),
 		accessPointRadioTemplateUsecase: usecase.NewAccessPointRadioTemplateUsecase(composite.accessPointRadioTemplateService, composite.accessPointTypeService),
 		accessPointUsecase:              usecase.NewAccessPointUsecase(composite.accessPointService, composite.accessPointTypeService, composite.floorService),
+		accessPointRadioUsecase:         usecase.NewAccessPointRadioUsecase(composite.accessPointRadioService, composite.accessPointService),
 	}
 }
