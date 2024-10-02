@@ -26,6 +26,12 @@ type GetAccessPointsDTO struct {
 	Offset  int
 }
 
+type GetAccessPointsDetailedDTO struct {
+	FloorID uuid.UUID `db:"floor_id"`
+	Limit   int
+	Offset  int
+}
+
 type PatchUpdateAccessPointDTO struct {
 	ID                uuid.UUID  `db:"id"`
 	Name              *string    `db:"name"`

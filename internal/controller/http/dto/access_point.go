@@ -46,6 +46,12 @@ type GetAccessPointDetailedDTO struct {
 	Size int
 }
 
+type GetAccessPointsDetailedDTO struct {
+	FloorID uuid.UUID `json:"floorId"`
+	Page    int
+	Size    int
+}
+
 type PatchUpdateAccessPointDTO struct {
 	ID                uuid.UUID  `json:"id"`
 	Name              *string    `json:"name"`

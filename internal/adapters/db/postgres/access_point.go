@@ -93,8 +93,107 @@ func (r *accessPointRepo) GetOne(ctx context.Context, accessPointID uuid.UUID) (
 	return
 }
 
-// func (r *accessPointRepo) GetOneDetailed(ctx context.Context, accessPointID uuid.UUID) (accessPoint *entity.AccessPointDetailed, err error) {
+// func (r *accessPointRepo) GetOneDetailed(ctx context.Context, accessPointID uuid.UUID) (apDetailed *entity.AccessPointDetailed, err error) {
+// 	query := `SELECT
+// 			ap.id,
+// 			ap.name,
+// 			ap.x, ap.y, ap.z,
+// 			ap.is_virtual,
+// 			ap.access_point_type_id,
+// 			ap.floor_id,
+// 			ap.created_at, ap.updated_at, ap.deleted_at,
 
+// 			apt.id,
+// 			apt.name,
+// 			apt.model,
+// 			apt.color,
+// 			apt.z,
+// 			apt.is_virtual,
+// 			apt.site_id,
+// 			apt.created_at, apt.updated_at, apt.deleted_at,
+
+// 			r.id,
+// 			r.number,
+// 			r.channel,
+// 			r.channel2,
+// 			r.channel_width,
+// 			r.wifi,
+// 			r.power,
+// 			r.bandwidth,
+// 			r.guard_interval,
+// 			r.is_active,
+// 			r.access_point_id,
+// 			r.created_at, r.updated_at, r.deleted_at
+// 		FROM access_points ap
+// 		JOIN access_point_types apt ON ap.access_point_type_id = apt.id AND apt.deleted_at IS NULL
+// 		LEFT JOIN access_point_radios r ON ap.id = r.access_point_id AND r.deleted_at IS NULL
+// 		WHERE ap.id = $1 AND ap.deleted_at IS NULL`
+// 	rows, err := r.pool.Query(ctx, query, accessPointID)
+// 	if err != nil {
+// 		log.Error().Err(err).Msg("failed to retrieve access point")
+// 		return
+// 	}
+// 	defer rows.Close()
+
+// 	apDetailed = &entity.AccessPointDetailed{}
+// 	apt := entity.AccessPointType{}
+// 	i := 0
+
+// 	for rows.Next() {
+// 		i++
+// 		r := &entity.AccessPointRadio{}
+
+// 		err = rows.Scan(
+// 			&apDetailed.ID,
+// 			&apDetailed.Name,
+// 			&apDetailed.X, &apDetailed.Y, &apDetailed.Z,
+// 			&apDetailed.IsVirtual,
+// 			&apDetailed.AccessPointTypeID,
+// 			&apDetailed.FloorID,
+// 			&apDetailed.CreatedAt, &apDetailed.UpdatedAt, &apDetailed.DeletedAt,
+
+// 			&apt.ID,
+// 			&apt.Name,
+// 			&apt.Model,
+// 			&apt.Color,
+// 			&apt.Z,
+// 			&apt.IsVirtual,
+// 			&apt.SiteID,
+// 			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+
+// 			&r.ID,
+// 			&r.Number,
+// 			&r.Channel,
+// 			&r.Channel2,
+// 			&r.ChannelWidth,
+// 			&r.WiFi,
+// 			&r.Power,
+// 			&r.Bandwidth,
+// 			&r.GuardInterval,
+// 			&r.IsActive,
+// 			&r.AccessPointID,
+// 			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
+// 		)
+// 		if err != nil {
+// 			log.Error().Err(err).Msg("failed to scan access point and related data")
+// 			return
+// 		}
+// 		apDetailed.AccessPointType = apt
+// 		apDetailed.Radios = append(apDetailed.Radios, r)
+// 	}
+
+// 	if err = rows.Err(); err != nil {
+// 		log.Error().Err(err).Msg("rows iteration error")
+// 		return
+// 	}
+
+// 	if i == 0 {
+// 		log.Debug().Msg("access point was not found")
+// 		return nil, service.ErrNotFound
+// 	}
+
+// 	log.Debug().Msgf("retrieved access point with detailed info: %v", apDetailed)
+// 	return
 // }
 
 func (r *accessPointRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, offset int) (accessPoints []*entity.AccessPoint, err error) {
@@ -150,6 +249,125 @@ func (r *accessPointRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, 
 	}
 
 	log.Debug().Msgf("retrieved %d access points", length)
+	return
+}
+
+func (r *accessPointRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID, limit, offset int) (accessPointsDetailed []*entity.AccessPointDetailed, err error) {
+	query := `SELECT 
+			ap.id, 
+			ap.name, 
+			ap.x, ap.y, ap.z,
+			ap.is_virtual,
+			ap.access_point_type_id,
+			ap.floor_id, 
+			ap.created_at, ap.updated_at, ap.deleted_at,
+			
+			apt.id, 
+			apt.name, 
+			apt.model,
+			apt.color, 
+			apt.z,
+			apt.is_virtual,
+			apt.site_id, 
+			apt.created_at, apt.updated_at, apt.deleted_at, 
+			
+			r.id, 
+			r.number, 
+			r.channel, 
+			r.channel2,
+			r.channel_width,
+			r.wifi, 
+			r.power, 
+			r.bandwidth, 
+			r.guard_interval, 
+			r.is_active, 
+			r.access_point_id,
+			r.created_at, r.updated_at, r.deleted_at
+		FROM access_points ap
+		JOIN access_point_types apt ON ap.access_point_type_id = apt.id AND apt.deleted_at IS NULL
+		LEFT JOIN access_point_radios r ON ap.id = r.access_point_id AND r.deleted_at IS NULL
+		WHERE ap.floor_id = $1 AND ap.deleted_at IS NULL
+		LIMIT $2 OFFSET $3`
+	rows, err := r.pool.Query(ctx, query, floorID, limit, offset)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to retrieve access point")
+		return
+	}
+	defer rows.Close()
+
+	apdMap := make(map[uuid.UUID]*entity.AccessPointDetailed)
+	i := 0
+
+	for rows.Next() {
+		i++
+		apd := &entity.AccessPointDetailed{}
+		apt := entity.AccessPointType{}
+		r := &entity.AccessPointRadio{}
+
+		err = rows.Scan(
+			&apd.ID,
+			&apd.Name,
+			&apd.X, &apd.Y, &apd.Z,
+			&apd.IsVirtual,
+			&apd.AccessPointTypeID,
+			&apd.FloorID,
+			&apd.CreatedAt, &apd.UpdatedAt, &apd.DeletedAt,
+
+			&apt.ID,
+			&apt.Name,
+			&apt.Model,
+			&apt.Color,
+			&apt.Z,
+			&apt.IsVirtual,
+			&apt.SiteID,
+			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+
+			&r.ID,
+			&r.Number,
+			&r.Channel,
+			&r.Channel2,
+			&r.ChannelWidth,
+			&r.WiFi,
+			&r.Power,
+			&r.Bandwidth,
+			&r.GuardInterval,
+			&r.IsActive,
+			&r.AccessPointID,
+			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to scan access point and related data")
+			return
+		}
+
+		existingAP, exists := apdMap[apd.ID]
+		if exists {
+			// If access point is already in the map, append the new radio to its list
+			existingAP.Radios = append(existingAP.Radios, r)
+		} else {
+			// If it's a new access point, initialize and add to map
+			apd.AccessPointType = apt
+			apd.Radios = append(apd.Radios, r)
+			apdMap[apd.ID] = apd
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("rows iteration error")
+		return
+	}
+
+	if i == 0 {
+		log.Debug().Msg("access point was not found")
+		return nil, service.ErrNotFound
+	}
+
+	// Convert map to slice
+	for _, apd := range apdMap {
+		accessPointsDetailed = append(accessPointsDetailed, apd)
+	}
+
+	log.Debug().Msgf("retrieved access point with detailed info: %v", accessPointsDetailed)
 	return
 }
 

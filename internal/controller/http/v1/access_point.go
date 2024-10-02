@@ -15,10 +15,11 @@ import (
 )
 
 const (
-	createAccessPointURL      = "/"
-	getAccessPointURL         = "/"
-	getAccessPointDetailedURL = "/detailed"
-	getAccessPointsURL        = "/all"
+	createAccessPointURL       = "/"
+	getAccessPointURL          = "/"
+	getAccessPointDetailedURL  = "/detailed"
+	getAccessPointsURL         = "/all"
+	getAccessPointsDetailedURL = "/all/detailed"
 
 	patchUpdateAccessPointURL = "/"
 
@@ -51,6 +52,7 @@ func (h *accessPointHandler) Register(r *fiber.Router) fiber.Router {
 	router.Get(getAccessPointURL, h.GetAccessPoint)
 	router.Get(getAccessPointDetailedURL, h.GetAccessPointDetailed)
 	router.Get(getAccessPointsURL, h.GetAccessPoints)
+	router.Get(getAccessPointsDetailedURL, h.GetAccessPointsDetailed)
 
 	// Update
 	router.Patch(patchUpdateAccessPointURL, h.PatchUpdateAccessPoint)
@@ -247,17 +249,17 @@ func (h *accessPointHandler) GetAccessPoints(c *fiber.Ctx) error {
 		Offset:  (dto.Page - 1) * dto.Size,
 	}
 
-	aptDomainDTOs, err := h.usecase.GetAccessPoints(context.Background(), domainDTO)
+	apDomainDTOs, err := h.usecase.GetAccessPoints(context.Background(), domainDTO)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
 			return nil
 		}
 
-		log.Error().Err(err).Msg("an unexpected error has occurred while trying to retrieve the access point")
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to retrieve the access points")
 		return c.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
 			fiber.StatusInternalServerError,
-			"An unexpected error has occurred while trying to retrieve the access point",
+			"An unexpected error has occurred while trying to retrieve the access points",
 			"",
 			nil,
 		))
@@ -265,12 +267,83 @@ func (h *accessPointHandler) GetAccessPoints(c *fiber.Ctx) error {
 
 	// Mapping entity -> http DTO
 	var apHttpDTOs []http_dto.AccessPointDTO
-	for _, aptDomainDTO := range aptDomainDTOs {
-		accessPointDTO := (http_dto.AccessPointDTO)(*aptDomainDTO)
+	for _, apDomainDTO := range apDomainDTOs {
+		accessPointDTO := (http_dto.AccessPointDTO)(*apDomainDTO)
 		apHttpDTOs = append(apHttpDTOs, accessPointDTO)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": apHttpDTOs})
+}
+
+func (h *accessPointHandler) GetAccessPointsDetailed(c *fiber.Ctx) error {
+	floorID, err := uuid.Parse(c.Query("id"))
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
+		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid ID",
+			"Failed to parse 'id' as UUID",
+			nil,
+		))
+	}
+
+	// TODO реализовать передачу page и size
+	var dto http_dto.GetAccessPointsDetailedDTO = http_dto.GetAccessPointsDetailedDTO{
+		FloorID: floorID,
+		Page:    1,
+		Size:    100,
+	}
+
+	// TODO validate
+
+	// Mapping http DTO -> domain DTO
+	domainDTO := domain_dto.GetAccessPointsDetailedDTO{
+		FloorID: dto.FloorID,
+		Limit:   dto.Size,
+		Offset:  (dto.Page - 1) * dto.Size,
+	}
+
+	accessPointsDetailed, err := h.usecase.GetAccessPointsDetailed(context.Background(), domainDTO)
+	if err != nil {
+		if errors.Is(err, usecase.ErrNotFound) {
+			c.Status(fiber.StatusNoContent)
+			return nil
+		}
+
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to retrieve the access points detailed")
+		return c.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to retrieve the access points detailed",
+			"",
+			nil,
+		))
+	}
+
+	// TODO mapping
+	// // Mapping entity -> http DTO
+	// var apdHttpDTOs []http_dto.AccessPointDetailedDTO
+	// for _, apdDomainDTO := range apdDomainDTOs {
+	// 	accessPointDetailedDTO := (http_dto.AccessPointDetailedDTO)(*apdDomainDTO)
+	// 	apdHttpDTOs = append(apdHttpDTOs, accessPointDetailedDTO)
+	// }
+
+	// // Mapping access point radio entity -> http DTO
+	// var aprHttpDTOs []*http_dto.AccessPointRadioDTO
+	// for _, aprHttpDTO := range accessPointsDetailed.Radios {
+	// 	aprHttpDTOs = append(aprHttpDTOs, (*http_dto.AccessPointRadioDTO)(aprHttpDTO))
+	// }
+
+	// accessPointDetailedDTO
+	// for _, accessPointDetailed := range accessPointsDetailed {
+	// 	// Mapping entity -> http DTO
+	// accessPointDetailedDTO := http_dto.AccessPointDetailedDTO{
+	// 	AccessPointDTO:  (http_dto.AccessPointDTO)(accessPointDetailed.AccessPoint),
+	// 	AccessPointType: (http_dto.AccessPointTypeDTO)(accessPointDetailed.AccessPointType),
+	// 	Radios:          aprHttpDTOs,
+	// }
+	// }
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointsDetailed})
 }
 
 func (h *accessPointHandler) PatchUpdateAccessPoint(c *fiber.Ctx) error {

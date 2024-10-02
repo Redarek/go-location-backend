@@ -16,6 +16,7 @@ type AccessPointService interface {
 	GetAccessPoint(ctx context.Context, accessPointID uuid.UUID) (accessPoint *entity.AccessPoint, err error)
 	GetAccessPointDetailed(ctx context.Context, getDTO dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error)
 	GetAccessPoints(ctx context.Context, getDTO dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error)
+	GetAccessPointsDetailed(ctx context.Context, dto dto.GetAccessPointsDetailedDTO) (accessPoints []*entity.AccessPointDetailed, err error)
 
 	UpdateAccessPoint(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointDTO) (err error)
 
@@ -110,6 +111,20 @@ func (u *AccessPointUsecase) GetAccessPoints(ctx context.Context, getDTO dto.Get
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get access points")
+			return
+		}
+	}
+
+	return
+}
+
+func (u *AccessPointUsecase) GetAccessPointsDetailed(ctx context.Context, getDTO dto.GetAccessPointsDetailedDTO) (accessPointsDetailed []*entity.AccessPointDetailed, err error) {
+	accessPointsDetailed, err = u.accessPointService.GetAccessPointsDetailed(ctx, getDTO)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get access points detailed")
 			return
 		}
 	}
