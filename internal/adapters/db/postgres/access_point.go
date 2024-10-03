@@ -28,6 +28,7 @@ func NewAccessPointRepo(pool *pgxpool.Pool) *accessPointRepo {
 func (r *accessPointRepo) Create(ctx context.Context, createAccessPointDTO *dto.CreateAccessPointDTO) (accessPointID uuid.UUID, err error) {
 	query := `INSERT INTO access_points (
 			name, 
+			color,
 			x, 
 			y,
 			z,
@@ -39,6 +40,7 @@ func (r *accessPointRepo) Create(ctx context.Context, createAccessPointDTO *dto.
 		RETURNING id`
 	row := r.pool.QueryRow(ctx, query,
 		createAccessPointDTO.Name,
+		createAccessPointDTO.Color,
 		createAccessPointDTO.X,
 		createAccessPointDTO.Y,
 		createAccessPointDTO.Z,
@@ -59,6 +61,7 @@ func (r *accessPointRepo) GetOne(ctx context.Context, accessPointID uuid.UUID) (
 	query := `SELECT 
 			id, 
 			name, 
+			color,
 			x, 
 			y,
 			z,
@@ -73,6 +76,7 @@ func (r *accessPointRepo) GetOne(ctx context.Context, accessPointID uuid.UUID) (
 	err = row.Scan(
 		&accessPoint.ID,
 		&accessPoint.Name,
+		&accessPoint.Color,
 		&accessPoint.X,
 		&accessPoint.Y,
 		&accessPoint.Z,
@@ -200,6 +204,7 @@ func (r *accessPointRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, 
 	query := `SELECT 
 			id, 
 			name, 
+			color,
 			x, 
 			y,
 			z,
@@ -222,6 +227,7 @@ func (r *accessPointRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, 
 		err = rows.Scan(
 			&accessPoint.ID,
 			&accessPoint.Name,
+			&accessPoint.Color,
 			&accessPoint.X,
 			&accessPoint.Y,
 			&accessPoint.Z,
@@ -256,6 +262,7 @@ func (r *accessPointRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID,
 	query := `SELECT 
 			ap.id, 
 			ap.name, 
+			ap.color,
 			ap.x, ap.y, ap.z,
 			ap.is_virtual,
 			ap.access_point_type_id,
@@ -307,6 +314,7 @@ func (r *accessPointRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID,
 		err = rows.Scan(
 			&apd.ID,
 			&apd.Name,
+			&apd.Color,
 			&apd.X, &apd.Y, &apd.Z,
 			&apd.IsVirtual,
 			&apd.AccessPointTypeID,
@@ -380,6 +388,11 @@ func (r *accessPointRepo) Update(ctx context.Context, updateAccessPointDTO *dto.
 	if updateAccessPointDTO.Name != nil {
 		updates = append(updates, fmt.Sprintf("name = $%d", paramID))
 		params = append(params, updateAccessPointDTO.Name)
+		paramID++
+	}
+	if updateAccessPointDTO.Color != nil {
+		updates = append(updates, fmt.Sprintf("color = $%d", paramID))
+		params = append(params, updateAccessPointDTO.Color)
 		paramID++
 	}
 	if updateAccessPointDTO.X != nil {

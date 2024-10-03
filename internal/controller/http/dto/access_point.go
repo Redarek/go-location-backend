@@ -8,6 +8,7 @@ import (
 type AccessPointDTO struct {
 	ID                uuid.UUID           `json:"id"`
 	Name              string              `json:"name"`
+	Color             *string             `json:"color"`
 	X                 *int                `json:"x"`
 	Y                 *int                `json:"y"`
 	Z                 *float64            `json:"z"`
@@ -26,6 +27,7 @@ type AccessPointDetailedDTO struct {
 
 type CreateAccessPointDTO struct {
 	Name              string    `json:"name"`
+	Color             *string   `json:"color"`
 	X                 *int      `json:"x"`
 	Y                 *int      `json:"y"`
 	Z                 *float64  `json:"z"`
@@ -55,6 +57,7 @@ type GetAccessPointsDetailedDTO struct {
 type PatchUpdateAccessPointDTO struct {
 	ID                uuid.UUID  `json:"id"`
 	Name              *string    `json:"name"`
+	Color             *string    `json:"color"`
 	X                 *int       `json:"x"`
 	Y                 *int       `json:"y"`
 	Z                 *float64   `json:"z"`

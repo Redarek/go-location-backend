@@ -166,6 +166,7 @@ func syncTables(pool *pgxpool.Pool) (err error) {
     CREATE TABLE IF NOT EXISTS access_points (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR(128) NOT NULL,
+        color CHAR(6),
         x INTEGER,
         y INTEGER,
         z FLOAT,

@@ -8,6 +8,7 @@ import (
 type AccessPoint struct {
 	ID                uuid.UUID           `db:"id"`
 	Name              string              `db:"name"`
+	Color             *string             `db:"color"`
 	X                 *int                `db:"x"`
 	Y                 *int                `db:"y"`
 	Z                 *float64            `db:"z"`
