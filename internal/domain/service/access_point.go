@@ -15,7 +15,7 @@ import (
 type AccessPointRepo interface {
 	Create(ctx context.Context, createAccessPointDTO *dto.CreateAccessPointDTO) (accessPointID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointID uuid.UUID) (accessPoint *entity.AccessPoint, err error)
-	// GetOneDetailed(ctx context.Context, accessPointID uuid.UUID) (apDetailed *entity.AccessPointDetailed, err error)
+	GetOneDetailed(ctx context.Context, accessPointID uuid.UUID) (apDetailed *entity.AccessPointDetailed, err error)
 	GetAll(ctx context.Context, floorID uuid.UUID, limit, offset int) (accessPoints []*entity.AccessPoint, err error)
 	GetAllDetailed(ctx context.Context, floorID uuid.UUID, limit, offset int) (accessPointsDetailed []*entity.AccessPointDetailed, err error)
 
@@ -62,63 +62,63 @@ func (s *accessPointService) GetAccessPoint(ctx context.Context, accessPointID u
 	return
 }
 
-func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
-	accessPoint, err := s.accessPointRepo.GetOne(ctx, dto.ID)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			log.Debug().Msg("access point was not found")
-			return accessPointDetailed, usecase.ErrNotFound
-		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve access point")
-		return
-	}
-
-	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, accessPoint.AccessPointTypeID)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			log.Error().Msg("access point type was not found")
-			return
-		}
-
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve access point type")
-		return
-	}
-
-	accessPointRadios, err := s.accessPointRadioRepo.GetAll(ctx, accessPoint.ID, dto.Limit, dto.Offset)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			log.Debug().Msg("access point radios were not found")
-			err = nil
-		} else {
-			// TODO улучшить лог
-			log.Error().Msg("failed to retrieve access point radios")
-			return
-		}
-	}
-
-	accessPointDetailed = &entity.AccessPointDetailed{
-		AccessPoint:     *accessPoint,
-		AccessPointType: *accessPointType,
-		Radios:          accessPointRadios,
-	}
-
-	return
-}
-
-// func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto.GetAccessPointDetailedDTO) (apDetailed *entity.AccessPointDetailed, err error) {
-// 	apDetailed, err = s.accessPointRepo.GetOneDetailed(ctx, dto.ID)
+// func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
+// 	accessPoint, err := s.accessPointRepo.GetOne(ctx, dto.ID)
 // 	if err != nil {
 // 		if errors.Is(err, ErrNotFound) {
-// 			return nil, usecase.ErrNotFound
+// 			log.Debug().Msg("access point was not found")
+// 			return accessPointDetailed, usecase.ErrNotFound
+// 		}
+// 		// TODO улучшить лог
+// 		log.Error().Msg("failed to retrieve access point")
+// 		return
+// 	}
+
+// 	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, accessPoint.AccessPointTypeID)
+// 	if err != nil {
+// 		if errors.Is(err, ErrNotFound) {
+// 			log.Error().Msg("access point type was not found")
+// 			return
 // 		}
 
+// 		// TODO улучшить лог
+// 		log.Error().Msg("failed to retrieve access point type")
 // 		return
+// 	}
+
+// 	accessPointRadios, err := s.accessPointRadioRepo.GetAll(ctx, accessPoint.ID, dto.Limit, dto.Offset)
+// 	if err != nil {
+// 		if errors.Is(err, ErrNotFound) {
+// 			log.Debug().Msg("access point radios were not found")
+// 			err = nil
+// 		} else {
+// 			// TODO улучшить лог
+// 			log.Error().Msg("failed to retrieve access point radios")
+// 			return
+// 		}
+// 	}
+
+// 	accessPointDetailed = &entity.AccessPointDetailed{
+// 		AccessPoint:     *accessPoint,
+// 		AccessPointType: *accessPointType,
+// 		Radios:          accessPointRadios,
 // 	}
 
 // 	return
 // }
+
+func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto.GetAccessPointDetailedDTO) (apDetailed *entity.AccessPointDetailed, err error) {
+	apDetailed, err = s.accessPointRepo.GetOneDetailed(ctx, dto.ID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, usecase.ErrNotFound
+		}
+
+		return
+	}
+
+	return
+}
 
 func (s *accessPointService) GetAccessPoints(ctx context.Context, dto dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error) {
 	accessPoints, err = s.accessPointRepo.GetAll(ctx, dto.FloorID, dto.Limit, dto.Offset)

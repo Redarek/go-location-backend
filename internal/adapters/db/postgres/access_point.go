@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
@@ -23,6 +24,23 @@ type accessPointRepo struct {
 
 func NewAccessPointRepo(pool *pgxpool.Pool) *accessPointRepo {
 	return &accessPointRepo{pool: pool}
+}
+
+type tmpAccessPointRadio struct {
+	ID            *uuid.UUID          `db:"id"`
+	Number        *int                `db:"number"`
+	Channel       *int                `db:"channel"`
+	Channel2      *int                `db:"channel2"`
+	ChannelWidth  *string             `db:"channel_width"`
+	WiFi          *string             `db:"wifi"`
+	Power         *int                `db:"power"`
+	Bandwidth     *string             `db:"bandwidth"`
+	GuardInterval *int                `db:"guard_interval"`
+	IsActive      *bool               `db:"is_active"`
+	AccessPointID *uuid.UUID          `db:"access_point_id"`
+	CreatedAt     *pgtype.Timestamptz `db:"created_at"`
+	UpdatedAt     *pgtype.Timestamptz `db:"updated_at"`
+	DeletedAt     *pgtype.Timestamptz `db:"deleted_at"`
 }
 
 func (r *accessPointRepo) Create(ctx context.Context, createAccessPointDTO *dto.CreateAccessPointDTO) (accessPointID uuid.UUID, err error) {
@@ -97,108 +115,129 @@ func (r *accessPointRepo) GetOne(ctx context.Context, accessPointID uuid.UUID) (
 	return
 }
 
-// func (r *accessPointRepo) GetOneDetailed(ctx context.Context, accessPointID uuid.UUID) (apDetailed *entity.AccessPointDetailed, err error) {
-// 	query := `SELECT
-// 			ap.id,
-// 			ap.name,
-// 			ap.x, ap.y, ap.z,
-// 			ap.is_virtual,
-// 			ap.access_point_type_id,
-// 			ap.floor_id,
-// 			ap.created_at, ap.updated_at, ap.deleted_at,
+func (r *accessPointRepo) GetOneDetailed(ctx context.Context, accessPointID uuid.UUID) (apDetailed *entity.AccessPointDetailed, err error) {
+	query := `SELECT
+			ap.id,
+			ap.name,
+			ap.color,
+			ap.x, ap.y, ap.z,
+			ap.is_virtual,
+			ap.access_point_type_id,
+			ap.floor_id,
+			ap.created_at, ap.updated_at, ap.deleted_at,
 
-// 			apt.id,
-// 			apt.name,
-// 			apt.model,
-// 			apt.color,
-// 			apt.z,
-// 			apt.is_virtual,
-// 			apt.site_id,
-// 			apt.created_at, apt.updated_at, apt.deleted_at,
+			apt.id,
+			apt.name,
+			apt.model,
+			apt.color,
+			apt.z,
+			apt.is_virtual,
+			apt.site_id,
+			apt.created_at, apt.updated_at, apt.deleted_at,
 
-// 			r.id,
-// 			r.number,
-// 			r.channel,
-// 			r.channel2,
-// 			r.channel_width,
-// 			r.wifi,
-// 			r.power,
-// 			r.bandwidth,
-// 			r.guard_interval,
-// 			r.is_active,
-// 			r.access_point_id,
-// 			r.created_at, r.updated_at, r.deleted_at
-// 		FROM access_points ap
-// 		JOIN access_point_types apt ON ap.access_point_type_id = apt.id AND apt.deleted_at IS NULL
-// 		LEFT JOIN access_point_radios r ON ap.id = r.access_point_id AND r.deleted_at IS NULL
-// 		WHERE ap.id = $1 AND ap.deleted_at IS NULL`
-// 	rows, err := r.pool.Query(ctx, query, accessPointID)
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("failed to retrieve access point")
-// 		return
-// 	}
-// 	defer rows.Close()
+			r.id,
+			r.number,
+			r.channel,
+			r.channel2,
+			r.channel_width,
+			r.wifi,
+			r.power,
+			r.bandwidth,
+			r.guard_interval,
+			r.is_active,
+			r.access_point_id,
+			r.created_at, r.updated_at, r.deleted_at
+		FROM access_points ap
+		JOIN access_point_types apt ON ap.access_point_type_id = apt.id AND apt.deleted_at IS NULL
+		LEFT JOIN access_point_radios r ON ap.id = r.access_point_id AND r.deleted_at IS NULL
+		WHERE ap.id = $1 AND ap.deleted_at IS NULL`
+	rows, err := r.pool.Query(ctx, query, accessPointID)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to retrieve access point")
+		return
+	}
+	defer rows.Close()
 
-// 	apDetailed = &entity.AccessPointDetailed{}
-// 	apt := entity.AccessPointType{}
-// 	i := 0
+	apDetailed = &entity.AccessPointDetailed{}
+	apt := entity.AccessPointType{}
+	i := 0
 
-// 	for rows.Next() {
-// 		i++
-// 		r := &entity.AccessPointRadio{}
+	for rows.Next() {
+		i++
+		tmpRadio := tmpAccessPointRadio{}
 
-// 		err = rows.Scan(
-// 			&apDetailed.ID,
-// 			&apDetailed.Name,
-// 			&apDetailed.X, &apDetailed.Y, &apDetailed.Z,
-// 			&apDetailed.IsVirtual,
-// 			&apDetailed.AccessPointTypeID,
-// 			&apDetailed.FloorID,
-// 			&apDetailed.CreatedAt, &apDetailed.UpdatedAt, &apDetailed.DeletedAt,
+		err = rows.Scan(
+			&apDetailed.ID,
+			&apDetailed.Name,
+			&apDetailed.Color,
+			&apDetailed.X, &apDetailed.Y, &apDetailed.Z,
+			&apDetailed.IsVirtual,
+			&apDetailed.AccessPointTypeID,
+			&apDetailed.FloorID,
+			&apDetailed.CreatedAt, &apDetailed.UpdatedAt, &apDetailed.DeletedAt,
 
-// 			&apt.ID,
-// 			&apt.Name,
-// 			&apt.Model,
-// 			&apt.Color,
-// 			&apt.Z,
-// 			&apt.IsVirtual,
-// 			&apt.SiteID,
-// 			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
+			&apt.ID,
+			&apt.Name,
+			&apt.Model,
+			&apt.Color,
+			&apt.Z,
+			&apt.IsVirtual,
+			&apt.SiteID,
+			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 
-// 			&r.ID,
-// 			&r.Number,
-// 			&r.Channel,
-// 			&r.Channel2,
-// 			&r.ChannelWidth,
-// 			&r.WiFi,
-// 			&r.Power,
-// 			&r.Bandwidth,
-// 			&r.GuardInterval,
-// 			&r.IsActive,
-// 			&r.AccessPointID,
-// 			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
-// 		)
-// 		if err != nil {
-// 			log.Error().Err(err).Msg("failed to scan access point and related data")
-// 			return
-// 		}
-// 		apDetailed.AccessPointType = apt
-// 		apDetailed.Radios = append(apDetailed.Radios, r)
-// 	}
+			&tmpRadio.ID,
+			&tmpRadio.Number,
+			&tmpRadio.Channel,
+			&tmpRadio.Channel2,
+			&tmpRadio.ChannelWidth,
+			&tmpRadio.WiFi,
+			&tmpRadio.Power,
+			&tmpRadio.Bandwidth,
+			&tmpRadio.GuardInterval,
+			&tmpRadio.IsActive,
+			&tmpRadio.AccessPointID,
+			&tmpRadio.CreatedAt, &tmpRadio.UpdatedAt, &tmpRadio.DeletedAt,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to scan access point and related data")
+			return
+		}
+		apDetailed.AccessPointType = apt
 
-// 	if err = rows.Err(); err != nil {
-// 		log.Error().Err(err).Msg("rows iteration error")
-// 		return
-// 	}
+		if tmpRadio.ID != nil {
+			r := &entity.AccessPointRadio{
+				ID:            *tmpRadio.ID,
+				Number:        *tmpRadio.Number,
+				Channel:       *tmpRadio.Channel,
+				Channel2:      tmpRadio.Channel2,
+				ChannelWidth:  *tmpRadio.ChannelWidth,
+				WiFi:          *tmpRadio.WiFi,
+				Power:         *tmpRadio.Power,
+				Bandwidth:     *tmpRadio.Bandwidth,
+				GuardInterval: *tmpRadio.GuardInterval,
+				IsActive:      *tmpRadio.IsActive,
+				AccessPointID: *tmpRadio.AccessPointID,
+				CreatedAt:     *tmpRadio.CreatedAt,
+				UpdatedAt:     *tmpRadio.UpdatedAt,
+				DeletedAt:     tmpRadio.DeletedAt,
+			}
+			apDetailed.Radios = append(apDetailed.Radios, r)
+		}
+	}
 
-// 	if i == 0 {
-// 		log.Debug().Msg("access point was not found")
-// 		return nil, service.ErrNotFound
-// 	}
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("rows iteration error")
+		return
+	}
 
-// 	log.Debug().Msgf("retrieved access point with detailed info: %v", apDetailed)
-// 	return
-// }
+	if i == 0 {
+		log.Debug().Msg("access point was not found")
+		return nil, service.ErrNotFound
+	}
+
+	log.Debug().Msgf("retrieved access point with detailed info: %v", apDetailed)
+	return
+}
 
 func (r *accessPointRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, offset int) (accessPoints []*entity.AccessPoint, err error) {
 	query := `SELECT 
