@@ -19,6 +19,7 @@ type AccessPointDTO struct {
 	UpdatedAt         pgtype.Timestamptz  `json:"updatedAt"`
 	DeletedAt         *pgtype.Timestamptz `json:"deletedAt"`
 }
+
 type AccessPointDetailedDTO struct {
 	AccessPointDTO
 	AccessPointType AccessPointTypeDTO     `json:"accessPointType"`

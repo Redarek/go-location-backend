@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	http_dto "location-backend/internal/controller/http/dto"
+	"location-backend/internal/controller/http/mapper"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
@@ -28,16 +29,16 @@ const (
 )
 
 type accessPointHandler struct {
-	usecase *usecase.AccessPointUsecase
-	// aptMapper  *mapper.AccessPointMapper
+	usecase  *usecase.AccessPointUsecase
+	apMapper *mapper.AccessPointMapper
 	// aprtMapper *mapper.AccessPointRadioTemplateMapper
 }
 
 // Регистрирует новый handler
 func NewAccessPointHandler(usecase *usecase.AccessPointUsecase) *accessPointHandler {
 	return &accessPointHandler{
-		usecase: usecase,
-		// aptMapper:  &mapper.AccessPointMapper{},
+		usecase:  usecase,
+		apMapper: &mapper.AccessPointMapper{},
 		// aprtMapper: &mapper.AccessPointRadioTemplateMapper{},
 	}
 }
@@ -320,30 +321,10 @@ func (h *accessPointHandler) GetAccessPointsDetailed(c *fiber.Ctx) error {
 	}
 
 	// TODO mapping
-	// // Mapping entity -> http DTO
-	// var apdHttpDTOs []http_dto.AccessPointDetailedDTO
-	// for _, apdDomainDTO := range apdDomainDTOs {
-	// 	accessPointDetailedDTO := (http_dto.AccessPointDetailedDTO)(*apdDomainDTO)
-	// 	apdHttpDTOs = append(apdHttpDTOs, accessPointDetailedDTO)
-	// }
+	// Mapping entity -> http DTO
+	accessPointsDetailedDTO := h.apMapper.DetailedToHTTPList(accessPointsDetailed)
 
-	// // Mapping access point radio entity -> http DTO
-	// var aprHttpDTOs []*http_dto.AccessPointRadioDTO
-	// for _, aprHttpDTO := range accessPointsDetailed.Radios {
-	// 	aprHttpDTOs = append(aprHttpDTOs, (*http_dto.AccessPointRadioDTO)(aprHttpDTO))
-	// }
-
-	// accessPointDetailedDTO
-	// for _, accessPointDetailed := range accessPointsDetailed {
-	// 	// Mapping entity -> http DTO
-	// accessPointDetailedDTO := http_dto.AccessPointDetailedDTO{
-	// 	AccessPointDTO:  (http_dto.AccessPointDTO)(accessPointDetailed.AccessPoint),
-	// 	AccessPointType: (http_dto.AccessPointTypeDTO)(accessPointDetailed.AccessPointType),
-	// 	Radios:          aprHttpDTOs,
-	// }
-	// }
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointsDetailed})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointsDetailedDTO})
 }
 
 func (h *accessPointHandler) PatchUpdateAccessPoint(c *fiber.Ctx) error {

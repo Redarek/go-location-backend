@@ -205,7 +205,7 @@ func (r *accessPointRepo) GetOneDetailed(ctx context.Context, accessPointID uuid
 		apDetailed.AccessPointType = apt
 
 		if tmpRadio.ID != nil {
-			r := &entity.AccessPointRadio{
+			radio := &entity.AccessPointRadio{
 				ID:            *tmpRadio.ID,
 				Number:        *tmpRadio.Number,
 				Channel:       *tmpRadio.Channel,
@@ -221,7 +221,7 @@ func (r *accessPointRepo) GetOneDetailed(ctx context.Context, accessPointID uuid
 				UpdatedAt:     *tmpRadio.UpdatedAt,
 				DeletedAt:     tmpRadio.DeletedAt,
 			}
-			apDetailed.Radios = append(apDetailed.Radios, r)
+			apDetailed.Radios = append(apDetailed.Radios, radio)
 		}
 	}
 
@@ -348,7 +348,7 @@ func (r *accessPointRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID,
 		i++
 		apd := &entity.AccessPointDetailed{}
 		apt := entity.AccessPointType{}
-		r := &entity.AccessPointRadio{}
+		tmpRadio := tmpAccessPointRadio{}
 
 		err = rows.Scan(
 			&apd.ID,
@@ -369,32 +369,56 @@ func (r *accessPointRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID,
 			&apt.SiteID,
 			&apt.CreatedAt, &apt.UpdatedAt, &apt.DeletedAt,
 
-			&r.ID,
-			&r.Number,
-			&r.Channel,
-			&r.Channel2,
-			&r.ChannelWidth,
-			&r.WiFi,
-			&r.Power,
-			&r.Bandwidth,
-			&r.GuardInterval,
-			&r.IsActive,
-			&r.AccessPointID,
-			&r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
+			&tmpRadio.ID,
+			&tmpRadio.Number,
+			&tmpRadio.Channel,
+			&tmpRadio.Channel2,
+			&tmpRadio.ChannelWidth,
+			&tmpRadio.WiFi,
+			&tmpRadio.Power,
+			&tmpRadio.Bandwidth,
+			&tmpRadio.GuardInterval,
+			&tmpRadio.IsActive,
+			&tmpRadio.AccessPointID,
+			&tmpRadio.CreatedAt, &tmpRadio.UpdatedAt, &tmpRadio.DeletedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to scan access point and related data")
 			return
 		}
 
+		var radio *entity.AccessPointRadio
+		if tmpRadio.ID != nil {
+			radio = &entity.AccessPointRadio{
+				ID:            *tmpRadio.ID,
+				Number:        *tmpRadio.Number,
+				Channel:       *tmpRadio.Channel,
+				Channel2:      tmpRadio.Channel2,
+				ChannelWidth:  *tmpRadio.ChannelWidth,
+				WiFi:          *tmpRadio.WiFi,
+				Power:         *tmpRadio.Power,
+				Bandwidth:     *tmpRadio.Bandwidth,
+				GuardInterval: *tmpRadio.GuardInterval,
+				IsActive:      *tmpRadio.IsActive,
+				AccessPointID: *tmpRadio.AccessPointID,
+				CreatedAt:     *tmpRadio.CreatedAt,
+				UpdatedAt:     *tmpRadio.UpdatedAt,
+				DeletedAt:     tmpRadio.DeletedAt,
+			}
+		}
+
 		existingAP, exists := apdMap[apd.ID]
 		if exists {
 			// If access point is already in the map, append the new radio to its list
-			existingAP.Radios = append(existingAP.Radios, r)
+			if radio != nil {
+				existingAP.Radios = append(existingAP.Radios, radio)
+			}
 		} else {
 			// If it's a new access point, initialize and add to map
 			apd.AccessPointType = apt
-			apd.Radios = append(apd.Radios, r)
+			if radio != nil {
+				apd.Radios = append(apd.Radios, radio)
+			}
 			apdMap[apd.ID] = apd
 		}
 	}
