@@ -1,0 +1,140 @@
+package usecase
+
+import (
+	"context"
+	"errors"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/bcrypt"
+
+	"location-backend/internal/config"
+	"location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
+)
+
+type UserService interface {
+	// TODO GetByID(ctx context.Context, id uuid.UUID) entity.User
+
+	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
+	CreateUser(ctx context.Context, createUserDTO *dto.CreateUserDTO) (userID uuid.UUID, err error)
+}
+
+type UserUsecase struct {
+	userService UserService
+	// authorService UserService
+	// genreService  GenreService
+}
+
+// ? TEST. Изначально этого не было
+func NewUserUsecase(userService UserService) *UserUsecase {
+	return &UserUsecase{userService: userService}
+}
+
+// ? Нужен ли ctx *fiber.Ctx
+func (u *UserUsecase) Register(ctx context.Context, registerDTO *dto.RegisterUserDTO) (userID uuid.UUID, err error) {
+	_, err = u.userService.GetUserByName(ctx, registerDTO.Username)
+	if err != nil {
+		// If error except ErrNotFound
+		if !errors.Is(err, ErrNotFound) {
+			log.Error().Err(err).Msg("failed to check user existing")
+			return
+		}
+	} else { // If user already exists
+		return userID, ErrAlreadyExists
+	}
+
+	hash, err := hashPassword(registerDTO.Password)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to hash user password")
+		return
+	}
+
+	var createUserDTO dto.CreateUserDTO = dto.CreateUserDTO{
+		Username:     registerDTO.Username,
+		PasswordHash: hash,
+	}
+
+	userID, err = u.userService.CreateUser(ctx, &createUserDTO)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to create user")
+		return
+	}
+
+	log.Info().Msgf("user %v successfully registered", registerDTO.Username)
+
+	return
+}
+
+func (u *UserUsecase) Login(ctx context.Context, dto *dto.LoginUserDTO) (signedString string, err error) {
+	user, err := u.userService.GetUserByName(ctx, dto.Username)
+	if err != nil {
+		// Return ErrBadLogin if user not found
+		if errors.Is(err, ErrNotFound) {
+			return "", ErrBadLogin
+		} else {
+			log.Error().Err(err).Msg("failed to check user existing")
+			return
+		}
+	}
+
+	if !checkPasswordHash(dto.Password, user.PasswordHash) {
+		log.Info().Msg("wrong password")
+		return "", ErrBadLogin
+	}
+
+	// TODO already login err
+
+	claims := jwt.MapClaims{
+		"id":       user.ID,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 72).Unix(), // TODO вынести в конфиг
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	signedString, err = token.SignedString([]byte(config.App.JWTSecret))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to sign token")
+		return
+		// return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return
+	// return c.JSON(fiber.Map{"token": signedString})
+}
+
+func (u *UserUsecase) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
+	user, err = u.userService.GetUserByName(ctx, username)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get user")
+			return
+		}
+	}
+
+	return
+}
+
+// Хэширует пароль
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	// log.Debug().Msgf("Password: %v", password)
+	// log.Debug().Msgf("HashPassword: %v", bytes)
+	return string(bytes), err
+}
+
+// Сравнивает пароль и его хэш. Если верно – true, иначе – false.
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		log.Debug().Msgf("failed to compare hash and password (password: '%v' \t hash: '%v')", password, hash)
+	}
+
+	return err == nil
+}

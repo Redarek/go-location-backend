@@ -1,0 +1,72 @@
+package postgres
+
+import (
+	"context"
+	"errors"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog/log"
+
+	"location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
+	"location-backend/internal/domain/service"
+)
+
+type userRepo struct {
+	pool *pgxpool.Pool
+}
+
+func NewUserRepo(pool *pgxpool.Pool) *userRepo {
+	return &userRepo{pool: pool}
+}
+
+func (r *userRepo) Create(ctx context.Context, dto *dto.CreateUserDTO) (userID uuid.UUID, err error) {
+	query := `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`
+	row := r.pool.QueryRow(ctx, query,
+		dto.Username,
+		dto.PasswordHash,
+	)
+	var user entity.User
+	err = row.Scan(&user.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to scan user")
+		return uuid.UUID{}, err
+	}
+
+	return user.ID, nil
+}
+
+func (r *userRepo) GetOneByName(ctx context.Context, username string) (user *entity.User, err error) {
+	query := `SELECT 
+		id, 
+		username, 
+		password, 
+		created_at, 
+		updated_at, 
+		deleted_at 
+	FROM users 
+	WHERE username = $1 AND deleted_at IS NULL`
+	row := r.pool.QueryRow(ctx, query, username)
+
+	user = &entity.User{}
+	err = row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.PasswordHash,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.DeletedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			log.Info().Msgf("user %v not found", username)
+			return user, service.ErrNotFound
+		}
+		log.Error().Err(err).Msg("failed to scan user")
+		return
+	}
+	log.Debug().Msgf("retrieved user: %v", user)
+	return
+}

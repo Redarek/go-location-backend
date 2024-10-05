@@ -16,7 +16,7 @@ type postgres struct {
 // New initializes a new postgres connection.
 func New() Service {
 
-	pool, err := pgxpool.New(context.Background(), config.Postgres.URL)
+	pool, err := pgxpool.New(context.Background(), config.Postgres.Host) // было URL/ намеренная ошибка
 	if err != nil {
 		log.Fatal().Err(err).Msg("Unable to connect to postgres")
 	}
@@ -98,12 +98,12 @@ func New() Service {
         width_in_pixels INTEGER NOT NULL DEFAULT 0,
         height_in_pixels INTEGER NOT NULL DEFAULT 0,
         scale FLOAT NOT NULL CHECK (scale > 0),
-        building_id UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE ON UPDATE CASCADE,
         cell_size_meter FLOAT NOT NULL DEFAULT 0.25 CHECK (cell_size_meter > 0),
         north_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (north_area_indent_meter >= 0),
         south_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (south_area_indent_meter >= 0),
         west_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (west_area_indent_meter >= 0),
         east_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (east_area_indent_meter >= 0),
+        building_id UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE ON UPDATE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         deleted_at TIMESTAMPTZ
@@ -122,7 +122,7 @@ func New() Service {
         deleted_at TIMESTAMPTZ
     );
 
-    CREATE TABLE IF NOT EXISTS radio_templates (
+    CREATE TABLE IF NOT EXISTS access_point_radio_templates (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
@@ -151,7 +151,7 @@ func New() Service {
         deleted_at TIMESTAMPTZ
     );
 
-    CREATE TABLE IF NOT EXISTS radios (
+    CREATE TABLE IF NOT EXISTS access_point_radios (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         number SMALLINT NOT NULL, -- no need check parking / basement
         channel SMALLINT NOT NULL CHECK (channel > 0),
@@ -166,24 +166,30 @@ func New() Service {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         deleted_at TIMESTAMPTZ
     );
-
+    
     CREATE TABLE IF NOT EXISTS sensor_types (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        name VARCHAR NOT NULL,
-        color VARCHAR NOT NULL,
-        alias VARCHAR NOT NULL,
-        interface_0 VARCHAR NOT NULL,
-        interface_1 VARCHAR,
-        interface_2 VARCHAR,
-        rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
-        hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
-        vert_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
-        correction_factor_24 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
-        correction_factor_5 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
-        correction_factor_6 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
-        diagram JSONB,
+        name VARCHAR(128) NOT NULL,
+        model VARCHAR(128) NOT NULL,
+        color CHAR(6) NOT NULL,
+        z FLOAT NOT NULL,
         is_virtual BOOLEAN NOT NULL,
-        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL,
+        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS sensor_radio_templates (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        number SMALLINT NOT NULL, -- no need check parking / basement
+        channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
+        wifi VARCHAR(64) NOT NULL, -- TODO fix
+        power SMALLINT NOT NULL,
+        bandwidth VARCHAR(64) NOT NULL, -- TODO fix
+        guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE CASCADE ON UPDATE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         deleted_at TIMESTAMPTZ
@@ -195,12 +201,9 @@ func New() Service {
         x INTEGER,
         y INTEGER,
         z FLOAT,
-        mac VARCHAR UNIQUE NOT NULL,
-        ip VARCHAR NOT NULL,
+        mac VARCHAR(17) UNIQUE NOT NULL,
+        ip VARCHAR(64) NOT NULL,
         alias VARCHAR NOT NULL,
-        interface_0 VARCHAR NOT NULL,
-        interface_1 VARCHAR,
-        interface_2 VARCHAR,
         rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
         vert_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
@@ -211,6 +214,22 @@ func New() Service {
         diagram JSONB,
         sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE SET NULL,
         floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS sensor_radios (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        number SMALLINT NOT NULL, -- no need check parking / basement
+        channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel_width SMALLINT NOT NULL CHECK (channel_width > 0),
+        wifi VARCHAR(64) NOT NULL, -- TODO fix
+        power SMALLINT NOT NULL,
+        bandwidth VARCHAR(64) NOT NULL, -- TODO fix
+        guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        is_active BOOLEAN NOT NULL,
+        sensor_id UUID NOT NULL REFERENCES sensors(id) ON DELETE RESTRICT ON UPDATE CASCADE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
         deleted_at TIMESTAMPTZ

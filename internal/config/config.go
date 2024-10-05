@@ -4,37 +4,35 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
+
+	"location-backend/pkg/client/postgres"
 )
 
 var (
-	Postgres PostgresConfig
+	Postgres postgres.PostgresConfig
 	App      AppConfig
 )
 
-type PostgresConfig struct {
-	URL string `env:"DB_URL,required"` // docker run --name location-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres -p 5432:5432 -d postgres
+// TODO
+type Config struct {
+	IsDebug bool `env:"IS_DEBUG" env-default:"false"`
 }
 
-type AppConfig struct {
-	Port         string `env:"PORT,required"`
-	JWTSecret    string `env:"JWT_SECRET,required"`
-	IsProduction bool   `env:"PRODUCTION,required"`
-	ClientURL    string `env:"CLIENT_URL,required"`
-}
+func LoadConfig() {
+	// Load from .env file
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal().Err(err).Msg("error loading .env file")
+	}
 
-func Init() {
-	if err := godotenv.Load(); err != nil {
-		log.Error().Err(err).Msg("Error loading .env file")
+	// Parse environment variables
+	if err := env.Parse(&Postgres); err != nil {
+		log.Fatal().Err(err).Msg("failed to parse PostgreSQL config")
 	}
 
 	if err := env.Parse(&App); err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err).Msg("failed to parse App config")
 	}
-	log.Debug().Msgf("%+v\n", App)
 
-	if err := env.Parse(&Postgres); err != nil {
-		log.Error().Err(err)
-	}
-	log.Debug().Msgf("%+v\n", Postgres)
-
+	log.Info().Msg("configuration loaded successfully")
 }

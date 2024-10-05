@@ -1,0 +1,324 @@
+package postgres
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	// "github.com/jackc/pgx/v5"
+	// "github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog/log"
+)
+
+// type Client interface {
+// 	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+// 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+// 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+// 	Begin(ctx context.Context) (pgx.Tx, error)
+// }
+
+func ConnectPostgres(cfg *PostgresConfig) (*pgxpool.Pool, error) {
+	dsn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?connect_timeout=10&pool_max_conns=20&client_encoding=UTF8", // TODO move to .env
+		cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database,
+	)
+
+	// Create a connection pool
+	pool, err := pgxpool.New(context.Background(), dsn)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to create connection pool")
+		return nil, err
+	}
+
+	// Optional: Check the connection pool
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // TODO move 5 to conf var
+	defer cancel()
+
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatal().Err(err).Msg("unable to ping the connection pool")
+		return nil, err
+	}
+
+	log.Info().Msg("Successfully connected to the PostgreSQL database")
+
+	// TODO перенести в миграции!
+	err = syncTables(pool)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to sync tables")
+	}
+
+	return pool, nil
+}
+
+// SyncTables synchronize database tables.
+func syncTables(pool *pgxpool.Pool) (err error) {
+	query := `
+    CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        username VARCHAR(64) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL, -- TODO уточнить длину hash
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS roles (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(128) UNIQUE NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS user_roles (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ,
+        UNIQUE (user_id, role_id)
+    );
+
+
+    CREATE TABLE IF NOT EXISTS refresh_tokens (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        token VARCHAR(1500) NOT NULL,
+        expiry TIMESTAMPTZ NOT NULL,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+    );
+
+
+    CREATE TABLE IF NOT EXISTS sites (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        description VARCHAR(2000),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE SET NULL, -- TODO fix behavior
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS buildings (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        description VARCHAR(2000), -- TODO fix struct
+        country VARCHAR(128) NOT NULL, -- NN??
+        city VARCHAR(128) NOT NULL,
+        address VARCHAR(512) NOT NULL,
+        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE, -- TODO fix on delete
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS floors (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(128) NOT NULL,
+        number SMALLINT NOT NULL,
+        image VARCHAR(1024),
+        heatmap VARCHAR(1024),
+        width_in_pixels INTEGER NOT NULL DEFAULT 0,
+        height_in_pixels INTEGER NOT NULL DEFAULT 0,
+        scale FLOAT NOT NULL CHECK (scale > 0) DEFAULT 0.1,
+        cell_size_meter FLOAT NOT NULL DEFAULT 0.25 CHECK (cell_size_meter > 0),
+        north_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (north_area_indent_meter >= 0),
+        south_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (south_area_indent_meter >= 0),
+        west_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (west_area_indent_meter >= 0),
+        east_area_indent_meter FLOAT NOT NULL DEFAULT 0 CHECK (east_area_indent_meter >= 0),
+        building_id UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS access_point_types (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(128) NOT NULL,
+        model VARCHAR(128) NOT NULL,
+        color CHAR(6) NOT NULL,
+        z FLOAT NOT NULL,
+        is_virtual BOOLEAN NOT NULL,
+        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS access_point_radio_templates (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        number SMALLINT NOT NULL, -- no need check parking / basement
+        channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
+        wifi VARCHAR(64) NOT NULL, -- TODO fix
+        power SMALLINT NOT NULL,
+        bandwidth VARCHAR(64) NOT NULL, -- TODO fix
+        guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        is_active BOOLEAN NOT NULL,
+        access_point_type_id UUID NOT NULL REFERENCES access_point_types(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS access_points (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(128) NOT NULL,
+        color CHAR(6),
+        x INTEGER,
+        y INTEGER,
+        z FLOAT,
+        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        access_point_type_id UUID NOT NULL REFERENCES access_point_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+        is_virtual BOOLEAN NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS access_point_radios (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        number SMALLINT NOT NULL, -- no need check parking / basement
+        channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
+        wifi VARCHAR(64) NOT NULL, -- TODO fix
+        power SMALLINT NOT NULL,
+        bandwidth VARCHAR(64) NOT NULL, -- TODO fix
+        guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        is_active BOOLEAN NOT NULL,
+        access_point_id UUID NOT NULL REFERENCES access_points(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+    
+    CREATE TABLE IF NOT EXISTS sensor_types (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(128) NOT NULL,
+        model VARCHAR(128) NOT NULL,
+        color CHAR(6) NOT NULL,
+        z FLOAT NOT NULL,
+        is_virtual BOOLEAN NOT NULL,
+        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS sensor_radio_templates (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        number SMALLINT NOT NULL, -- no need check parking / basement
+        channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
+        wifi VARCHAR(64) NOT NULL, -- TODO fix
+        power SMALLINT NOT NULL,
+        bandwidth VARCHAR(64) NOT NULL, -- TODO fix
+        guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        is_active BOOLEAN NOT NULL,
+        sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS sensors (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR NOT NULL,
+        color CHAR(6),
+        x INTEGER,
+        y INTEGER,
+        z FLOAT,
+        mac VARCHAR(17) UNIQUE NOT NULL,
+        ip VARCHAR(64) NOT NULL,
+        rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+        hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
+        vert_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
+        correction_factor_24 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+        correction_factor_5 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+        correction_factor_6 FLOAT NOT NULL DEFAULT 0, -- TODO: add check
+        is_virtual BOOLEAN NOT NULL,
+        diagram JSONB,
+        sensor_type_id UUID NOT NULL REFERENCES sensor_types(id) ON DELETE SET NULL,
+        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS sensor_radios (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        number SMALLINT NOT NULL, -- no need check parking / basement
+        channel SMALLINT NOT NULL CHECK (channel > 0),
+        channel2 SMALLINT CHECK (channel > 0),
+        channel_width VARCHAR(32) NOT NULL,
+        wifi VARCHAR(64) NOT NULL, -- TODO fix
+        power SMALLINT NOT NULL,
+        bandwidth VARCHAR(64) NOT NULL, -- TODO fix
+        guard_interval SMALLINT NOT NULL CHECK (guard_interval > 0),
+        is_active BOOLEAN NOT NULL,
+        sensor_id UUID NOT NULL REFERENCES sensors(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS wall_types (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR NOT NULL,
+        color VARCHAR NOT NULL,
+        attenuation_24 FLOAT NOT NULL CHECK (attenuation_24 > 0),
+        attenuation_5 FLOAT NOT NULL CHECK (attenuation_5 > 0),
+        attenuation_6 FLOAT NOT NULL CHECK (attenuation_6 > 0),
+        thickness FLOAT NOT NULL CHECK (thickness > 0),
+        site_id UUID NOT NULL REFERENCES sites(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS walls (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        x1 INTEGER NOT NULL,
+        y1 INTEGER NOT NULL,
+        x2 INTEGER NOT NULL,
+        y2 INTEGER NOT NULL,
+        wall_type_id UUID NOT NULL REFERENCES wall_types(id) ON DELETE SET NULL,
+        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+        deleted_at TIMESTAMPTZ
+    );
+
+    -- Активация расширения для генерации UUID
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;`
+
+	_, err = pool.Exec(context.Background(), query)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error syncing tables")
+		return err
+	}
+
+	log.Info().Msg("Tables synced successfully")
+	return nil
+}
+
+// // Health pings database
+// func (p *postgres) Health() map[string]string {
+// 	// Creating a context with a timeout ensures that the health check does not hang indefinitely.
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	// Ping the database to check connectivity.
+// 	err := p.Ping(ctx)
+// 	if err != nil {
+// 		log.Fatal().Err(err).Msg("Database is down!")
+// 	}
+
+// 	return map[string]string{
+// 		"message": "It's healthy",
+// 	}
+// }
