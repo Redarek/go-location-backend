@@ -228,12 +228,12 @@ func syncTables(pool *pgxpool.Pool) (err error) {
     CREATE TABLE IF NOT EXISTS sensors (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR NOT NULL,
+        color CHAR(6),
         x INTEGER,
         y INTEGER,
         z FLOAT,
         mac VARCHAR(17) UNIQUE NOT NULL,
         ip VARCHAR(64) NOT NULL,
-        alias VARCHAR NOT NULL,
         rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
         vert_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check

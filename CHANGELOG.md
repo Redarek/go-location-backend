@@ -121,6 +121,7 @@
     - `AccessPoint`: аналогично Building
     - `AccessPointRadio`: аналогично Building
     - `SensorType`: аналогично Building
+    - `Sensor`: аналогично Building
         
 5. Добавлены/обновлены примеры ответов сервера в Postman для слудющих сценариев:
     - `Health`
@@ -257,6 +258,7 @@
     `AccessPoint`: аналогично Wall (+ get list detailed)
     `AccessPointRadio`: аналогично Wall (без detailed)
     `SensorType`: аналогично Wall (без detailed)
+    `Sensor`: аналогично Wall (radios всегда null)
 6. Пинг базы данных вынесен в репозиторий.
 7. Добавлен слой middleware (проверка авторизации)
 8. Создана единая точка маршрутизации.
@@ -278,7 +280,8 @@
 24. Маршрут `/radio` **заменён** на `/ap-radio`.
 25. Добавлена необязательная для заполнения колонка `color` для таблиц `access_points` и `sensors`.
 26. Восстановлены маршруты для `SensorType`: создание, получение по ID, получение списка,  мягкое удаление, восстановление, patch update.
-19. Добавлены новые баги :3
+27. Восстановлены маршруты для `Sensor`: создание, получение по ID, получение списка, получение детализированного объекта по ID, получения списка детализированных объектов,  мягкое удаление, восстановление, patch update. **На текущий момент поле `radios` всегда `null`!**
+28. Добавлены новые баги :3
 
 ## Миграции:
 
@@ -402,6 +405,11 @@ ALTER COLUMN z SET NOT NULL;
 
 Изменение таблицы `sensors`:
 ```sql
+ALTER TABLE sensors
+DROP COLUMN interface_0,
+DROP COLUMN interface_1,
+DROP COLUMN interface_2;
+
 ALTER TABLE sensors
 DROP COLUMN alias;
 ```
