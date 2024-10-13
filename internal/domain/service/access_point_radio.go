@@ -14,7 +14,7 @@ import (
 type AccessPointRadioRepo interface {
 	Create(ctx context.Context, createAccessPointRadioDTO *dto.CreateAccessPointRadioDTO) (accessPointRadioID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointRadioID uuid.UUID) (accessPointRadio *entity.AccessPointRadio, err error)
-	GetAll(ctx context.Context, accessPointTypeID uuid.UUID, limit, offset int) (accessPointRadios []*entity.AccessPointRadio, err error)
+	GetAll(ctx context.Context, accessPointID uuid.UUID, limit, offset int) (accessPointRadios []*entity.AccessPointRadio, err error)
 
 	Update(ctx context.Context, updateAccessPointRadioDTO *dto.PatchUpdateAccessPointRadioDTO) (err error)
 
