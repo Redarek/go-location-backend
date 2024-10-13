@@ -132,6 +132,54 @@ func (r *sensorRepo) GetOne(ctx context.Context, sensorID uuid.UUID) (sensor *en
 	return
 }
 
+func (r *sensorRepo) GetOneByMAC(ctx context.Context, mac string) (sensor *entity.Sensor, err error) {
+	query := `SELECT 
+			id, 
+			name, 
+			color,
+			x, y, z,
+			mac,
+			ip,
+			rx_ant_gain,
+			hor_rotation_offset, vert_rotation_offset,
+			correction_factor_24, correction_factor_5, correction_factor_6,
+			is_virtual,
+			diagram,
+			sensor_type_id,
+			floor_id,
+			created_at, updated_at, deleted_at
+		FROM sensors WHERE mac = $1 AND deleted_at IS NULL`
+	row := r.pool.QueryRow(ctx, query, mac)
+
+	sensor = &entity.Sensor{}
+	err = row.Scan(
+		&sensor.ID,
+		&sensor.Name,
+		&sensor.Color,
+		&sensor.X, &sensor.Y, &sensor.Z,
+		&sensor.MAC,
+		&sensor.IP,
+		&sensor.RxAntGain,
+		&sensor.HorRotationOffset, &sensor.VertRotationOffset,
+		&sensor.CorrectionFactor24, &sensor.CorrectionFactor5, &sensor.CorrectionFactor6,
+		&sensor.IsVirtual,
+		&sensor.Diagram,
+		&sensor.SensorTypeID,
+		&sensor.FloorID,
+		&sensor.CreatedAt, &sensor.UpdatedAt, &sensor.DeletedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			log.Info().Err(err).Msgf("no sensor found with MAC %v", mac)
+			return nil, service.ErrNotFound
+		}
+		log.Error().Err(err).Msg("failed to retrieve sensor")
+		return
+	}
+	log.Debug().Msgf("retrieved sensor: %v", sensor)
+	return
+}
+
 func (r *sensorRepo) GetOneDetailed(ctx context.Context, sensorID uuid.UUID) (sensorDetailed *entity.SensorDetailed, err error) {
 	query := `SELECT
 			s.id,

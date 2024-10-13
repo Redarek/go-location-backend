@@ -14,6 +14,7 @@ import (
 type SensorRepo interface {
 	Create(ctx context.Context, createSensorDTO *dto.CreateSensorDTO) (sensorID uuid.UUID, err error)
 	GetOne(ctx context.Context, sensorID uuid.UUID) (sensor *entity.Sensor, err error)
+	GetOneByMAC(ctx context.Context, mac string) (sensor *entity.Sensor, err error)
 	GetOneDetailed(ctx context.Context, sensorID uuid.UUID) (sensorDetailed *entity.SensorDetailed, err error)
 	GetAll(ctx context.Context, floorID uuid.UUID, limit, offset int) (sensors []*entity.Sensor, err error)
 	GetAllDetailed(ctx context.Context, floorID uuid.UUID, limit, offset int) (sensorsDetailed []*entity.SensorDetailed, err error)
@@ -50,6 +51,19 @@ func (s *sensorService) CreateSensor(ctx context.Context, createSensorDTO *dto.C
 
 func (s *sensorService) GetSensor(ctx context.Context, sensorID uuid.UUID) (sensor *entity.Sensor, err error) {
 	sensor, err = s.sensorRepo.GetOne(ctx, sensorID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return sensor, usecase.ErrNotFound
+		}
+
+		return
+	}
+
+	return
+}
+
+func (s *sensorService) GetSensorByMAC(ctx context.Context, mac string) (sensor *entity.Sensor, err error) {
+	sensor, err = s.sensorRepo.GetOneByMAC(ctx, mac)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return sensor, usecase.ErrNotFound

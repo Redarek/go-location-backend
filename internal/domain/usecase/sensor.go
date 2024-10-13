@@ -14,6 +14,7 @@ import (
 type SensorService interface {
 	CreateSensor(ctx context.Context, createDTO *dto.CreateSensorDTO) (sensorID uuid.UUID, err error)
 	GetSensor(ctx context.Context, sensorID uuid.UUID) (sensor *entity.Sensor, err error)
+	GetSensorByMAC(ctx context.Context, mac string) (sensor *entity.Sensor, err error)
 	GetSensorDetailed(ctx context.Context, getDTO dto.GetSensorDetailedDTO) (sensorDetailed *entity.SensorDetailed, err error)
 	GetSensors(ctx context.Context, getDTO dto.GetSensorsDTO) (sensors []*entity.Sensor, err error)
 	GetSensorsDetailed(ctx context.Context, dto dto.GetSensorsDetailedDTO) (sensorsDetailed []*entity.SensorDetailed, err error)
@@ -64,6 +65,17 @@ func (u *SensorUsecase) CreateSensor(ctx context.Context, createDTO *dto.CreateS
 
 		log.Error().Err(err).Msg("failed to check sensor type existing")
 		return
+	}
+
+	_, err = u.sensorService.GetSensorByMAC(ctx, createDTO.MAC)
+	if err != nil {
+		if !errors.Is(err, ErrNotFound) {
+			log.Error().Err(err).Msg("failed to check sensor MAC existing")
+			return
+		}
+	} else {
+		log.Info().Err(err).Msg("failed to create sensor: the sensor with provided MAC already exists")
+		return sensorID, ErrAlreadyExists
 	}
 
 	sensorID, err = u.sensorService.CreateSensor(ctx, createDTO)

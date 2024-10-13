@@ -96,6 +96,16 @@ func (h *sensorHandler) CreateSensor(ctx *fiber.Ctx) error {
 			))
 		}
 
+		if errors.Is(err, usecase.ErrAlreadyExists) {
+			log.Info().Err(err).Msg("the sensor with provided 'mac' already exists")
+			return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+				fiber.StatusBadRequest,
+				"Invalid request body",
+				"The sensor with provided 'mac' already exists",
+				nil,
+			))
+		}
+
 		log.Error().Err(err).Msg("an unexpected error has occurred while trying to create the sensor")
 		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
 			fiber.StatusInternalServerError,
