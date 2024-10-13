@@ -20,8 +20,9 @@ type RepositoryComposite struct {
 	accessPointRepo              service.AccessPointRepo
 	accessPointRadioRepo         service.AccessPointRadioRepo
 
-	sensorTypeRepo service.SensorTypeRepo
-	sensorRepo     service.SensorRepo
+	sensorTypeRepo          service.SensorTypeRepo
+	sensorRadioTemplateRepo service.SensorRadioTemplateRepo
+	sensorRepo              service.SensorRepo
 }
 
 func NewRepositoryComposite(composite *PostgresComposite) (repositoryComposite *RepositoryComposite) {
@@ -40,7 +41,8 @@ func NewRepositoryComposite(composite *PostgresComposite) (repositoryComposite *
 		accessPointRepo:              repository.NewAccessPointRepo(composite.pool),
 		accessPointRadioRepo:         repository.NewAccessPointRadioRepo(composite.pool),
 
-		sensorTypeRepo: repository.NewSensorTypeRepo(composite.pool),
-		sensorRepo:     repository.NewSensorRepo(composite.pool),
+		sensorTypeRepo:          repository.NewSensorTypeRepo(composite.pool),
+		sensorRadioTemplateRepo: repository.NewSensorRadioTemplateRepo(composite.pool),
+		sensorRepo:              repository.NewSensorRepo(composite.pool),
 	}
 }
