@@ -9,15 +9,17 @@ import (
 	"github.com/rs/zerolog/log"
 
 	http_dto "location-backend/internal/controller/http/dto"
+	"location-backend/internal/controller/http/mapper"
 	domain_dto "location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
 
 const (
-	createSiteURL = "/"
-	getSiteURL    = "/"
-	getSitesURL   = "/all"
+	createSiteURL       = "/"
+	getSiteURL          = "/"
+	getSitesURL         = "/all"
+	getSitesDetailedURL = "/all/detailed"
 
 	patchUpdateSiteURL = "/"
 
@@ -26,12 +28,16 @@ const (
 )
 
 type siteHandler struct {
-	usecase *usecase.SiteUsecase
+	usecase    *usecase.SiteUsecase
+	siteMapper *mapper.SiteMapper
 }
 
 // Регистрирует новый handler
 func NewSiteHandler(usecase *usecase.SiteUsecase) *siteHandler {
-	return &siteHandler{usecase: usecase}
+	return &siteHandler{
+		usecase:    usecase,
+		siteMapper: &mapper.SiteMapper{},
+	}
 }
 
 // Регистрирует маршруты для user
@@ -40,6 +46,7 @@ func (h *siteHandler) Register(r *fiber.Router) fiber.Router {
 	router.Post(createSiteURL, h.CreateSite)
 	router.Get(getSiteURL, h.GetSite)
 	router.Get(getSitesURL, h.GetSites)
+	router.Get(getSitesDetailedURL, h.GetSitesDetailed)
 
 	router.Patch(patchUpdateSiteURL, h.PatchUpdateSite)
 
@@ -196,6 +203,57 @@ func (h *siteHandler) GetSites(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sitesDTO})
+}
+
+func (h *siteHandler) GetSitesDetailed(c *fiber.Ctx) error {
+	// Получение ID пользователя из JWT
+	userID, err := GetUserIDFromJWT(c)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to parse user ID from JWT")
+		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Unable to retrieve user information due to an issue with your authentication token",
+			"",
+			nil,
+		))
+	}
+
+	// TODO реализовать передачу page и size
+	var dto http_dto.GetSitesDetailedDTO = http_dto.GetSitesDetailedDTO{
+		UserID: userID,
+		Page:   1,
+		Size:   100,
+	}
+
+	// TODO validate
+
+	// Mapping http DTO -> domain DTO
+	domainDTO := domain_dto.GetSitesDTO{
+		UserID: dto.UserID,
+		Limit:  dto.Size,
+		Offset: (dto.Page - 1) * dto.Size,
+	}
+
+	sitesDetailed, err := h.usecase.GetSitesDetailed(context.Background(), domainDTO)
+	if err != nil {
+		if errors.Is(err, usecase.ErrNotFound) {
+			c.Status(fiber.StatusNoContent)
+			return nil
+		}
+
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to retrieve the site")
+		return c.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to retrieve the site",
+			"",
+			nil,
+		))
+	}
+
+	// Mapping entity -> http DTO
+	sitesDetailedDTO := h.siteMapper.DetailedToHTTPList(sitesDetailed)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sitesDetailedDTO})
 }
 
 func (h *siteHandler) PatchUpdateSite(c *fiber.Ctx) error {

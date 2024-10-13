@@ -21,11 +21,24 @@ type CreateSiteDTO struct {
 	UserID      uuid.UUID `db:"user_id"`
 }
 
-type GetSitesDTO struct {
-	UserID uuid.UUID `db:"id"`
+type GetSiteDetailedDTO struct {
+	ID     uuid.UUID `db:"id"`
 	Limit  int
 	Offset int
 }
+
+type GetSitesDTO struct {
+	UserID uuid.UUID `db:"user_id"`
+	Limit  int
+	Offset int
+}
+
+// ? Возможно удалить
+// type GetSitesDetailedDTO struct {
+// 	UserID uuid.UUID `db:"user_id"`
+// 	Limit  int
+// 	Offset int
+// }
 
 type PatchUpdateSiteDTO struct {
 	ID          uuid.UUID `db:"id"`

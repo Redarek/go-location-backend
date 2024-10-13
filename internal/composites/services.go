@@ -31,7 +31,7 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		healthService:   service.NewHealthService(composite.healthRepo),
 		userService:     service.NewUserService(composite.userRepo),
 		roleService:     service.NewRoleService(composite.roleRepo),
-		siteService:     service.NewSiteService(composite.siteRepo),
+		siteService:     service.NewSiteService(composite.siteRepo, composite.buildingRepo, composite.wallTypeRepo, composite.accessPointTypeRepo, composite.sensorTypeRepo),
 		buildingService: service.NewBuildingService(composite.buildingRepo),
 		floorService:    service.NewFloorService(composite.floorRepo),
 		wallTypeService: service.NewWallTypeService(composite.wallTypeRepo),

@@ -55,6 +55,12 @@
             - `400 BadRequest`: невозможно получить ID пользователя из JWT
             - `401 Unauthorized`: ошибка авторизации
             - `500 InternalServerError`: ошибка сервера
+        - `Get list detailed`
+            - `200 OK`: sites найдены
+            - `204 NoContent`: таких sites не существует
+            - `400 BadRequest`: невозможно получить ID пользователя из JWT
+            - `401 Unauthorized`: ошибка авторизации
+            - `500 InternalServerError`: ошибка сервера
         - `Patch update`
             - `200 OK`: site успешно обновлён
             - `400 BadRequest`: переданы некорректные данные
@@ -172,6 +178,8 @@
             - `fail wrong id`: статус 400 (добавлен)
         - `Get list`
             - `success`: статус 200 (обновлён)
+        - `Get list detailed`
+            - `success`: статус 200 (обновлён)
         - `Patch update`
             - `success`: статус 200 (обновлён)
             - `fail not updated`: статус 400 (добавлен)
@@ -267,7 +275,7 @@
 7. Добавлен слой middleware (проверка авторизации)
 8. Создана единая точка маршрутизации.
 9. Добавлены маршруты для `Role`: создание, получение по ID, получение по названию.
-10. Восстановлены маршруты для `Site`: создание, получение по ID, получение списка, мягкое удаление, восстановление, patch update.
+10. Восстановлены маршруты для `Site`: создание, получение по ID, получение списка, получение детализированного списка, мягкое удаление, восстановление, patch update.
 11. Восстановлены маршруты для `Floor`: создание, получение по ID, получение списка, мягкое удаление, восстановление, patch update.
 12. Для `Floor` добавлена возможность **создавать** следующие поля: `cell_size_meter`, `north_area_indent_meter`, `south_area_indent_meter`, `west_area_indent_meter`, `east_area_indent_meter`. Указанные поля имеют значение по умолчанию или могут быть NULL, т.е. их указание необязательно при создании таблицы.
 13. Для `Floor` добавлена возможность **обновлять** следующие поля: `cell_size_meter`, `north_area_indent_meter`, `south_area_indent_meter`, `west_area_indent_meter`, `east_area_indent_meter`.
@@ -301,7 +309,7 @@
 
 ## Миграции:
 
-Обновление колонки `scale` тыблицы `floors`:
+Обновление колонки `scale` таблицы `floors`:
 ```sql
 ALTER TABLE floors
 ALTER COLUMN scale SET DEFAULT 0.1;

@@ -18,8 +18,8 @@ type Site struct {
 type SiteDetailed struct {
 	Site
 	Buildings        []*Building
-	AccessPointTypes []*AccessPointType
 	WallTypes        []*WallType
+	AccessPointTypes []*AccessPointType
 	SensorTypes      []*SensorType
 }
 

@@ -14,8 +14,9 @@ import (
 type SiteService interface {
 	CreateSite(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
 	GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
+	GetSiteDetailed(ctx context.Context, getDTO dto.GetSiteDetailedDTO) (siteDetailed *entity.SiteDetailed, err error)
 	GetSites(ctx context.Context, getSiteDTO dto.GetSitesDTO) (sites []*entity.Site, err error)
-	// TODO get site list detailed
+	GetSitesDetailed(ctx context.Context, getDTO dto.GetSitesDTO) (sitesDetailed []*entity.SiteDetailed, err error)
 
 	UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.PatchUpdateSiteDTO) (err error)
 
@@ -57,6 +58,20 @@ func (u *SiteUsecase) GetSite(ctx context.Context, siteID uuid.UUID) (site *enti
 	return
 }
 
+func (u *SiteUsecase) GetSiteDetailed(ctx context.Context, getDTO dto.GetSiteDetailedDTO) (siteDetailed *entity.SiteDetailed, err error) {
+	siteDetailed, err = u.siteService.GetSiteDetailed(ctx, getDTO)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get site detailed")
+			return
+		}
+	}
+
+	return
+}
+
 func (u *SiteUsecase) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites []*entity.Site, err error) {
 	sites, err = u.siteService.GetSites(ctx, dto)
 	if err != nil {
@@ -64,6 +79,20 @@ func (u *SiteUsecase) GetSites(ctx context.Context, dto dto.GetSitesDTO) (sites 
 			return nil, ErrNotFound
 		} else {
 			log.Error().Err(err).Msg("failed to get sites")
+			return
+		}
+	}
+
+	return
+}
+
+func (u *SiteUsecase) GetSitesDetailed(ctx context.Context, getDTO dto.GetSitesDTO) (sitesDetailed []*entity.SiteDetailed, err error) {
+	sitesDetailed, err = u.siteService.GetSitesDetailed(ctx, getDTO)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNotFound
+		} else {
+			log.Error().Err(err).Msg("failed to get sites detailed")
 			return
 		}
 	}
