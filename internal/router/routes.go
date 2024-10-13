@@ -77,6 +77,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	sensor := v1.Group("/sensor", middleware.Auth)
 	handlerComposite.SensorHandler.Register(&sensor)
+
+	sensorRadio := v1.Group("/sensor-radio", middleware.Auth)
+	handlerComposite.SensorRadioHandler.Register(&sensorRadio)
 }
 
 // import (

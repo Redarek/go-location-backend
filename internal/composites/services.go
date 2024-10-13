@@ -23,6 +23,7 @@ type ServiceComposite struct {
 	sensorTypeService          usecase.SensorTypeService
 	sensorRadioTemplateService usecase.SensorRadioTemplateService
 	sensorService              usecase.SensorService
+	sensorRadioService         usecase.SensorRadioService
 }
 
 func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *ServiceComposite) {
@@ -44,5 +45,6 @@ func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *Serv
 		sensorTypeService:          service.NewSensorTypeService(composite.sensorTypeRepo),
 		sensorRadioTemplateService: service.NewSensorRadioTemplateService(composite.sensorRadioTemplateRepo),
 		sensorService:              service.NewSensorService(composite.sensorRepo, composite.sensorTypeRepo),
+		sensorRadioService:         service.NewSensorRadioService(composite.sensorRadioRepo),
 	}
 }
