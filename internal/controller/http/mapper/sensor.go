@@ -7,7 +7,7 @@ import (
 )
 
 type SensorMapper struct {
-	// aprMapper *SensorRadioMapper
+	sensorRadioMapper *SensorRadioMapper
 }
 
 // TODO убрать зависимость от entity
@@ -37,9 +37,7 @@ func (m *SensorMapper) DetailedToHTTP(domain *entity.SensorDetailed) (httpDTO *h
 			DeletedAt:          domain.DeletedAt,
 		},
 		SensorType: (http_dto.SensorTypeDTO)(domain.SensorType),
-		// Radios:          m.aprMapper.EntitiesDomainToHTTP(domain.Radios),
-		// TODO fix
-		Radios: nil,
+		Radios:     m.sensorRadioMapper.EntitiesDomainToHTTP(domain.Radios),
 	}
 
 	return

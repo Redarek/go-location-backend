@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	// "github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
@@ -27,23 +27,22 @@ func NewSensorRepo(pool *pgxpool.Pool) *sensorRepo {
 	return &sensorRepo{pool: pool}
 }
 
-// TODO fix
-// type tmpSensorRadio struct {
-// 	ID            *uuid.UUID          `db:"id"`
-// 	Number        *int                `db:"number"`
-// 	Channel       *int                `db:"channel"`
-// 	Channel2      *int                `db:"channel2"`
-// 	ChannelWidth  *string             `db:"channel_width"`
-// 	WiFi          *string             `db:"wifi"`
-// 	Power         *int                `db:"power"`
-// 	Bandwidth     *string             `db:"bandwidth"`
-// 	GuardInterval *int                `db:"guard_interval"`
-// 	IsActive      *bool               `db:"is_active"`
-// 	SensorID *uuid.UUID          `db:"access_point_id"`
-// 	CreatedAt     *pgtype.Timestamptz `db:"created_at"`
-// 	UpdatedAt     *pgtype.Timestamptz `db:"updated_at"`
-// 	DeletedAt     *pgtype.Timestamptz `db:"deleted_at"`
-// }
+type tmpSensorRadio struct {
+	ID            *uuid.UUID          `db:"id"`
+	Number        *int                `db:"number"`
+	Channel       *int                `db:"channel"`
+	Channel2      *int                `db:"channel2"`
+	ChannelWidth  *string             `db:"channel_width"`
+	WiFi          *string             `db:"wifi"`
+	Power         *int                `db:"power"`
+	Bandwidth     *string             `db:"bandwidth"`
+	GuardInterval *int                `db:"guard_interval"`
+	IsActive      *bool               `db:"is_active"`
+	SensorID      *uuid.UUID          `db:"sensor_id"`
+	CreatedAt     *pgtype.Timestamptz `db:"created_at"`
+	UpdatedAt     *pgtype.Timestamptz `db:"updated_at"`
+	DeletedAt     *pgtype.Timestamptz `db:"deleted_at"`
+}
 
 func (r *sensorRepo) Create(ctx context.Context, createSensorDTO *dto.CreateSensorDTO) (sensorID uuid.UUID, err error) {
 	query := `INSERT INTO sensors (
@@ -161,8 +160,7 @@ func (r *sensorRepo) GetOneDetailed(ctx context.Context, sensorID uuid.UUID) (se
 
 			r.id,
 			r.number,
-			r.channel,
-			r.channel2,
+			r.channel, r.channel2,
 			r.channel_width,
 			r.wifi,
 			r.power,
@@ -188,7 +186,7 @@ func (r *sensorRepo) GetOneDetailed(ctx context.Context, sensorID uuid.UUID) (se
 
 	for rows.Next() {
 		i++
-		// tmpRadio := tmpSensorRadio{}
+		tmpRadio := tmpSensorRadio{}
 
 		err = rows.Scan(
 			&sensorDetailed.ID,
@@ -215,19 +213,17 @@ func (r *sensorRepo) GetOneDetailed(ctx context.Context, sensorID uuid.UUID) (se
 			&sensorType.SiteID,
 			&sensorType.CreatedAt, &sensorType.UpdatedAt, &sensorType.DeletedAt,
 
-			// TODO fix
-			nil,           // &tmpRadio.ID,
-			nil,           // &tmpRadio.Number,
-			nil,           // &tmpRadio.Channel,
-			nil,           // &tmpRadio.Channel2,
-			nil,           // &tmpRadio.ChannelWidth,
-			nil,           // &tmpRadio.WiFi,
-			nil,           // &tmpRadio.Power,
-			nil,           // &tmpRadio.Bandwidth,
-			nil,           // &tmpRadio.GuardInterval,
-			nil,           // &tmpRadio.IsActive,
-			nil,           // &tmpRadio.SensorID,
-			nil, nil, nil, // &tmpRadio.CreatedAt, &tmpRadio.UpdatedAt, &tmpRadio.DeletedAt,
+			&tmpRadio.ID,
+			&tmpRadio.Number,
+			&tmpRadio.Channel, &tmpRadio.Channel2,
+			&tmpRadio.ChannelWidth,
+			&tmpRadio.WiFi,
+			&tmpRadio.Power,
+			&tmpRadio.Bandwidth,
+			&tmpRadio.GuardInterval,
+			&tmpRadio.IsActive,
+			&tmpRadio.SensorID,
+			&tmpRadio.CreatedAt, &tmpRadio.UpdatedAt, &tmpRadio.DeletedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to scan sensor and related data")
@@ -235,26 +231,25 @@ func (r *sensorRepo) GetOneDetailed(ctx context.Context, sensorID uuid.UUID) (se
 		}
 		sensorDetailed.SensorType = sensorType
 
-		// TODO fix
-		// if tmpRadio.ID != nil {
-		// 	radio := &entity.SensorRadio{
-		// 		ID:            *tmpRadio.ID,
-		// 		Number:        *tmpRadio.Number,
-		// 		Channel:       *tmpRadio.Channel,
-		// 		Channel2:      tmpRadio.Channel2,
-		// 		ChannelWidth:  *tmpRadio.ChannelWidth,
-		// 		WiFi:          *tmpRadio.WiFi,
-		// 		Power:         *tmpRadio.Power,
-		// 		Bandwidth:     *tmpRadio.Bandwidth,
-		// 		GuardInterval: *tmpRadio.GuardInterval,
-		// 		IsActive:      *tmpRadio.IsActive,
-		// 		SensorID: *tmpRadio.SensorID,
-		// 		CreatedAt:     *tmpRadio.CreatedAt,
-		// 		UpdatedAt:     *tmpRadio.UpdatedAt,
-		// 		DeletedAt:     tmpRadio.DeletedAt,
-		// 	}
-		// 	apDetailed.Radios = append(apDetailed.Radios, radio)
-		// }
+		if tmpRadio.ID != nil {
+			radio := &entity.SensorRadio{
+				ID:            *tmpRadio.ID,
+				Number:        *tmpRadio.Number,
+				Channel:       *tmpRadio.Channel,
+				Channel2:      tmpRadio.Channel2,
+				ChannelWidth:  *tmpRadio.ChannelWidth,
+				WiFi:          *tmpRadio.WiFi,
+				Power:         *tmpRadio.Power,
+				Bandwidth:     *tmpRadio.Bandwidth,
+				GuardInterval: *tmpRadio.GuardInterval,
+				IsActive:      *tmpRadio.IsActive,
+				SensorID:      *tmpRadio.SensorID,
+				CreatedAt:     *tmpRadio.CreatedAt,
+				UpdatedAt:     *tmpRadio.UpdatedAt,
+				DeletedAt:     tmpRadio.DeletedAt,
+			}
+			sensorDetailed.Radios = append(sensorDetailed.Radios, radio)
+		}
 	}
 
 	if err = rows.Err(); err != nil {
@@ -393,7 +388,7 @@ func (r *sensorRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID, limi
 		i++
 		sensorDetailed := &entity.SensorDetailed{}
 		sensorType := entity.SensorType{}
-		// tmpRadio := tmpSensorRadio{}
+		tmpRadio := tmpSensorRadio{}
 
 		err = rows.Scan(
 			&sensorDetailed.ID,
@@ -420,19 +415,17 @@ func (r *sensorRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID, limi
 			&sensorType.SiteID,
 			&sensorType.CreatedAt, &sensorType.UpdatedAt, &sensorType.DeletedAt,
 
-			// TODO fix
-			nil,           // &tmpRadio.ID,
-			nil,           // &tmpRadio.Number,
-			nil,           // &tmpRadio.Channel,
-			nil,           // &tmpRadio.Channel2,
-			nil,           // &tmpRadio.ChannelWidth,
-			nil,           // &tmpRadio.WiFi,
-			nil,           // &tmpRadio.Power,
-			nil,           // &tmpRadio.Bandwidth,
-			nil,           // &tmpRadio.GuardInterval,
-			nil,           // &tmpRadio.IsActive,
-			nil,           // &tmpRadio.SensorID,
-			nil, nil, nil, // &tmpRadio.CreatedAt, &tmpRadio.UpdatedAt, &tmpRadio.DeletedAt,
+			&tmpRadio.ID,
+			&tmpRadio.Number,
+			&tmpRadio.Channel, &tmpRadio.Channel2,
+			&tmpRadio.ChannelWidth,
+			&tmpRadio.WiFi,
+			&tmpRadio.Power,
+			&tmpRadio.Bandwidth,
+			&tmpRadio.GuardInterval,
+			&tmpRadio.IsActive,
+			&tmpRadio.SensorID,
+			&tmpRadio.CreatedAt, &tmpRadio.UpdatedAt, &tmpRadio.DeletedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to scan sensor detailed and related data")
@@ -440,25 +433,24 @@ func (r *sensorRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID, limi
 		}
 
 		var radio *entity.SensorRadio
-		// TODO fix
-		// if tmpRadio.ID != nil {
-		// 	radio = &entity.SensorRadio{
-		// 		ID:            *tmpRadio.ID,
-		// 		Number:        *tmpRadio.Number,
-		// 		Channel:       *tmpRadio.Channel,
-		// 		Channel2:      tmpRadio.Channel2,
-		// 		ChannelWidth:  *tmpRadio.ChannelWidth,
-		// 		WiFi:          *tmpRadio.WiFi,
-		// 		Power:         *tmpRadio.Power,
-		// 		Bandwidth:     *tmpRadio.Bandwidth,
-		// 		GuardInterval: *tmpRadio.GuardInterval,
-		// 		IsActive:      *tmpRadio.IsActive,
-		// 		SensorID: *tmpRadio.SensorID,
-		// 		CreatedAt:     *tmpRadio.CreatedAt,
-		// 		UpdatedAt:     *tmpRadio.UpdatedAt,
-		// 		DeletedAt:     tmpRadio.DeletedAt,
-		// 	}
-		// }
+		if tmpRadio.ID != nil {
+			radio = &entity.SensorRadio{
+				ID:            *tmpRadio.ID,
+				Number:        *tmpRadio.Number,
+				Channel:       *tmpRadio.Channel,
+				Channel2:      tmpRadio.Channel2,
+				ChannelWidth:  *tmpRadio.ChannelWidth,
+				WiFi:          *tmpRadio.WiFi,
+				Power:         *tmpRadio.Power,
+				Bandwidth:     *tmpRadio.Bandwidth,
+				GuardInterval: *tmpRadio.GuardInterval,
+				IsActive:      *tmpRadio.IsActive,
+				SensorID:      *tmpRadio.SensorID,
+				CreatedAt:     *tmpRadio.CreatedAt,
+				UpdatedAt:     *tmpRadio.UpdatedAt,
+				DeletedAt:     tmpRadio.DeletedAt,
+			}
+		}
 
 		existingAP, exists := apdMap[sensorDetailed.ID]
 		if exists {
@@ -578,7 +570,7 @@ func (r *sensorRepo) Update(ctx context.Context, updateSensorDTO *dto.PatchUpdat
 		paramID++
 	}
 	if updateSensorDTO.SensorTypeID != nil {
-		updates = append(updates, fmt.Sprintf("access_point_type_id = $%d", paramID))
+		updates = append(updates, fmt.Sprintf("sensor_type_id = $%d", paramID))
 		params = append(params, updateSensorDTO.SensorTypeID)
 		paramID++
 	}

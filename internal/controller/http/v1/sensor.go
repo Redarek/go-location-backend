@@ -29,16 +29,16 @@ const (
 )
 
 type sensorHandler struct {
-	usecase  *usecase.SensorUsecase
-	apMapper *mapper.SensorMapper
+	usecase      *usecase.SensorUsecase
+	sensorMapper *mapper.SensorMapper
 	// aprtMapper *mapper.SensorRadioTemplateMapper
 }
 
 // Регистрирует новый handler
 func NewSensorHandler(usecase *usecase.SensorUsecase) *sensorHandler {
 	return &sensorHandler{
-		usecase:  usecase,
-		apMapper: &mapper.SensorMapper{},
+		usecase:      usecase,
+		sensorMapper: &mapper.SensorMapper{},
 		// aprtMapper: &mapper.SensorRadioTemplateMapper{},
 	}
 }
@@ -207,17 +207,16 @@ func (h *sensorHandler) GetSensorDetailed(ctx *fiber.Ctx) error {
 	}
 
 	// Mapping sensor radio entity -> http DTO
-	var aprHttpDTOs []*http_dto.SensorRadioDTO
-	// TODO FIX
-	// for _, aprHttpDTO := range sensorDetailed.Radios {
-	// 	aprHttpDTOs = append(aprHttpDTOs, (*http_dto.SensorRadioDTO)(aprHttpDTO))
-	// }
+	var sensorRadioHttpDTOs []*http_dto.SensorRadioDTO
+	for _, sensorRadioHttpDTO := range sensorDetailed.Radios {
+		sensorRadioHttpDTOs = append(sensorRadioHttpDTOs, (*http_dto.SensorRadioDTO)(sensorRadioHttpDTO))
+	}
 
 	// Mapping entity -> http DTO
 	sensorDetailedDTO := http_dto.SensorDetailedDTO{
 		SensorDTO:  (http_dto.SensorDTO)(sensorDetailed.Sensor),
 		SensorType: (http_dto.SensorTypeDTO)(sensorDetailed.SensorType),
-		Radios:     aprHttpDTOs,
+		Radios:     sensorRadioHttpDTOs,
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": sensorDetailedDTO})
@@ -321,9 +320,8 @@ func (h *sensorHandler) GetSensorsDetailed(c *fiber.Ctx) error {
 		))
 	}
 
-	// TODO mapping
 	// Mapping entity -> http DTO
-	sensorsDetailedDTO := h.apMapper.DetailedToHTTPList(sensorsDetailed)
+	sensorsDetailedDTO := h.sensorMapper.DetailedToHTTPList(sensorsDetailed)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sensorsDetailedDTO})
 }
