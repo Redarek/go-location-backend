@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
@@ -195,8 +194,7 @@ func (s *accessPointService) RestoreAccessPoint(ctx context.Context, accessPoint
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to restore accessPoint")
+
 		return
 	}
 

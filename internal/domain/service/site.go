@@ -189,8 +189,7 @@ func (s *siteService) UpdateSite(ctx context.Context, patchUpdateSiteDTO *dto.Pa
 		if errors.Is(err, ErrNotUpdated) {
 			return usecase.ErrNotUpdated
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to update site")
+
 		return
 	}
 
@@ -203,8 +202,6 @@ func (s *siteService) IsSiteSoftDeleted(ctx context.Context, siteID uuid.UUID) (
 		if errors.Is(err, ErrNotFound) {
 			return false, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve site")
 		return
 	}
 
@@ -217,8 +214,6 @@ func (s *siteService) SoftDeleteSite(ctx context.Context, siteID uuid.UUID) (err
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to soft delete site")
 		return
 	}
 
@@ -231,8 +226,6 @@ func (s *siteService) RestoreSite(ctx context.Context, siteID uuid.UUID) (err er
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to restore site")
 		return
 	}
 

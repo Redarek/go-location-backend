@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
@@ -28,13 +27,7 @@ func NewRoleService(repository RoleRepo) *roleService {
 
 func (s *roleService) CreateRole(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error) {
 	roleID, err = s.repository.Create(ctx, createRoleDTO)
-	if err != nil {
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to create role")
-		return
-	}
-
-	return roleID, nil
+	return
 }
 
 func (s *roleService) GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error) {
@@ -43,8 +36,6 @@ func (s *roleService) GetRole(ctx context.Context, roleID uuid.UUID) (role *enti
 		if errors.Is(err, ErrNotFound) {
 			return nil, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve role")
 		return
 	}
 
@@ -57,8 +48,6 @@ func (s *roleService) GetRoleByName(ctx context.Context, name string) (role *ent
 		if errors.Is(err, ErrNotFound) {
 			return nil, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve role")
 		return
 	}
 

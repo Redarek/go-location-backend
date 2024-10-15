@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
@@ -38,13 +37,7 @@ func NewAccessPointTypeService(accessPointTypeRepo AccessPointTypeRepo, accessPo
 
 func (s *accessPointTypeService) CreateAccessPointType(ctx context.Context, createAccessPointTypeDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error) {
 	accessPointTypeID, err = s.accessPointTypeRepo.Create(ctx, createAccessPointTypeDTO)
-	if err != nil {
-		// TODO улучшить лог
-		log.Error().Msg("failed to create accessPointType")
-		return
-	}
-
-	return accessPointTypeID, nil
+	return
 }
 
 func (s *accessPointTypeService) GetAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error) {
@@ -53,8 +46,7 @@ func (s *accessPointTypeService) GetAccessPointType(ctx context.Context, accessP
 		if errors.Is(err, ErrNotFound) {
 			return accessPointType, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve accessPointType")
+
 		return
 	}
 
@@ -67,8 +59,7 @@ func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context,
 		if errors.Is(err, ErrNotFound) {
 			return accessPointTypeDetailed, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve access point type")
+
 		return
 	}
 
@@ -77,7 +68,7 @@ func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context,
 		if errors.Is(err, ErrNotFound) {
 			err = nil
 		} else {
-			log.Error().Msg("failed to retrieve access point radio template")
+			// log.Error().Msg("failed to retrieve access point radio template")
 			return
 		}
 	}
@@ -96,8 +87,7 @@ func (s *accessPointTypeService) GetAccessPointTypes(ctx context.Context, dto dt
 		if errors.Is(err, ErrNotFound) {
 			return accessPointTypes, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve accessPointType")
+
 		return
 	}
 
@@ -114,8 +104,7 @@ func (s *accessPointTypeService) UpdateAccessPointType(ctx context.Context, upda
 		if errors.Is(err, ErrNotUpdated) {
 			return usecase.ErrNotUpdated
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to update accessPointType")
+
 		return
 	}
 
@@ -128,8 +117,7 @@ func (s *accessPointTypeService) IsAccessPointTypeSoftDeleted(ctx context.Contex
 		if errors.Is(err, ErrNotFound) {
 			return false, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve accessPointType")
+
 		return
 	}
 
@@ -142,8 +130,7 @@ func (s *accessPointTypeService) SoftDeleteAccessPointType(ctx context.Context, 
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to soft delete accessPointType")
+
 		return
 	}
 
@@ -156,8 +143,7 @@ func (s *accessPointTypeService) RestoreAccessPointType(ctx context.Context, acc
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to restore accessPointType")
+
 		return
 	}
 

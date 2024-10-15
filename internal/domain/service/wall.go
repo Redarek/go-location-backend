@@ -39,13 +39,7 @@ func NewWallService(wallRepo WallRepo, wallTypeRepo WallTypeRepo) *wallService {
 
 func (s *wallService) CreateWall(ctx context.Context, createWallDTO *dto.CreateWallDTO) (wallID uuid.UUID, err error) {
 	wallID, err = s.wallRepo.Create(ctx, createWallDTO)
-	if err != nil {
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to create wall")
-		return
-	}
-
-	return wallID, nil
+	return
 }
 
 func (s *wallService) GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error) {
@@ -54,8 +48,7 @@ func (s *wallService) GetWall(ctx context.Context, wallID uuid.UUID) (wall *enti
 		if errors.Is(err, ErrNotFound) {
 			return wall, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve wall")
+
 		return
 	}
 
@@ -68,19 +61,17 @@ func (s *wallService) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 		if errors.Is(err, ErrNotFound) {
 			return wallDetailed, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve wall")
+
 		return
 	}
 
 	wallType, err := s.wallTypeRepo.GetOne(ctx, wall.WallTypeID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			log.Error().Msg("wall type was not found")
+			log.Error().Msg("wall type was not found") // ? Эта ошибка не должна происходить. Возможно удалить
 			return
 		}
-		// TODO улучшить лог
-		log.Error().Msg("failed to retrieve wallType")
+
 		return
 	}
 
@@ -98,8 +89,7 @@ func (s *wallService) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls 
 		if errors.Is(err, ErrNotFound) {
 			return walls, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve wall")
+
 		return
 	}
 
@@ -116,8 +106,7 @@ func (s *wallService) UpdateWall(ctx context.Context, updateWallDTO *dto.PatchUp
 		if errors.Is(err, ErrNotUpdated) {
 			return usecase.ErrNotUpdated
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to update wall")
+
 		return
 	}
 
@@ -130,8 +119,7 @@ func (s *wallService) IsWallSoftDeleted(ctx context.Context, wallID uuid.UUID) (
 		if errors.Is(err, ErrNotFound) {
 			return false, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve wall")
+
 		return
 	}
 
@@ -144,8 +132,7 @@ func (s *wallService) SoftDeleteWall(ctx context.Context, wallID uuid.UUID) (err
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to soft delete wall")
+
 		return
 	}
 
@@ -158,8 +145,7 @@ func (s *wallService) RestoreWall(ctx context.Context, wallID uuid.UUID) (err er
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to restore wall")
+
 		return
 	}
 

@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
@@ -34,13 +33,7 @@ func NewFloorService(repository FloorRepo) *floorService {
 
 func (s *floorService) CreateFloor(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error) {
 	floorID, err = s.repository.Create(ctx, createFloorDTO)
-	if err != nil {
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to create floor")
-		return
-	}
-
-	return floorID, nil
+	return
 }
 
 func (s *floorService) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error) {
@@ -49,8 +42,7 @@ func (s *floorService) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *
 		if errors.Is(err, ErrNotFound) {
 			return floor, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve floor")
+
 		return
 	}
 
@@ -63,8 +55,7 @@ func (s *floorService) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (flo
 		if errors.Is(err, ErrNotFound) {
 			return floors, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve floor")
+
 		return
 	}
 
@@ -81,8 +72,7 @@ func (s *floorService) UpdateFloor(ctx context.Context, updateFloorDTO *dto.Patc
 		if errors.Is(err, ErrNotUpdated) {
 			return usecase.ErrNotUpdated
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to update floor")
+
 		return
 	}
 
@@ -95,8 +85,7 @@ func (s *floorService) IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID
 		if errors.Is(err, ErrNotFound) {
 			return false, usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to retrieve floor")
+
 		return
 	}
 
@@ -109,8 +98,7 @@ func (s *floorService) SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to soft delete floor")
+
 		return
 	}
 
@@ -123,8 +111,7 @@ func (s *floorService) RestoreFloor(ctx context.Context, floorID uuid.UUID) (err
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound
 		}
-		// TODO улучшить лог
-		log.Error().Err(err).Msg("failed to restore floor")
+
 		return
 	}
 
