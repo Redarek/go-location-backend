@@ -3,7 +3,7 @@ package location
 // second_method consts
 
 // Порог мощности, ниже которого ячейки считаются "невидимым"
-const RSII_CUTOFF float64 = -85
+const RSSI_CUTOFF float64 = -85
 
 // Значение мощности для "невидимых" ячеек
 const RSSI_INVISIBLE float64 = -100
