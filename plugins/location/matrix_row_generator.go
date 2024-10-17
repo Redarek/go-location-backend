@@ -224,6 +224,7 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
             Check that the radiation diagram for sensor with ID = ${sensor.ID} is filled out correctly.
             By default, the antenna gain of ${sensor.rx_ant_gain} will be used for all directions.`)
 		} else {
+			// TODO Убрать дублирование или реализовать gorutine
 			horAzimuth, err := _approximateAzimuth(
 				float64(getHorizontalAzimuthDeg(
 					XYZcoordinate{x: float64(*sensor.X), y: float64(*sensor.Y), z: *sensor.Z},
@@ -231,7 +232,11 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
 					0)),
 				float64(delta))
 			if err != nil {
-				goto errorHandling
+				antGain = sensor.RxAntGain
+				freeSpaceRSSI24 += antGain
+				freeSpaceRSSI5 += antGain
+				freeSpaceRSSI6 += antGain
+				return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
 			}
 
 			vertAzimuth, err := _approximateAzimuth(
@@ -241,11 +246,14 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
 					0)),
 				float64(delta))
 			if err != nil {
-				goto errorHandling
+				antGain = sensor.RxAntGain
+				freeSpaceRSSI24 += antGain
+				freeSpaceRSSI5 += antGain
+				freeSpaceRSSI6 += antGain
+				return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
 			}
 
 			antGain = (diagram.Degree[string(rune(horAzimuth))].HorGain + diagram.Degree[string(rune(vertAzimuth))].VertGain) / 2 // окр до десятых
-
 		}
 	} else {
 		freeSpaceRSSI24 += sensor.RxAntGain
@@ -253,13 +261,6 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
 		freeSpaceRSSI6 += sensor.RxAntGain
 	}
 
-	return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
-
-errorHandling:
-	antGain = sensor.RxAntGain
-	freeSpaceRSSI24 += antGain
-	freeSpaceRSSI5 += antGain
-	freeSpaceRSSI6 += antGain
 	return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
 }
 
