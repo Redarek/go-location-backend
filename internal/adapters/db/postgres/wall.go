@@ -134,6 +134,75 @@ func (r *wallRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, offset 
 	return
 }
 
+func (r *wallRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID, limit, offset int) (wallsDetailed []*entity.WallDetailed, err error) {
+	query := `SELECT 
+			w.id, 
+			w.x1, w.y1, 
+			w.x2, w.y2, 
+			w.wall_type_id,
+			w.floor_id,
+			w.created_at, w.updated_at, w.deleted_at,
+			
+			wt.id, 
+			wt.name, 
+			wt.color, 
+			wt.attenuation_24, wt.attenuation_5, wt.attenuation_6, 
+			wt.thickness, 
+			wt.site_id,
+			wt.created_at, wt.updated_at, wt.deleted_at
+		FROM walls w
+		JOIN wall_types wt ON w.wall_type_id = wt.id AND wt.deleted_at IS NULL
+		WHERE w.floor_id = $1 AND w.deleted_at IS NULL
+		LIMIT $2 OFFSET $3`
+	rows, err := r.pool.Query(ctx, query, floorID, limit, offset)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to retrieve walls detailed")
+		return
+	}
+	defer rows.Close()
+
+	i := 0
+	for rows.Next() {
+		i++
+		wallDetailed := &entity.WallDetailed{}
+
+		err = rows.Scan(
+			&wallDetailed.ID,
+			&wallDetailed.X1, &wallDetailed.Y1,
+			&wallDetailed.X2, &wallDetailed.Y2,
+			&wallDetailed.WallTypeID,
+			&wallDetailed.FloorID,
+			&wallDetailed.CreatedAt, &wallDetailed.UpdatedAt, &wallDetailed.DeletedAt,
+
+			&wallDetailed.WallType.ID,
+			&wallDetailed.WallType.Name,
+			&wallDetailed.WallType.Color,
+			&wallDetailed.WallType.Attenuation24, &wallDetailed.WallType.Attenuation5, &wallDetailed.WallType.Attenuation6,
+			&wallDetailed.WallType.Thickness,
+			&wallDetailed.WallType.SiteID,
+			&wallDetailed.WallType.CreatedAt, &wallDetailed.WallType.UpdatedAt, &wallDetailed.WallType.DeletedAt,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to scan wall and related data")
+			return
+		}
+
+		wallsDetailed = append(wallsDetailed, wallDetailed)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("rows iteration error")
+		return
+	}
+
+	if i == 0 {
+		log.Debug().Msg("walls were not found")
+		return nil, service.ErrNotFound
+	}
+
+	return
+}
+
 func (r *wallRepo) Update(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error) {
 	query := "UPDATE walls SET updated_at = NOW(), "
 	updates := []string{}

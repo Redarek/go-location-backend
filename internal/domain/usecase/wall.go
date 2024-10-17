@@ -14,8 +14,9 @@ import (
 type WallService interface {
 	CreateWall(ctx context.Context, createWallDTO *dto.CreateWallDTO) (wallID uuid.UUID, err error)
 	GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
-	GetWalls(ctx context.Context, getDTO dto.GetWallsDTO) (walls []*entity.Wall, err error)
 	GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailed *entity.WallDetailed, err error)
+	GetWalls(ctx context.Context, getDTO dto.GetWallsDTO) (walls []*entity.Wall, err error)
+	GetWallsDetailed(ctx context.Context, dto dto.GetWallsDTO) (wallsDetailed []*entity.WallDetailed, err error)
 
 	UpdateWall(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error)
 
@@ -99,6 +100,21 @@ func (u *WallUsecase) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls 
 
 	return
 }
+
+// TODO uncomment, it works
+// func (u *WallUsecase) GetWallsDetailed(ctx context.Context, dto dto.GetWallsDTO) (wallsDetailed []*entity.WallDetailed, err error) {
+// 	wallsDetailed, err = u.wallService.GetWallsDetailed(ctx, dto)
+// 	if err != nil {
+// 		if errors.Is(err, ErrNotFound) {
+// 			return nil, ErrNotFound
+// 		} else {
+// 			log.Error().Msg("failed to get walls detailed")
+// 			return
+// 		}
+// 	}
+
+// 	return
+// }
 
 func (u *WallUsecase) PatchUpdateWall(ctx context.Context, patchUpdateDTO *dto.PatchUpdateWallDTO) (err error) {
 	_, err = u.wallService.GetWall(ctx, patchUpdateDTO.ID)

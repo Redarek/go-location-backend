@@ -14,9 +14,10 @@ import (
 
 type WallRepo interface {
 	Create(ctx context.Context, dto *dto.CreateWallDTO) (wallID uuid.UUID, err error)
-	GetOne(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
 
+	GetOne(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
 	GetAll(ctx context.Context, floorID uuid.UUID, limit, offset int) (walls []*entity.Wall, err error)
+	GetAllDetailed(ctx context.Context, floorID uuid.UUID, limit, offset int) (wallsDetailed []*entity.WallDetailed, err error)
 
 	Update(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error)
 
@@ -88,6 +89,19 @@ func (s *wallService) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls 
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return walls, usecase.ErrNotFound
+		}
+
+		return
+	}
+
+	return
+}
+
+func (s *wallService) GetWallsDetailed(ctx context.Context, dto dto.GetWallsDTO) (wallsDetailed []*entity.WallDetailed, err error) {
+	wallsDetailed, err = s.wallRepo.GetAllDetailed(ctx, dto.FloorID, dto.Limit, dto.Offset)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, usecase.ErrNotFound
 		}
 
 		return
