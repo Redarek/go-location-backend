@@ -153,6 +153,7 @@ func _getWallsAttenuation(
 	return loss24, loss5, loss6
 }
 
+// TODO разобраться с cellSizeMeters
 /**
  * Returns the Distance in meters between Client and sensor.
  * @param clientX Client X coordinate.
@@ -206,7 +207,7 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
 	var freeSpaceRSSI5 float64 = float64(client.TrSignalPower) + float64(client.TrAntGain) - fspl5 + sensor.CorrectionFactor5
 	var freeSpaceRSSI6 float64 = float64(client.TrSignalPower) + float64(client.TrAntGain) - fspl6 + sensor.CorrectionFactor6
 
-	var antGain float64 = 2
+	var antGain float64 = sensor.RxAntGain // RxAntGain by default
 
 	var diagram Diagram
 	err := json.Unmarshal(*sensor.Diagram, &diagram)
@@ -232,7 +233,6 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
 					0)),
 				float64(delta))
 			if err != nil {
-				antGain = sensor.RxAntGain
 				freeSpaceRSSI24 += antGain
 				freeSpaceRSSI5 += antGain
 				freeSpaceRSSI6 += antGain
@@ -246,7 +246,6 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
 					0)),
 				float64(delta))
 			if err != nil {
-				antGain = sensor.RxAntGain
 				freeSpaceRSSI24 += antGain
 				freeSpaceRSSI5 += antGain
 				freeSpaceRSSI6 += antGain
@@ -255,15 +254,15 @@ func _getFreeSpaceRSSI(clientX float64, clientY float64, client Client, sensor S
 
 			antGain = (diagram.Degree[string(rune(horAzimuth))].HorGain + diagram.Degree[string(rune(vertAzimuth))].VertGain) / 2 // окр до десятых
 		}
-	} else {
-		freeSpaceRSSI24 += sensor.RxAntGain
-		freeSpaceRSSI5 += sensor.RxAntGain
-		freeSpaceRSSI6 += sensor.RxAntGain
 	}
+
+	freeSpaceRSSI24 += antGain
+	freeSpaceRSSI5 += antGain
+	freeSpaceRSSI6 += antGain
 
 	return freeSpaceRSSI24, freeSpaceRSSI5, freeSpaceRSSI6
 }
 
-func getDiagram(sensor Sensor) {
+// func getDiagram(sensor Sensor) {
 
-}
+// }
