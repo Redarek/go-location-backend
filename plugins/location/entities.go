@@ -65,4 +65,5 @@ type Wall struct {
 	Attenuation24 float64
 	Attenuation5  float64
 	Attenuation6  float64
+	FloorID       uuid.UUID
 }
