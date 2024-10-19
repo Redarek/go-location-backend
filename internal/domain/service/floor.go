@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type FloorRepo interface {
+type IFloorRepo interface {
 	Create(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error)
 	GetOne(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error)
 	GetAll(ctx context.Context, buildingID uuid.UUID, limit, offset int) (floors []*entity.Floor, err error)
@@ -24,10 +24,10 @@ type FloorRepo interface {
 }
 
 type floorService struct {
-	repository FloorRepo
+	repository IFloorRepo
 }
 
-func NewFloorService(repository FloorRepo) *floorService {
+func NewFloorService(repository IFloorRepo) *floorService {
 	return &floorService{repository: repository}
 }
 

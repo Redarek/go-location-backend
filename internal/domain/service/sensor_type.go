@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type SensorTypeRepo interface {
+type ISensorTypeRepo interface {
 	Create(ctx context.Context, createSensorTypeDTO *dto.CreateSensorTypeDTO) (sensorTypeID uuid.UUID, err error)
 	GetOne(ctx context.Context, sensorTypeID uuid.UUID) (sensorType *entity.SensorType, err error)
 	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (sensorTypes []*entity.SensorType, err error)
@@ -24,12 +24,12 @@ type SensorTypeRepo interface {
 }
 
 type sensorTypeService struct {
-	sensorTypeRepo SensorTypeRepo
+	sensorTypeRepo ISensorTypeRepo
 	// sensorRadioTemplateRepo SensorRadioTemplateRepo
 }
 
 func NewSensorTypeService(
-	sensorTypeRepo SensorTypeRepo,
+	sensorTypeRepo ISensorTypeRepo,
 	// sensorRadioTemplateRepo SensorRadioTemplateRepo,
 ) *sensorTypeService {
 	return &sensorTypeService{

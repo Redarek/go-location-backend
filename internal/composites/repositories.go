@@ -6,24 +6,24 @@ import (
 )
 
 type RepositoryComposite struct {
-	healthRepo   service.HealthRepo
-	userRepo     service.UserRepo
-	roleRepo     service.RoleRepo
-	siteRepo     service.SiteRepo
-	buildingRepo service.BuildingRepo
-	floorRepo    service.FloorRepo
-	wallTypeRepo service.WallTypeRepo
-	wallRepo     service.WallRepo
+	healthRepo   service.IHealthRepo
+	userRepo     service.IUserRepo
+	roleRepo     service.IRoleRepo
+	siteRepo     service.ISiteRepo
+	buildingRepo service.IBuildingRepo
+	floorRepo    service.IFloorRepo
+	wallTypeRepo service.IWallTypeRepo
+	wallRepo     service.IWallRepo
 
-	accessPointTypeRepo          service.AccessPointTypeRepo
-	accessPointRadioTemplateRepo service.AccessPointRadioTemplateRepo
-	accessPointRepo              service.AccessPointRepo
-	accessPointRadioRepo         service.AccessPointRadioRepo
+	accessPointTypeRepo          service.IAccessPointTypeRepo
+	accessPointRadioTemplateRepo service.IAccessPointRadioTemplateRepo
+	accessPointRepo              service.IAccessPointRepo
+	accessPointRadioRepo         service.IAccessPointRadioRepo
 
-	sensorTypeRepo          service.SensorTypeRepo
-	sensorRadioTemplateRepo service.SensorRadioTemplateRepo
-	sensorRepo              service.SensorRepo
-	sensorRadioRepo         service.SensorRadioRepo
+	sensorTypeRepo          service.ISensorTypeRepo
+	sensorRadioTemplateRepo service.ISensorRadioTemplateRepo
+	sensorRepo              service.ISensorRepo
+	sensorRadioRepo         service.ISensorRadioRepo
 }
 
 func NewRepositoryComposite(composite *PostgresComposite) (repositoryComposite *RepositoryComposite) {

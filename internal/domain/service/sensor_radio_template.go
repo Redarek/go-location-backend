@@ -12,7 +12,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type SensorRadioTemplateRepo interface {
+type ISensorRadioTemplateRepo interface {
 	Create(ctx context.Context, createSensorRadioTemplateDTO *dto.CreateSensorRadioTemplateDTO) (sensorRadioTemplateID uuid.UUID, err error)
 	GetOne(ctx context.Context, sensorRadioTemplateID uuid.UUID) (sensorRadioTemplate *entity.SensorRadioTemplate, err error)
 	GetAll(ctx context.Context, sensorTypeID uuid.UUID, limit, offset int) (sensorRadioTemplates []*entity.SensorRadioTemplate, err error)
@@ -25,10 +25,10 @@ type SensorRadioTemplateRepo interface {
 }
 
 type sensorRadioTemplateService struct {
-	repository SensorRadioTemplateRepo
+	repository ISensorRadioTemplateRepo
 }
 
-func NewSensorRadioTemplateService(repository SensorRadioTemplateRepo) *sensorRadioTemplateService {
+func NewSensorRadioTemplateService(repository ISensorRadioTemplateRepo) *sensorRadioTemplateService {
 	return &sensorRadioTemplateService{repository: repository}
 }
 

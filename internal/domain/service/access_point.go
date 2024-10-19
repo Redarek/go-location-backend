@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type AccessPointRepo interface {
+type IAccessPointRepo interface {
 	Create(ctx context.Context, createAccessPointDTO *dto.CreateAccessPointDTO) (accessPointID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointID uuid.UUID) (accessPoint *entity.AccessPoint, err error)
 	GetOneDetailed(ctx context.Context, accessPointID uuid.UUID) (apDetailed *entity.AccessPointDetailed, err error)
@@ -26,15 +26,15 @@ type AccessPointRepo interface {
 }
 
 type accessPointService struct {
-	accessPointRepo      AccessPointRepo
-	accessPointTypeRepo  AccessPointTypeRepo
-	accessPointRadioRepo AccessPointRadioRepo
+	accessPointRepo      IAccessPointRepo
+	accessPointTypeRepo  IAccessPointTypeRepo
+	accessPointRadioRepo IAccessPointRadioRepo
 }
 
 func NewAccessPointService(
-	accessPointRepo AccessPointRepo,
-	accessPointTypeRepo AccessPointTypeRepo,
-	accessPointRadioRepo AccessPointRadioRepo,
+	accessPointRepo IAccessPointRepo,
+	accessPointTypeRepo IAccessPointTypeRepo,
+	accessPointRadioRepo IAccessPointRadioRepo,
 ) *accessPointService {
 	return &accessPointService{
 		accessPointRepo:      accessPointRepo,

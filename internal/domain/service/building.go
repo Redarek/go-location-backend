@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type BuildingRepo interface {
+type IBuildingRepo interface {
 	Create(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetOne(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
 	// GetOneDetailed(ctx context.Context, buildingID uuid.UUID) (building *entity.BuildingDetailed, err error) // TODO
@@ -26,10 +26,10 @@ type BuildingRepo interface {
 }
 
 type buildingService struct {
-	repository BuildingRepo
+	repository IBuildingRepo
 }
 
-func NewBuildingService(repository BuildingRepo) *buildingService {
+func NewBuildingService(repository IBuildingRepo) *buildingService {
 	return &buildingService{repository: repository}
 }
 

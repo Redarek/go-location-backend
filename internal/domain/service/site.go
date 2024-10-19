@@ -12,7 +12,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type SiteRepo interface {
+type ISiteRepo interface {
 	Create(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
 	GetOne(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
 	GetAll(ctx context.Context, userID uuid.UUID, limit, offset int) (sites []*entity.Site, err error)
@@ -25,19 +25,19 @@ type SiteRepo interface {
 }
 
 type siteService struct {
-	siteRepo            SiteRepo
-	buildingRepo        BuildingRepo
-	wallTypeRepo        WallTypeRepo
-	accessPointTypeRepo AccessPointTypeRepo
-	sensorTypeRepo      SensorTypeRepo
+	siteRepo            ISiteRepo
+	buildingRepo        IBuildingRepo
+	wallTypeRepo        IWallTypeRepo
+	accessPointTypeRepo IAccessPointTypeRepo
+	sensorTypeRepo      ISensorTypeRepo
 }
 
 func NewSiteService(
-	siteRepo SiteRepo,
-	buildingRepo BuildingRepo,
-	wallTypeRepo WallTypeRepo,
-	accessPointTypeRepo AccessPointTypeRepo,
-	sensorTypeRepo SensorTypeRepo,
+	siteRepo ISiteRepo,
+	buildingRepo IBuildingRepo,
+	wallTypeRepo IWallTypeRepo,
+	accessPointTypeRepo IAccessPointTypeRepo,
+	sensorTypeRepo ISensorTypeRepo,
 ) *siteService {
 	return &siteService{
 		siteRepo:            siteRepo,

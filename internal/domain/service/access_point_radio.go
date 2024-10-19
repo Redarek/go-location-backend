@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type AccessPointRadioRepo interface {
+type IAccessPointRadioRepo interface {
 	Create(ctx context.Context, createAccessPointRadioDTO *dto.CreateAccessPointRadioDTO) (accessPointRadioID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointRadioID uuid.UUID) (accessPointRadio *entity.AccessPointRadio, err error)
 	GetAll(ctx context.Context, accessPointID uuid.UUID, limit, offset int) (accessPointRadios []*entity.AccessPointRadio, err error)
@@ -24,10 +24,10 @@ type AccessPointRadioRepo interface {
 }
 
 type accessPointRadioService struct {
-	repository AccessPointRadioRepo
+	repository IAccessPointRadioRepo
 }
 
-func NewAccessPointRadioService(repository AccessPointRadioRepo) *accessPointRadioService {
+func NewAccessPointRadioService(repository IAccessPointRadioRepo) *accessPointRadioService {
 	return &accessPointRadioService{repository: repository}
 }
 

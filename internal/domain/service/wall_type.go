@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type WallTypeRepo interface {
+type IWallTypeRepo interface {
 	Create(ctx context.Context, dto *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
 	GetOne(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
 	// GetOneDetailed(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallTypeDetailed, err error) // TODO
@@ -26,10 +26,10 @@ type WallTypeRepo interface {
 }
 
 type wallTypeService struct {
-	repository WallTypeRepo
+	repository IWallTypeRepo
 }
 
-func NewWallTypeService(repository WallTypeRepo) *wallTypeService {
+func NewWallTypeService(repository IWallTypeRepo) *wallTypeService {
 	return &wallTypeService{repository: repository}
 }
 

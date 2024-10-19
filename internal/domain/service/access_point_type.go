@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type AccessPointTypeRepo interface {
+type IAccessPointTypeRepo interface {
 	Create(ctx context.Context, createAccessPointTypeDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error)
 	GetAll(ctx context.Context, siteID uuid.UUID, limit, offset int) (accessPointTypes []*entity.AccessPointType, err error)
@@ -24,11 +24,11 @@ type AccessPointTypeRepo interface {
 }
 
 type accessPointTypeService struct {
-	accessPointTypeRepo          AccessPointTypeRepo
-	accessPointRadioTemplateRepo AccessPointRadioTemplateRepo
+	accessPointTypeRepo          IAccessPointTypeRepo
+	accessPointRadioTemplateRepo IAccessPointRadioTemplateRepo
 }
 
-func NewAccessPointTypeService(accessPointTypeRepo AccessPointTypeRepo, accessPointRadioTemplateRepo AccessPointRadioTemplateRepo) *accessPointTypeService {
+func NewAccessPointTypeService(accessPointTypeRepo IAccessPointTypeRepo, accessPointRadioTemplateRepo IAccessPointRadioTemplateRepo) *accessPointTypeService {
 	return &accessPointTypeService{
 		accessPointTypeRepo:          accessPointTypeRepo,
 		accessPointRadioTemplateRepo: accessPointRadioTemplateRepo,

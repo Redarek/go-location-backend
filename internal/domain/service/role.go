@@ -11,17 +11,17 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type RoleRepo interface {
+type IRoleRepo interface {
 	Create(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
 	GetOne(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
 	GetOneByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
 
 type roleService struct {
-	repository RoleRepo
+	repository IRoleRepo
 }
 
-func NewRoleService(repository RoleRepo) *roleService {
+func NewRoleService(repository IRoleRepo) *roleService {
 	return &roleService{repository: repository}
 }
 

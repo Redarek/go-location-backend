@@ -11,16 +11,16 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type UserRepo interface {
+type IUserRepo interface {
 	Create(ctx context.Context, dto *dto.CreateUserDTO) (userID uuid.UUID, err error)
 	GetOneByName(ctx context.Context, username string) (user *entity.User, err error)
 }
 
 type userService struct {
-	repository UserRepo
+	repository IUserRepo
 }
 
-func NewUserService(repository UserRepo) *userService {
+func NewUserService(repository IUserRepo) *userService {
 	return &userService{repository: repository}
 }
 

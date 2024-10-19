@@ -12,7 +12,7 @@ import (
 	"location-backend/internal/domain/usecase"
 )
 
-type AccessPointRadioTemplateRepo interface {
+type IAccessPointRadioTemplateRepo interface {
 	Create(ctx context.Context, createAccessPointRadioTemplateDTO *dto.CreateAccessPointRadioTemplateDTO) (accessPointRadioTemplateID uuid.UUID, err error)
 	GetOne(ctx context.Context, accessPointRadioTemplateID uuid.UUID) (accessPointRadioTemplate *entity.AccessPointRadioTemplate, err error)
 	GetAll(ctx context.Context, accessPointTypeID uuid.UUID, limit, offset int) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error)
@@ -25,10 +25,10 @@ type AccessPointRadioTemplateRepo interface {
 }
 
 type accessPointRadioTemplateService struct {
-	repository AccessPointRadioTemplateRepo
+	repository IAccessPointRadioTemplateRepo
 }
 
-func NewAccessPointRadioTemplateService(repository AccessPointRadioTemplateRepo) *accessPointRadioTemplateService {
+func NewAccessPointRadioTemplateService(repository IAccessPointRadioTemplateRepo) *accessPointRadioTemplateService {
 	return &accessPointRadioTemplateService{repository: repository}
 }
 

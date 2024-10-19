@@ -4,15 +4,15 @@ import (
 	"context"
 )
 
-type HealthRepo interface {
+type IHealthRepo interface {
 	Health(ctx context.Context) (err error)
 }
 
 type healthService struct {
-	repository HealthRepo
+	repository IHealthRepo
 }
 
-func NewHealthService(repository HealthRepo) *healthService {
+func NewHealthService(repository IHealthRepo) *healthService {
 	return &healthService{repository: repository}
 }
 
