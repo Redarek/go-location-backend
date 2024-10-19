@@ -94,7 +94,7 @@ func (r *wallRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, offset 
 			created_at, updated_at, deleted_at
 		FROM walls 
 		WHERE floor_id = $1 AND deleted_at IS NULL
-		LIMIT $2 OFFSET $3`
+		LIMIT COALESCE(NULLIF($2, 0), ALL) OFFSET $3`
 	rows, err := r.pool.Query(ctx, query, floorID, limit, offset)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to retrieve walls")
@@ -153,7 +153,7 @@ func (r *wallRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID, limit,
 		FROM walls w
 		JOIN wall_types wt ON w.wall_type_id = wt.id AND wt.deleted_at IS NULL
 		WHERE w.floor_id = $1 AND w.deleted_at IS NULL
-		LIMIT $2 OFFSET $3`
+		LIMIT COALESCE(NULLIF($2, 0), ALL) OFFSET $3`
 	rows, err := r.pool.Query(ctx, query, floorID, limit, offset)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to retrieve walls detailed")
