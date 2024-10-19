@@ -11,17 +11,17 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type RoleService interface {
+type IRoleService interface {
 	CreateRole(ctx context.Context, createRoleDTO *dto.CreateRoleDTO) (roleID uuid.UUID, err error)
 	GetRole(ctx context.Context, roleID uuid.UUID) (role *entity.Role, err error)
 	GetRoleByName(ctx context.Context, name string) (role *entity.Role, err error)
 }
 
 type RoleUsecase struct {
-	roleService RoleService
+	roleService IRoleService
 }
 
-func NewRoleUsecase(roleService RoleService) *RoleUsecase {
+func NewRoleUsecase(roleService IRoleService) *RoleUsecase {
 	return &RoleUsecase{roleService: roleService}
 }
 

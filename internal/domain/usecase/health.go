@@ -4,15 +4,15 @@ import (
 	"context"
 )
 
-type HealthService interface {
+type IHealthService interface {
 	Health(ctx context.Context) (err error)
 }
 
 type HealthUsecase struct {
-	healthService HealthService
+	healthService IHealthService
 }
 
-func NewHealthUsecase(healthService HealthService) *HealthUsecase {
+func NewHealthUsecase(healthService IHealthService) *HealthUsecase {
 	return &HealthUsecase{healthService: healthService}
 }
 

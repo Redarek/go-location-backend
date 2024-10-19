@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type SiteService interface {
+type ISiteService interface {
 	CreateSite(ctx context.Context, createSiteDTO *dto.CreateSiteDTO) (siteID uuid.UUID, err error)
 	GetSite(ctx context.Context, siteID uuid.UUID) (site *entity.Site, err error)
 	GetSiteDetailed(ctx context.Context, getDTO dto.GetSiteDetailedDTO) (siteDetailed *entity.SiteDetailed, err error)
@@ -26,10 +26,10 @@ type SiteService interface {
 }
 
 type SiteUsecase struct {
-	siteService SiteService
+	siteService ISiteService
 }
 
-func NewSiteUsecase(siteService SiteService) *SiteUsecase {
+func NewSiteUsecase(siteService ISiteService) *SiteUsecase {
 	return &SiteUsecase{siteService: siteService}
 }
 

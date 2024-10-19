@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type BuildingService interface {
+type IBuildingService interface {
 	CreateBuilding(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
 	GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
@@ -25,11 +25,11 @@ type BuildingService interface {
 }
 
 type BuildingUsecase struct {
-	buildingService BuildingService
-	siteService     SiteService
+	buildingService IBuildingService
+	siteService     ISiteService
 }
 
-func NewBuildingUsecase(buildingService BuildingService, siteService SiteService) *BuildingUsecase {
+func NewBuildingUsecase(buildingService IBuildingService, siteService ISiteService) *BuildingUsecase {
 	return &BuildingUsecase{
 		buildingService: buildingService,
 		siteService:     siteService,

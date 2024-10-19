@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type FloorService interface {
+type IFloorService interface {
 	CreateFloor(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error)
 	GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error)
 	GetFloors(ctx context.Context, getDTO dto.GetFloorsDTO) (floors []*entity.Floor, err error)
@@ -25,11 +25,11 @@ type FloorService interface {
 }
 
 type FloorUsecase struct {
-	floorService    FloorService
-	buildingService BuildingService
+	floorService    IFloorService
+	buildingService IBuildingService
 }
 
-func NewFloorUsecase(floorService FloorService, buildingService BuildingService) *FloorUsecase {
+func NewFloorUsecase(floorService IFloorService, buildingService IBuildingService) *FloorUsecase {
 	return &FloorUsecase{
 		floorService:    floorService,
 		buildingService: buildingService,

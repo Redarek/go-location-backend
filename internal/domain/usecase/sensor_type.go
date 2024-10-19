@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type SensorTypeService interface {
+type ISensorTypeService interface {
 	CreateSensorType(ctx context.Context, createDTO *dto.CreateSensorTypeDTO) (sensorTypeID uuid.UUID, err error)
 	GetSensorType(ctx context.Context, sensorTypeID uuid.UUID) (sensorType *entity.SensorType, err error)
 	// GetSensorTypeDetailed(ctx context.Context, getDTO dto.GetSensorTypeDetailedDTO) (sensorTypeDetailed *entity.SensorTypeDetailed, err error)
@@ -25,15 +25,15 @@ type SensorTypeService interface {
 }
 
 type SensorTypeUsecase struct {
-	sensorTypeService SensorTypeService
+	sensorTypeService ISensorTypeService
 	// accessPointRadioTemplateService AccessPointRadioTemplateService
-	siteService SiteService
+	siteService ISiteService
 }
 
 func NewSensorTypeUsecase(
-	sensorTypeService SensorTypeService,
+	sensorTypeService ISensorTypeService,
 	// accessPointRadioTemplateService AccessPointRadioTemplateService,
-	siteService SiteService,
+	siteService ISiteService,
 ) *SensorTypeUsecase {
 	return &SensorTypeUsecase{
 		sensorTypeService: sensorTypeService,

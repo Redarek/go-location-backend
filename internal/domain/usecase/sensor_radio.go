@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type SensorRadioService interface {
+type ISensorRadioService interface {
 	CreateSensorRadio(ctx context.Context, createDTO *dto.CreateSensorRadioDTO) (sensorRadioID uuid.UUID, err error)
 	GetSensorRadio(ctx context.Context, sensorRadioID uuid.UUID) (sensorRadio *entity.SensorRadio, err error)
 	GetSensorRadios(ctx context.Context, getDTO dto.GetSensorRadiosDTO) (sensorRadios []*entity.SensorRadio, err error)
@@ -24,11 +24,11 @@ type SensorRadioService interface {
 }
 
 type SensorRadioUsecase struct {
-	sensorRadioService SensorRadioService
-	sensorService      SensorService
+	sensorRadioService ISensorRadioService
+	sensorService      ISensorService
 }
 
-func NewSensorRadioUsecase(sensorRadioService SensorRadioService, sensorService SensorService) *SensorRadioUsecase {
+func NewSensorRadioUsecase(sensorRadioService ISensorRadioService, sensorService ISensorService) *SensorRadioUsecase {
 	return &SensorRadioUsecase{
 		sensorRadioService: sensorRadioService,
 		sensorService:      sensorService,

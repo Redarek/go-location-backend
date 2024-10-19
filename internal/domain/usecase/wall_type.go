@@ -11,7 +11,7 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type WallTypeService interface {
+type IWallTypeService interface {
 	CreateWallType(ctx context.Context, createWallTypeDTO *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
 	GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
 	GetWallTypes(ctx context.Context, getDTO dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error)
@@ -25,11 +25,11 @@ type WallTypeService interface {
 }
 
 type WallTypeUsecase struct {
-	wallTypeService WallTypeService
-	siteService     SiteService
+	wallTypeService IWallTypeService
+	siteService     ISiteService
 }
 
-func NewWallTypeUsecase(wallTypeService WallTypeService, siteService SiteService) *WallTypeUsecase {
+func NewWallTypeUsecase(wallTypeService IWallTypeService, siteService ISiteService) *WallTypeUsecase {
 	return &WallTypeUsecase{
 		wallTypeService: wallTypeService,
 		siteService:     siteService,

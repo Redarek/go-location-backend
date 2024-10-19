@@ -6,24 +6,24 @@ import (
 )
 
 type ServiceComposite struct {
-	healthService   usecase.HealthService
-	userService     usecase.UserService
-	roleService     usecase.RoleService
-	siteService     usecase.SiteService
-	buildingService usecase.BuildingService
-	floorService    usecase.FloorService
-	wallTypeService usecase.WallTypeService
-	wallService     usecase.WallService
+	healthService   usecase.IHealthService
+	userService     usecase.IUserService
+	roleService     usecase.IRoleService
+	siteService     usecase.ISiteService
+	buildingService usecase.IBuildingService
+	floorService    usecase.IFloorService
+	wallTypeService usecase.IWallTypeService
+	wallService     usecase.IWallService
 
-	accessPointTypeService          usecase.AccessPointTypeService
-	accessPointRadioTemplateService usecase.AccessPointRadioTemplateService
-	accessPointService              usecase.AccessPointService
-	accessPointRadioService         usecase.AccessPointRadioService
+	accessPointTypeService          usecase.IAccessPointTypeService
+	accessPointRadioTemplateService usecase.IAccessPointRadioTemplateService
+	accessPointService              usecase.IAccessPointService
+	accessPointRadioService         usecase.IAccessPointRadioService
 
-	sensorTypeService          usecase.SensorTypeService
-	sensorRadioTemplateService usecase.SensorRadioTemplateService
-	sensorService              usecase.SensorService
-	sensorRadioService         usecase.SensorRadioService
+	sensorTypeService          usecase.ISensorTypeService
+	sensorRadioTemplateService usecase.ISensorRadioTemplateService
+	sensorService              usecase.ISensorService
+	sensorRadioService         usecase.ISensorRadioService
 }
 
 func NewServiceComposite(composite *RepositoryComposite) (serviceComposite *ServiceComposite) {

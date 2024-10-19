@@ -15,7 +15,7 @@ import (
 	"location-backend/internal/domain/entity"
 )
 
-type UserService interface {
+type IUserService interface {
 	// TODO GetByID(ctx context.Context, id uuid.UUID) entity.User
 
 	GetUserByName(ctx context.Context, username string) (user *entity.User, err error)
@@ -23,13 +23,13 @@ type UserService interface {
 }
 
 type UserUsecase struct {
-	userService UserService
+	userService IUserService
 	// authorService UserService
 	// genreService  GenreService
 }
 
 // ? TEST. Изначально этого не было
-func NewUserUsecase(userService UserService) *UserUsecase {
+func NewUserUsecase(userService IUserService) *UserUsecase {
 	return &UserUsecase{userService: userService}
 }
 
