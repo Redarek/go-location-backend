@@ -37,7 +37,7 @@ func _getMatrix(matrixRowGenerator chan MatrixPoint, floorID uuid.UUID) ([]Point
 	return pointRowsToInsert, matrixRowsToInsert
 }
 
-func CreateMatrix(floorID uuid.UUID, inputData InputData) ([]PointRow, []MatrixRow) {
+func CreateMatrix(floorID uuid.UUID, inputData *InputData) ([]PointRow, []MatrixRow) {
 	log.Info().Msg(fmt.Sprintf("Creating matrix for FloorID = %s...", floorID))
 	var startTestTime time.Time = time.Now()
 
@@ -68,7 +68,7 @@ func CreateMatrix(floorID uuid.UUID, inputData InputData) ([]PointRow, []MatrixR
 
 type InputData struct {
 	Client         Client
-	Walls          []Wall
+	Walls          []*Wall
 	Sensors        []*Sensor
 	CellSizeMeters float64
 	MinX           int

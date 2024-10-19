@@ -20,10 +20,10 @@ import (
 
 // type Generator chan MatrixPoint
 
-func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
+func GenerateMatrixRow(inputData *InputData) chan MatrixPoint {
 	// var Client, Walls, Sensors, CellSizeMeters, MinX, MinY, MaxX, MaxY int = inputData;
 	var client Client = inputData.Client
-	var walls []Wall = inputData.Walls
+	var walls []*Wall = inputData.Walls
 	var sensors []*Sensor = inputData.Sensors
 	var minX int = inputData.MinX
 	var minY int = inputData.MinY
@@ -121,7 +121,7 @@ func GenerateMatrixRow(inputData InputData) chan MatrixPoint {
 func _getWallsAttenuation(
 	clientX float64,
 	clientY float64,
-	walls []Wall,
+	walls []*Wall,
 	sensor Sensor,
 	client Client,
 	cellSizeMeters float64,
