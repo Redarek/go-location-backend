@@ -6,7 +6,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	// "location-backend/internal/domain/dto"
+
+	"location-backend/internal/domain/dto"
+	"location-backend/plugins/location"
+	"location-backend/plugins/location/mapper"
 	// "location-backend/internal/domain/entity"
 )
 
@@ -25,16 +28,21 @@ import (
 // 	RestoreSensor(ctx context.Context, sensorID uuid.UUID) (err error)
 // }
 
+// TODO описать
+type ILocationPlugin interface {
+	// Execute() error
+}
+
 type MatrixUsecase struct {
-	floorService  FloorService
-	wallService   WallService
-	sensorService SensorService
+	floorService  IFloorService
+	wallService   IWallService
+	sensorService ISensorService
 }
 
 func NewMatrixUsecase(
-	floorService FloorService,
-	wallService WallService,
-	sensorService SensorService,
+	floorService IFloorService,
+	wallService IWallService,
+	sensorService ISensorService,
 ) *MatrixUsecase {
 	return &MatrixUsecase{
 		floorService:  floorService,
@@ -44,17 +52,30 @@ func NewMatrixUsecase(
 }
 
 func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (err error) {
+	matrixInputData, err := u.getMatrixInputData(ctx, floorID)
+	log.Debug().Msgf("matrix input data: %+v", matrixInputData) // TODO remove
+
+	return
+}
+
+func (u *MatrixUsecase) getMatrixInputData(ctx context.Context, floorID uuid.UUID) (matrixInputData *location.InputData, err error) {
 	floor, err := u.floorService.GetFloor(ctx, floorID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return ErrNotFound
+			return
 		}
 
 		log.Error().Err(err).Msg("failed to get floor")
 		return
 	}
 
-	wallsDetailed, err := u.wallService.GetWallDetailed(ctx, floor.ID)
+	getWallsDTO := dto.GetWallsDTO{
+		FloorID: floorID,
+		Limit:   0,
+		Offset:  0,
+	}
+
+	wallsDetailed, err := u.wallService.GetWallsDetailed(ctx, getWallsDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			log.Debug().Msg("no any wall were found on the floor")
@@ -64,12 +85,41 @@ func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (er
 		return
 	}
 
-	// TODO подумать над LIMIT OFFSET
-	// sensors, err := u.sensorService.GetSensors(ctx, floor.ID)
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to get sensors")
-	// 	return ctx.SendStatus(fiber.StatusInternalServerError)
-	// }
+	getSensorsDTO := dto.GetSensorsDTO{
+		FloorID: floorID,
+		Limit:   0,
+		Offset:  0,
+	}
+
+	sensors, err := u.sensorService.GetSensors(ctx, getSensorsDTO)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			log.Error().Err(err).Msg("no any sensor were found on the floor")
+			return
+		}
+
+		log.Error().Err(err).Msg("failed to get sensors")
+		return
+	}
+
+	wallMapper := mapper.GetWallMapper()
+	sensorMapper := mapper.GetSensorMapper()
+
+	matrixInputData = &location.InputData{
+		Client: location.Client{
+			TrSignalPower: 17,
+			TrAntGain:     1,
+			ZM:            1,
+		},
+		Walls:          wallMapper.EntitiesDomainToLocation(wallsDetailed),
+		Sensors:        sensorMapper.EntitiesDomainToLocation(sensors),
+		CellSizeMeters: floor.CellSizeMeter,
+		MinX:           0,
+		MinY:           0,
+		MaxX:           int(float64((float64(floor.WidthInPixels)*floor.Scale)/1000) / floor.CellSizeMeter), // !be careful here
+		MaxY:           int(float64((float64(floor.WidthInPixels)*floor.Scale)/1000) / floor.CellSizeMeter), // !be careful here
+	}
+	log.Debug().Msgf("matrix input data: %+v", matrixInputData)
 
 	return
 }

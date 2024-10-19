@@ -115,22 +115,6 @@ func (h *matrixHandler) CreateMatrix(ctx *fiber.Ctx) (err error) { // TODO пе�
 	// 	return ctx.SendStatus(fiber.StatusInternalServerError)
 	// }
 
-	// matrixInputData := location.InputData{
-	// 	Client: location.Client{
-	// 		TrSignalPower: 17,
-	// 		TrAntGain:     1,
-	// 		ZM:            1,
-	// 	},
-	// 	Walls:          h.convertWallsFromDB(walls),
-	// 	Sensors:        sensors,
-	// 	CellSizeMeters: 0.25, // TODO fix
-	// 	MinX:           0,
-	// 	MinY:           0,
-	// 	MaxX:           int(float64((float64(*floor.WidthInPixels)**floor.Scale)/1000) / 0.25), // !be careful here
-	// 	MaxY:           int(float64((float64(*floor.WidthInPixels)**floor.Scale)/1000) / 0.25), // !be careful here
-	// }
-	// log.Debug().Msgf("Matrix input data: %+v", matrixInputData)
-
 	// pointRows, matrixRows := location.CreateMatrix(floor.ID, matrixInputData)
 	// //log.Debug().Msgf("Point rows: %+v", pointRows)
 	// //log.Debug().Msgf("Matrix rows: %+v", matrixRows)
