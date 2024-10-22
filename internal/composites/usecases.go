@@ -23,6 +23,8 @@ type UsecaseComposite struct {
 	sensorRadioTemplateUsecase *usecase.SensorRadioTemplateUsecase
 	sensorUsecase              *usecase.SensorUsecase
 	sensorRadioUsecase         *usecase.SensorRadioUsecase
+
+	matrixUsecase *usecase.MatrixUsecase
 }
 
 func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *UsecaseComposite) {
@@ -45,5 +47,7 @@ func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *Usecase
 		sensorRadioTemplateUsecase: usecase.NewSensorRadioTemplateUsecase(composite.sensorRadioTemplateService, composite.sensorTypeService),
 		sensorUsecase:              usecase.NewSensorUsecase(composite.sensorService, composite.sensorTypeService, composite.floorService),
 		sensorRadioUsecase:         usecase.NewSensorRadioUsecase(composite.sensorRadioService, composite.sensorService),
+
+		matrixUsecase: usecase.NewMatrixUsecase(composite.floorService, composite.wallService, composite.sensorService),
 	}
 }

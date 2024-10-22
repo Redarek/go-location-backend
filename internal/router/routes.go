@@ -80,6 +80,9 @@ func RegisterRoutes(router *Router, handlerComposite *composites.HandlerComposit
 
 	sensorRadio := v1.Group("/sensor-radio", middleware.Auth)
 	handlerComposite.SensorRadioHandler.Register(&sensorRadio)
+
+	matrix := v1.Group("/matrix", middleware.Auth)
+	handlerComposite.MatrixHandler.Register(&matrix)
 }
 
 // import (
