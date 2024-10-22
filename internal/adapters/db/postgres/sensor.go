@@ -332,7 +332,7 @@ func (r *sensorRepo) GetAll(ctx context.Context, floorID uuid.UUID, limit, offse
 			created_at, updated_at, deleted_at
 		FROM sensors 
 		WHERE floor_id = $1 AND deleted_at IS NULL
-		LIMIT $2 OFFSET $3`
+		LIMIT NULLIF($2, 0) OFFSET $3`
 	rows, err := r.pool.Query(ctx, query, floorID, limit, offset)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to retrieve sensors")
@@ -421,7 +421,7 @@ func (r *sensorRepo) GetAllDetailed(ctx context.Context, floorID uuid.UUID, limi
 		JOIN sensor_types st ON s.sensor_type_id = st.id AND st.deleted_at IS NULL
 		LEFT JOIN sensor_radios r ON s.id = r.sensor_id AND r.deleted_at IS NULL
 		WHERE s.floor_id = $1 AND s.deleted_at IS NULL
-		LIMIT $2 OFFSET $3`
+		LIMIT NULLIF($2, 0) OFFSET $3`
 	rows, err := r.pool.Query(ctx, query, floorID, limit, offset)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to retrieve sensor")
