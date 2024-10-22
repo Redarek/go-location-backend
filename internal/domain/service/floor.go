@@ -17,6 +17,7 @@ type IFloorRepo interface {
 	GetAll(ctx context.Context, buildingID uuid.UUID, limit, offset int) (floors []*entity.Floor, err error)
 
 	Update(ctx context.Context, patchUpdateFloorDTO *dto.PatchUpdateFloorDTO) (err error)
+	UpdateHeatmap(ctx context.Context, floorID uuid.UUID, heatmap string) (err error)
 
 	IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error)
 	SoftDelete(ctx context.Context, floorID uuid.UUID) (err error)
@@ -65,6 +66,22 @@ func (s *floorService) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (flo
 // TODO PUT update
 func (s *floorService) UpdateFloor(ctx context.Context, updateFloorDTO *dto.PatchUpdateFloorDTO) (err error) {
 	err = s.repository.Update(ctx, updateFloorDTO)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return usecase.ErrNotFound
+		}
+		if errors.Is(err, ErrNotUpdated) {
+			return usecase.ErrNotUpdated
+		}
+
+		return
+	}
+
+	return
+}
+
+func (s *floorService) UpdateFloorHeatmap(ctx context.Context, floorID uuid.UUID, heatmap string) (err error) {
+	err = s.repository.UpdateHeatmap(ctx, floorID, heatmap)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return usecase.ErrNotFound

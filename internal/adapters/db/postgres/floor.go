@@ -258,6 +258,25 @@ func (r *floorRepo) Update(ctx context.Context, patchUpdateFloorDTO *dto.PatchUp
 	return
 }
 
+func (r *floorRepo) UpdateHeatmap(ctx context.Context, floorID uuid.UUID, heatmap string) (err error) {
+	query := `UPDATE floors SET 
+		updated_at = NOW(), 
+		heatmap = $1
+	WHERE id = $2 AND deleted_at IS NULL`
+
+	commandTag, err := r.pool.Exec(ctx, query, heatmap, floorID)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to execute update")
+		return
+	}
+	if commandTag.RowsAffected() == 0 {
+		log.Info().Msgf("no floor found with the ID: %v", floorID)
+		return service.ErrNotFound
+	}
+
+	return
+}
+
 // Checks if the floor has been soft deleted
 func (r *floorRepo) IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error) {
 	var deletedAt sql.NullTime // Use sql.NullTime to properly handle NULL values

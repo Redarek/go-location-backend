@@ -18,6 +18,7 @@ type IFloorService interface {
 	// TODO get floor list detailed
 
 	UpdateFloor(ctx context.Context, updateFloorDTO *dto.PatchUpdateFloorDTO) (err error)
+	UpdateFloorHeatmap(ctx context.Context, floorID uuid.UUID, heatmap string) (err error)
 
 	IsFloorSoftDeleted(ctx context.Context, floorID uuid.UUID) (isDeleted bool, err error)
 	SoftDeleteFloor(ctx context.Context, floorID uuid.UUID) (err error)
