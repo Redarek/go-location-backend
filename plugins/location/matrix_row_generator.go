@@ -3,10 +3,9 @@
 package location
 
 import (
-	"errors"
-	. "math"
-
 	"encoding/json"
+	"errors"
+	"math"
 
 	"github.com/rs/zerolog/log"
 )
@@ -71,7 +70,7 @@ func GenerateMatrixRow(inputData *InputData) chan MatrixPoint {
 					var rssi5 float64
 					var rssi6 float64
 					if tempRSSI24 >= RSSI_CUTOFF {
-						rssi24 = Round(tempRSSI24*10) / 10 // округление до 1 знака
+						rssi24 = math.Round(tempRSSI24*10) / 10 // округление до 1 знака
 					} else {
 						rssi24 = RSSI_INVISIBLE
 					}
@@ -79,7 +78,7 @@ func GenerateMatrixRow(inputData *InputData) chan MatrixPoint {
 					var tempRSSI5 float64 = freeSpaceRSSI5 + wallsLoss5 + CORRECTION_COEFFICIENT_5
 					// var rssi_5 float64 = (tempRSSI5 >= RSII_CUTOFF) ? Number(tempRSSI5.toFixed(1)) : RSSI_INVISIBLE;
 					if tempRSSI5 >= RSSI_CUTOFF {
-						rssi5 = Round(tempRSSI5*10) / 10
+						rssi5 = math.Round(tempRSSI5*10) / 10
 					} else {
 						rssi5 = RSSI_INVISIBLE
 					}
@@ -87,12 +86,12 @@ func GenerateMatrixRow(inputData *InputData) chan MatrixPoint {
 					var tempRSSI6 float64 = freeSpaceRSSI6 + wallsLoss6 + CORRECTION_COEFFICIENT_6
 					// var rssi_6 float64 = (tempRSSI6 >= RSII_CUTOFF) ? Number(tempRSSI6.toFixed(1)) : RSSI_INVISIBLE;
 					if tempRSSI6 >= RSSI_CUTOFF {
-						rssi6 = Round(tempRSSI6*10) / 10
+						rssi6 = math.Round(tempRSSI6*10) / 10
 					} else {
 						rssi6 = RSSI_INVISIBLE
 					}
 
-					distance = Round(distance*10) / 10
+					distance = math.Round(distance*10) / 10
 
 					matrixWithPoint.sensorID = sensor.ID
 					matrixWithPoint.rssi24 = rssi24
@@ -178,7 +177,7 @@ func _getFSPL(frequency int, attenuationFactor float64, penetrationFactor float6
 	if distance < 1 {
 		distance = 1
 	}
-	return 20*Log10(float64(frequency)) + 10*attenuationFactor*Log10(distance) + penetrationFactor - 24
+	return 20*math.Log10(float64(frequency)) + 10*attenuationFactor*math.Log10(distance) + penetrationFactor - 24
 }
 
 func _approximateAzimuth(azimuth float64, delta float64) (int, error) {
@@ -186,7 +185,7 @@ func _approximateAzimuth(azimuth float64, delta float64) (int, error) {
 		return 0, errors.New("delta cannot be zero")
 	}
 
-	return int(Floor((azimuth+Floor(delta/2))/delta)*delta) % 360, nil
+	return int(math.Floor((azimuth+math.Floor(delta/2))/delta)*delta) % 360, nil
 }
 
 /**

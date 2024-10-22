@@ -3,7 +3,6 @@ package location
 import (
 	"fmt"
 	"math"
-	. "math"
 )
 
 // const X, Y, Z int = 0, 1, 2
@@ -33,7 +32,7 @@ func Magnitude(vector Vector) float64 {
 	b = vector.y * vector.y
 	c = vector.z * vector.z
 
-	return Sqrt(a + b + c)
+	return math.Sqrt(a + b + c)
 }
 
 // ГОТОВО
@@ -52,7 +51,7 @@ func _areProjectionsIntersect(range_1_s float64, range_1_e float64, range_2_s fl
 		range_2_s, range_2_e = range_2_e, range_2_s
 	}
 
-	return Max(range_1_s, range_2_s) <= Min(range_1_e, range_2_e)
+	return math.Max(range_1_s, range_2_s) <= math.Min(range_1_e, range_2_e)
 }
 
 // ГОТОВО
@@ -226,7 +225,7 @@ func getVerticalAzimuthDeg(point1 XYZcoordinate, point2 XYZcoordinate, offset_de
  * @returns
  */
 func _getAzimuth(vector Vector, offset_deg int) int {
-	var angle float64 = Atan2(vector.x, -vector.y) * (180 / math.Pi)
+	var angle float64 = math.Atan2(vector.x, -vector.y) * (180 / math.Pi)
 	if angle < 0 {
 		angle += 360
 	}
@@ -245,7 +244,7 @@ func _getPlunge(vector Vector, offset_deg int) int {
 	var z float64 = vector.z
 	var magnitude float64 = Magnitude(vector)
 
-	var angle float64 = Asin(z/magnitude) * (180 / Pi)
+	var angle float64 = math.Asin(z/magnitude) * (180 / math.Pi)
 	if angle < 0 {
 		angle += 360
 	}
@@ -261,7 +260,7 @@ func _getProjectionsOverlapLength(range_1_s float64, range_1_e float64, range_2_
 		range_2_s, range_2_e = range_2_e, range_2_s
 	}
 
-	return Max(range_1_s, range_2_s) - Min(range_1_e, range_2_e)
+	return math.Max(range_1_s, range_2_s) - math.Min(range_1_e, range_2_e)
 }
 
 ///////OLD
@@ -302,7 +301,7 @@ func getWallPathLengthThrough(
 			//    return thickness;
 
 			var cos_fi float64 = _findVectorCosPhi(vector1, vector2)
-			if cos_fi == 0 || IsNaN(cos_fi) || IsInf(cos_fi, 0) {
+			if cos_fi == 0 || math.IsNaN(cos_fi) || math.IsInf(cos_fi, 0) {
 				return thickness
 			}
 
@@ -312,19 +311,19 @@ func getWallPathLengthThrough(
 				XY, tmp := _getLinesIntersection2D(line1Point1, line1Point2, line2Point1, line2Point2) // or null
 				if tmp == true {
 					var x float64 = XY.x
-					var small_line_length float64 = Abs(x - line1Point1.x)
-					var big_line_length float64 = Abs(line1Point2.x - line1Point1.x)
+					var small_line_length float64 = math.Abs(x - line1Point1.x)
+					var big_line_length float64 = math.Abs(line1Point2.x - line1Point1.x)
 					var scale float64 = small_line_length / big_line_length
-					if !IsNaN(scale) || !IsInf(scale, 0) {
+					if !math.IsNaN(scale) || !math.IsInf(scale, 0) {
 						scaled_height_in_cells = scale * height_in_cells // здесь было округление до 2
 					}
 				}
 			}
-			var sin_fi float64 = Sqrt(1 - Pow(cos_fi, 2))
-			var wallPathLengthThrough = Hypot(thickness/sin_fi, scaled_height_in_cells*cell_size_meters) // Здесь было округление до 2
+			var sin_fi float64 = math.Sqrt(1 - math.Pow(cos_fi, 2))
+			var wallPathLengthThrough = math.Hypot(thickness/sin_fi, scaled_height_in_cells*cell_size_meters) // Здесь было округление до 2
 
 			// if parallel
-			if Abs(cos_fi) == 1 {
+			if math.Abs(cos_fi) == 1 {
 				var xProjection float64 = _getProjectionsOverlapLength(line1Point1.x, line1Point2.x, line2Point1.x, line2Point2.x)
 				var yProjection float64 = _getProjectionsOverlapLength(line1Point1.y, line1Point2.y, line2Point1.y, line2Point2.y)
 				//if (line1Point2[Y] >= line2Point2[Y])
@@ -339,7 +338,7 @@ func getWallPathLengthThrough(
 				var vector Vector = Vector{xProjection, yProjection, scaled_height_in_cells}
 				wallPathLengthThrough = Magnitude(vector) * cell_size_meters // было округление до 2
 				if wallPathLengthThrough == 0 {
-					return Hypot(thickness, scaled_height_in_cells*cell_size_meters) // было округление до 2
+					return math.Hypot(thickness, scaled_height_in_cells*cell_size_meters) // было округление до 2
 				}
 			}
 
