@@ -70,6 +70,7 @@ type InputData struct {
 	Client         Client
 	Walls          []*Wall
 	Sensors        []*Sensor
+	Floor          Floor
 	CellSizeMeters float64
 	MinX           int
 	MinY           int

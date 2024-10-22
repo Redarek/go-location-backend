@@ -15,8 +15,9 @@ import (
 	"location-backend/pkg/httperrors"
 )
 
-// const (
-// 	createSensorURL       = "/"
+const (
+	createMatrixURL = "/"
+
 // 	getSensorURL          = "/"
 // 	getSensorDetailedURL  = "/detailed"
 // 	getSensorsURL         = "/all"
@@ -24,20 +25,22 @@ import (
 
 // 	patchUpdateSensorURL = "/"
 
-// 	softDeleteSensorURL = "/sd"
-// 	restoreSensorURL    = "/restore"
-// )
+// softDeleteSensorURL = "/sd"
+// restoreSensorURL    = "/restore"
+)
 
 type matrixHandler struct {
-	floorUsecase *usecase.FloorUsecase
+	floorUsecase  *usecase.FloorUsecase
+	matrixUsecase *usecase.MatrixUsecase
 	// sensorMapper *mapper.SensorMapper
 	// aprtMapper *mapper.SensorRadioTemplateMapper
 }
 
 // Регистрирует новый handler
-func NewMatrixHandler(floorUsecase *usecase.FloorUsecase) *matrixHandler {
+func NewMatrixHandler(floorUsecase *usecase.FloorUsecase, matrixUsecase *usecase.MatrixUsecase) *matrixHandler {
 	return &matrixHandler{
-		floorUsecase: floorUsecase,
+		floorUsecase:  floorUsecase,
+		matrixUsecase: matrixUsecase,
 		// sensorMapper: &mapper.SensorMapper{},
 		// aprtMapper: &mapper.SensorRadioTemplateMapper{},
 	}
@@ -47,7 +50,7 @@ func NewMatrixHandler(floorUsecase *usecase.FloorUsecase) *matrixHandler {
 func (h *matrixHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
 	// Create
-	// router.Post(createSensorURL, h.CreateSensor)
+	router.Post(createSensorURL, h.CreateMatrix)
 
 	// // Get
 	// router.Get(getSensorURL, h.GetSensor)
@@ -99,92 +102,16 @@ func (h *matrixHandler) CreateMatrix(ctx *fiber.Ctx) (err error) { // TODO пе�
 		))
 	}
 
-	// walls, err := h.db.GetWallsDetailed(floor.ID)
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to get walls detailed")
-	// 	return ctx.SendStatus(fiber.StatusInternalServerError)
-	// }
-	// sensors, err := h.db.GetSensors(floor.ID)
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to get sensors")
-	// 	return ctx.SendStatus(fiber.StatusInternalServerError)
-	// }
-
-	// if *floor.WidthInPixels == 0 || *floor.HeightInPixels == 0 {
-	// 	log.Error().Msg("Width or height of floor is 0")
-	// 	return ctx.SendStatus(fiber.StatusInternalServerError)
-	// }
-
-	// pointRows, matrixRows := location.CreateMatrix(floor.ID, matrixInputData)
-	// //log.Debug().Msgf("Point rows: %+v", pointRows)
-	// //log.Debug().Msgf("Matrix rows: %+v", matrixRows)
-
-	// //responseData := fiber.Map{
-	// //	"data": fiber.Map{
-	// //		"pointRows":  pointRows,
-	// //		"matrixRows": matrixRows,
-	// //	},
-	// //}
-
-	// const squareSize = 1 // размер квадрата в пикселях
-
-	// dc := gg.NewContext(*floor.WidthInPixels, *floor.HeightInPixels)
-	// for _, point := range pointRows {
-	// 	var rssi float64 = -100
-	// 	for _, matrix := range matrixRows {
-	// 		if matrix.PointID == point.ID {
-	// 			rssi = matrix.RSSI24
-	// 			break
-	// 		}
-	// 	}
-
-	// 	if rssi != -100 {
-	// 		normalizedValue := normalize(rssi, -100, -25)
-	// 		clr := generateColorAndOpacity(normalizedValue)
-
-	// 		pointX := point.X * *floor.Scale / 1000
-	// 		pointY := point.Y * *floor.Scale / 1000
-
-	// 		dc.DrawRectangle(pointX, pointY, squareSize, squareSize)
-	// 		dc.SetColor(clr)
-	// 		dc.Fill()
-	// 	}
-	// }
-
-	// // Удаление предыдущей тепловой карты
-	// if floor.Heatmap != nil {
-	// 	path := filepath.Join("static", *floor.Heatmap)
-	// 	err = os.Remove(path)
-	// 	if err != nil {
-	// 		log.Error().Err(err).Msg("Failed to delete previous heatmap")
-	// 		return ctx.SendStatus(fiber.StatusInternalServerError)
-	// 	}
-	// 	log.Debug().Msgf("Previous heatmap deleted successfully")
-
-	// }
-
-	// fileName := uuid.New().String() + ".png"
-	// outputPath := filepath.Join("static", fileName)
-
-	// if _, err = os.Stat("static"); os.IsNotExist(err) {
-	// 	if err = os.Mkdir("static", os.ModePerm); err != nil {
-	// 		log.Error().Err(err).Msg("Failed to create directory")
-	// 		return ctx.SendStatus(fiber.StatusInternalServerError)
-	// 	}
-	// }
-
-	// err = dc.SavePNG(outputPath)
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to save heatmap")
-	// 	return ctx.SendStatus(fiber.StatusInternalServerError)
-	// }
-
-	// err = h.db.UpdateFloorHeatmap(floor.ID, fileName)
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to get sensors")
-	// 	return ctx.SendStatus(fiber.StatusInternalServerError)
-	// }
-	// log.Debug().Msgf("Heatmap saved as %v", outputPath)
+	err = h.matrixUsecase.CreateMatrix(context.Background(), floorID)
+	if err != nil {
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to create matrix")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to create matrix",
+			"",
+			nil,
+		))
+	}
 
 	return ctx.SendStatus(fiber.StatusOK)
 }
