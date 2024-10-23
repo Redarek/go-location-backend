@@ -66,7 +66,7 @@ func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (er
 
 	pointRows, matrixRows := location.CreateMatrix(floorID, matrixInputData)
 
-	const squareSize = 1 // размер квадрата в пикселях
+	var squareSizePx = 1000 / matrixInputData.Floor.Scale * matrixInputData.Floor.CellSizeMeter // размер квадрата в пикселях
 	dc := gg.NewContext(matrixInputData.Floor.WidthInPixels, matrixInputData.Floor.HeightInPixels)
 	for _, point := range pointRows {
 		var rssi float64 = -100
@@ -77,16 +77,18 @@ func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (er
 			}
 		}
 
-		if rssi != -100 {
-			normalizedValue := normalize(rssi, -100, -25)
+		if rssi != location.RSSI_INVISIBLE {
+			normalizedValue := normalize(rssi, location.RSSI_INVISIBLE, -25)
 			clr := generateColorAndOpacity(normalizedValue)
 
 			// pointY := point.Y * matrixInputData.Floor.Scale / 1000
 			//! Возможно неверное преобразование
-			pointX := point.X * 1000 / matrixInputData.Floor.Scale
-			pointY := point.Y * 1000 / matrixInputData.Floor.Scale
+			// pointX := point.X * 1000 / matrixInputData.Floor.Scale
+			// pointY := point.Y * 1000 / matrixInputData.Floor.Scale
+			pointX := point.X * squareSizePx
+			pointY := point.Y * squareSizePx
 
-			dc.DrawRectangle(pointX, pointY, squareSize, squareSize)
+			dc.DrawRectangle(pointX, pointY, squareSizePx, squareSizePx)
 			dc.SetColor(clr)
 			dc.Fill()
 		}
@@ -183,6 +185,7 @@ func (u *MatrixUsecase) getMatrixInputData(ctx context.Context, floorID uuid.UUI
 	floorMapper := mapper.GetFloorMapper()
 
 	// TODO убрать избыточные параметры
+	var squareSize = floor.Scale / 1000 / floor.CellSizeMeter
 	matrixInputData = &location.InputData{
 		Client: location.Client{
 			TrSignalPower: 17,
@@ -195,8 +198,10 @@ func (u *MatrixUsecase) getMatrixInputData(ctx context.Context, floorID uuid.UUI
 		CellSizeMeters: floor.CellSizeMeter,
 		MinX:           0,
 		MinY:           0,
-		MaxX:           int(float64(floor.WidthInPixels) * floor.Scale / 1000 / floor.CellSizeMeter),  // !be careful here
-		MaxY:           int(float64(floor.HeightInPixels) * floor.Scale / 1000 / floor.CellSizeMeter), // !be careful here
+		// MaxX:           int(float64(floor.WidthInPixels) * floor.Scale * 1000 / floor.CellSizeMeter),  // !be careful here
+		// MaxY:           int(float64(floor.HeightInPixels) * floor.Scale * 1000 / floor.CellSizeMeter), // !be careful here
+		MaxX: int(float64(floor.WidthInPixels) * squareSize),  // !be careful here
+		MaxY: int(float64(floor.HeightInPixels) * squareSize), // !be careful here
 	}
 	log.Debug().Msgf("matrix input data: %+v", matrixInputData)
 
