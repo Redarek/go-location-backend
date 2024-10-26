@@ -4,17 +4,19 @@ import (
 	"sync"
 
 	domain_entity "location-backend/internal/domain/entity"
-	location_entity "location-backend/plugins/location"
+	"location-backend/plugins/location"
 )
 
 type sensorMapper struct{}
 
-func (*sensorMapper) EntityDomainToLocation(domainEntity *domain_entity.Sensor) (locationEntity *location_entity.Sensor) {
-	locationEntity = &location_entity.Sensor{
+func (*sensorMapper) EntityDomainToLocation(domainEntity *domain_entity.Sensor, scale float64) (locationEntity *location.Sensor) {
+	x := location.PixelsToMeters(float64(*domainEntity.X), scale)
+	y := location.PixelsToMeters(float64(*domainEntity.Y), scale)
+	locationEntity = &location.Sensor{
 		ID:                 domainEntity.ID,
 		Name:               domainEntity.Name,
-		X:                  domainEntity.X,
-		Y:                  domainEntity.Y,
+		X:                  &x,
+		Y:                  &y,
 		Z:                  domainEntity.Z,
 		MAC:                domainEntity.MAC,
 		RxAntGain:          domainEntity.RxAntGain,
@@ -31,9 +33,9 @@ func (*sensorMapper) EntityDomainToLocation(domainEntity *domain_entity.Sensor) 
 	return
 }
 
-func (m *sensorMapper) EntitiesDomainToLocation(domainEntities []*domain_entity.Sensor) (locationEntities []*location_entity.Sensor) {
+func (m *sensorMapper) EntitiesDomainToLocation(domainEntities []*domain_entity.Sensor, scale float64) (locationEntities []*location.Sensor) {
 	for _, domainEntity := range domainEntities {
-		locationEntity := m.EntityDomainToLocation(domainEntity)
+		locationEntity := m.EntityDomainToLocation(domainEntity, scale)
 		locationEntities = append(locationEntities, locationEntity)
 	}
 

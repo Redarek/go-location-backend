@@ -29,8 +29,8 @@ type Sensor struct {
 	ID   uuid.UUID
 	Name string
 	// Color              *string
-	X   *int
-	Y   *int
+	X   *float64
+	Y   *float64
 	Z   *float64
 	MAC string
 	// IP                 string
@@ -57,10 +57,10 @@ type Degree struct {
 
 type Wall struct {
 	ID            uuid.UUID
-	X1            int
-	Y1            int
-	X2            int
-	Y2            int
+	X1            float64
+	Y1            float64
+	X2            float64
+	Y2            float64
 	Thickness     float64
 	Attenuation24 float64
 	Attenuation5  float64

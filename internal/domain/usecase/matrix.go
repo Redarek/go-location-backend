@@ -66,7 +66,8 @@ func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (er
 
 	pointRows, matrixRows := location.CreateMatrix(floorID, matrixInputData)
 
-	var squareSizePx = 1000 / matrixInputData.Floor.Scale * matrixInputData.Floor.CellSizeMeter // размер квадрата в пикселях
+	// var squareSizePx = 1000 / matrixInputData.Floor.Scale * matrixInputData.Floor.CellSizeMeter // размер квадрата в пикселях
+	var squareSizePx = location.MetersToPixels(matrixInputData.Floor.CellSizeMeter, matrixInputData.Floor.Scale)
 	dc := gg.NewContext(matrixInputData.Floor.WidthInPixels, matrixInputData.Floor.HeightInPixels)
 	for _, point := range pointRows {
 		var rssi float64 = -100
@@ -78,15 +79,17 @@ func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (er
 		}
 
 		if rssi != location.RSSI_INVISIBLE {
-			normalizedValue := normalize(rssi, location.RSSI_INVISIBLE, -25)
+			normalizedValue := normalize(rssi, location.RSSI_INVISIBLE, 0) // -25
 			clr := generateColorAndOpacity(normalizedValue)
 
 			// pointY := point.Y * matrixInputData.Floor.Scale / 1000
 			//! Возможно неверное преобразование
 			// pointX := point.X * 1000 / matrixInputData.Floor.Scale
 			// pointY := point.Y * 1000 / matrixInputData.Floor.Scale
-			pointX := point.X * squareSizePx
-			pointY := point.Y * squareSizePx
+			// pointX := point.X * squareSizePx
+			// pointY := point.Y * squareSizePx
+			pointX := location.MetersToPixels(point.X, matrixInputData.Floor.Scale)
+			pointY := location.MetersToPixels(point.Y, matrixInputData.Floor.Scale)
 
 			dc.DrawRectangle(pointX, pointY, squareSizePx, squareSizePx)
 			dc.SetColor(clr)
@@ -185,23 +188,23 @@ func (u *MatrixUsecase) getMatrixInputData(ctx context.Context, floorID uuid.UUI
 	floorMapper := mapper.GetFloorMapper()
 
 	// TODO убрать избыточные параметры
-	var squareSize = floor.Scale / 1000 / floor.CellSizeMeter
+	// var squareSize = floor.Scale / 1000 / floor.CellSizeMeter // ?
 	matrixInputData = &location.InputData{
 		Client: location.Client{
 			TrSignalPower: 17,
 			TrAntGain:     1,
 			ZM:            1,
 		},
-		Walls:          wallMapper.EntitiesDomainToLocation(wallsDetailed),
-		Sensors:        sensorMapper.EntitiesDomainToLocation(sensors),
+		Walls:          wallMapper.EntitiesDomainToLocation(wallsDetailed, floor.Scale),
+		Sensors:        sensorMapper.EntitiesDomainToLocation(sensors, floor.Scale),
 		Floor:          *floorMapper.EntityDomainToLocation(floor),
 		CellSizeMeters: floor.CellSizeMeter,
 		MinX:           0,
 		MinY:           0,
-		// MaxX:           int(float64(floor.WidthInPixels) * floor.Scale * 1000 / floor.CellSizeMeter),  // !be careful here
-		// MaxY:           int(float64(floor.HeightInPixels) * floor.Scale * 1000 / floor.CellSizeMeter), // !be careful here
-		MaxX: int(float64(floor.WidthInPixels) * squareSize),  // !be careful here
-		MaxY: int(float64(floor.HeightInPixels) * squareSize), // !be careful here
+		// MaxX: int(float64(floor.WidthInPixels) * squareSize),  // !be careful here
+		// MaxY: int(float64(floor.HeightInPixels) * squareSize), // !be careful here
+		MaxX: location.PixelsToCells(floor.WidthInPixels, floor.Scale, floor.CellSizeMeter),  // !be careful here
+		MaxY: location.PixelsToCells(floor.HeightInPixels, floor.Scale, floor.CellSizeMeter), // !be careful here
 	}
 	log.Debug().Msgf("matrix input data: %+v", matrixInputData)
 
@@ -214,7 +217,8 @@ func normalize(value, min, max float64) float64 {
 
 func generateColorAndOpacity(normalizedValue float64) color.Color {
 	var r, g, b, a uint8
-	a = 153 // 0.6 * 255
+	// a = 153 // 0.6 * 255
+	a = 255
 
 	if normalizedValue == 0 {
 		r, g, b, a = 0, 0, 0, 0
