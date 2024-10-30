@@ -293,6 +293,23 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         deleted_at TIMESTAMPTZ
     );
 
+    CREATE TABLE IF NOT EXISTS points (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
+        x INTEGER NOT NULL,
+        y INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS matrix (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        point_id UUID NOT NULL REFERENCES points(id) ON DELETE CASCADE,
+        sensor_id UUID NOT NULL REFERENCES sensors(id) ON DELETE CASCADE,
+        rssi24 FLOAT NOT NULL,
+        rssi5 FLOAT NOT NULL,
+        rssi6 FLOAT NOT NULL,
+        distance FLOAT NOT NULL
+    );
+
     -- Активация расширения для генерации UUID
     CREATE EXTENSION IF NOT EXISTS pgcrypto;`
 
