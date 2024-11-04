@@ -7,7 +7,7 @@ import (
 )
 
 type MatrixPoint struct {
-	id       int
+	id       uuid.UUID
 	sensorID uuid.UUID
 	x        int
 	y        int

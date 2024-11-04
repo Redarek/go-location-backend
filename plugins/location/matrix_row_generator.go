@@ -7,6 +7,7 @@ import (
 	"errors"
 	"math"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
 
@@ -39,7 +40,7 @@ func GenerateMatrixRow(inputData *InputData) chan MatrixPoint {
 			for x := minX; x < maxX+1; x++ {
 				i++
 				var matrixWithPoint MatrixPoint = MatrixPoint{
-					id: i,
+					id: uuid.New(),
 					// SensorID: -1,
 					x:        x,
 					y:        y,
