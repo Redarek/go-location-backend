@@ -296,8 +296,8 @@ func syncTables(pool *pgxpool.Pool) (err error) {
     CREATE TABLE IF NOT EXISTS points (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         floor_id UUID NOT NULL REFERENCES floors(id) ON DELETE SET NULL,
-        x INTEGER NOT NULL,
-        y INTEGER NOT NULL
+        x FLOAT NOT NULL, --метры
+        y FLOAT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS matrix (
