@@ -12,25 +12,18 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"location-backend/internal/domain/dto"
-	"location-backend/plugins/location"
-	"location-backend/plugins/location/mapper"
-	// "location-backend/internal/domain/entity"
+	"location-backend/internal/domain/entity"
+	"location-backend/plugins/location"        // TODO удалить зависимость
+	"location-backend/plugins/location/mapper" // TODO удалить зависимость
 )
 
-// type MatrixService interface {
-// 	CreateSensor(ctx context.Context, createDTO *dto.CreateSensorDTO) (sensorID uuid.UUID, err error)
-// 	GetSensor(ctx context.Context, sensorID uuid.UUID) (sensor *entity.Sensor, err error)
-// 	GetSensorByMAC(ctx context.Context, mac string) (sensor *entity.Sensor, err error)
-// 	GetSensorDetailed(ctx context.Context, getDTO dto.GetSensorDetailedDTO) (sensorDetailed *entity.SensorDetailed, err error)
-// 	GetSensors(ctx context.Context, getDTO dto.GetSensorsDTO) (sensors []*entity.Sensor, err error)
-// 	GetSensorsDetailed(ctx context.Context, dto dto.GetSensorsDetailedDTO) (sensorsDetailed []*entity.SensorDetailed, err error)
+const publicFolderPath = "public"
 
-// 	UpdateSensor(ctx context.Context, patchUpdateDTO *dto.PatchUpdateSensorDTO) (err error)
+type IMatrixService interface {
+	CreateMatrix(ctx context.Context, points []*entity.Point, matrixPoints []*entity.MatrixPoint) (err error)
 
-// 	IsSensorSoftDeleted(ctx context.Context, sensorID uuid.UUID) (isDeleted bool, err error)
-// 	SoftDeleteSensor(ctx context.Context, sensorID uuid.UUID) (err error)
-// 	RestoreSensor(ctx context.Context, sensorID uuid.UUID) (err error)
-// }
+	DeletePoints(ctx context.Context, floorID uuid.UUID) (deletedCount int64, err error)
+}
 
 // TODO описать
 type ILocationPlugin interface {
@@ -38,17 +31,20 @@ type ILocationPlugin interface {
 }
 
 type MatrixUsecase struct {
+	matrixService IMatrixService
 	floorService  IFloorService
 	wallService   IWallService
 	sensorService ISensorService
 }
 
 func NewMatrixUsecase(
+	matrixService IMatrixService,
 	floorService IFloorService,
 	wallService IWallService,
 	sensorService ISensorService,
 ) *MatrixUsecase {
 	return &MatrixUsecase{
+		matrixService: matrixService,
 		floorService:  floorService,
 		wallService:   wallService,
 		sensorService: sensorService,
@@ -56,8 +52,6 @@ func NewMatrixUsecase(
 }
 
 func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (err error) {
-	publicFolderPath := "public"
-
 	matrixInputData, err := u.getMatrixInputData(ctx, floorID)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get matrix input data")
@@ -66,66 +60,13 @@ func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (er
 
 	pointRows, matrixRows := location.CreateMatrix(floorID, matrixInputData)
 
-	// var squareSizePx = 1000 / matrixInputData.Floor.Scale * matrixInputData.Floor.CellSizeMeter // размер квадрата в пикселях
-	var squareSizePx = location.MetersToPixels(matrixInputData.Floor.CellSizeMeter, matrixInputData.Floor.Scale)
-	dc := gg.NewContext(matrixInputData.Floor.WidthInPixels, matrixInputData.Floor.HeightInPixels)
-	for _, point := range pointRows {
-		var rssi float64 = -100
-		for _, matrix := range matrixRows {
-			if matrix.PointID == point.ID {
-				rssi = matrix.RSSI24
-				break
-			}
-		}
-
-		if rssi != location.RSSI_INVISIBLE {
-			normalizedValue := normalize(rssi, location.RSSI_INVISIBLE, 0) // -25
-			clr := generateColorAndOpacity(normalizedValue)
-
-			// pointY := point.Y * matrixInputData.Floor.Scale / 1000
-			//! Возможно неверное преобразование
-			// pointX := point.X * 1000 / matrixInputData.Floor.Scale
-			// pointY := point.Y * 1000 / matrixInputData.Floor.Scale
-			// pointX := point.X * squareSizePx
-			// pointY := point.Y * squareSizePx
-			pointX := location.MetersToPixels(point.X, matrixInputData.Floor.Scale)
-			pointY := location.MetersToPixels(point.Y, matrixInputData.Floor.Scale)
-
-			dc.DrawRectangle(pointX, pointY, squareSizePx, squareSizePx)
-			dc.SetColor(clr)
-			dc.Fill()
-		}
-	}
-
-	// Удаление предыдущей тепловой карты
-	if matrixInputData.Floor.Heatmap != nil {
-		path := filepath.Join(publicFolderPath, *matrixInputData.Floor.Heatmap) // TODO fix
-		err = os.Remove(path)
-		if err != nil {
-			if os.IsNotExist(err) {
-				log.Warn().Msgf("file %s does not exist", *matrixInputData.Floor.Heatmap)
-			} else {
-				log.Error().Err(err).Msg("failed to remove previous heatmap")
-				return
-			}
-		}
-		log.Debug().Msgf("previous heatmap removed successfully")
-	}
-
+	// Имя файла и путь
 	fileName := uuid.New().String() + ".png"
-	outputPath := filepath.Join(publicFolderPath, fileName)
-
-	// ? проверка наличия папки public?
-	if _, err = os.Stat(publicFolderPath); os.IsNotExist(err) {
-		if err = os.Mkdir(publicFolderPath, os.ModePerm); err != nil {
-			log.Error().Err(err).Msg("failed to create directory")
-			return
-		}
-	}
-
-	err = dc.SavePNG(outputPath)
+	path := filepath.Join(publicFolderPath, fileName)
+	// Создание матрицы в виде картинки
+	err = createMatrixPNG(matrixInputData, pointRows, matrixRows, path)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to save heatmap")
+		log.Error().Err(err).Msg("failed to create PNG from matrix")
 		return
 	}
 
@@ -134,7 +75,32 @@ func (u *MatrixUsecase) CreateMatrix(ctx context.Context, floorID uuid.UUID) (er
 		log.Error().Err(err).Msg("failed to update heatmap")
 		return
 	}
-	log.Debug().Msgf("heatmap saved as %v", outputPath)
+	log.Debug().Msgf("heatmap saved as %v", path)
+
+	// var matrix []*entity.Matrix
+	// for _, point := range pointRows {
+	// 	for _, matrixPoint := range matrixRows {
+	// 		if matrixPoint.PointID == point.ID {
+	// 			matrix = append(matrix, &entity.Matrix{
+	// 				FloorID: floorID,
+	// 				X:       matrixInputData.Floor.X,
+	// 				Y:       matrixInputData.Floor.Y,
+	// 			})
+	// 		}
+	// 	}
+	// }
+	_, err = u.matrixService.DeletePoints(ctx, floorID)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to delete points")
+		return
+	}
+	// log.Debug().Msgf("heatmap saved as %v", path)
+
+	err = u.matrixService.CreateMatrix(ctx, pointRows, matrixRows)
+	if err != nil {
+		log.Error().Err(err).Msg("failed insert matrix into database")
+		return
+	}
 
 	return
 }
@@ -237,4 +203,82 @@ func generateColorAndOpacity(normalizedValue float64) color.Color {
 	}
 
 	return color.NRGBA{R: r, G: g, B: b, A: a}
+}
+
+func createMatrixContext(matrixInputData *location.InputData, pointRows []*entity.Point, matrixRows []*entity.MatrixPoint) (context *gg.Context) {
+	// var squareSizePx = 1000 / matrixInputData.Floor.Scale * matrixInputData.Floor.CellSizeMeter // размер квадрата в пикселях
+	var squareSizePx = location.MetersToPixels(matrixInputData.Floor.CellSizeMeter, matrixInputData.Floor.Scale)
+	context = gg.NewContext(matrixInputData.Floor.WidthInPixels, matrixInputData.Floor.HeightInPixels)
+	for _, point := range pointRows {
+		var rssi float64 = -100
+		for _, matrix := range matrixRows {
+			if matrix.PointID == point.ID {
+				rssi = matrix.RSSI24
+				break
+			}
+		}
+
+		if rssi != location.RSSI_INVISIBLE {
+			normalizedValue := normalize(rssi, location.RSSI_INVISIBLE, 0) // -25
+			clr := generateColorAndOpacity(normalizedValue)
+
+			//! Возможно неверное преобразование
+			// pointX := point.X * squareSizePx
+			// pointY := point.Y * squareSizePx
+			pointX := location.MetersToPixels(point.X, matrixInputData.Floor.Scale)
+			pointY := location.MetersToPixels(point.Y, matrixInputData.Floor.Scale)
+
+			context.DrawRectangle(pointX, pointY, squareSizePx, squareSizePx)
+			context.SetColor(clr)
+			context.Fill()
+		}
+	}
+
+	return
+}
+
+func removePreviousPicture(matrixInputData *location.InputData) (err error) {
+	if matrixInputData.Floor.Heatmap != nil {
+		path := filepath.Join(publicFolderPath, *matrixInputData.Floor.Heatmap) // TODO fix
+		err = os.Remove(path)
+	}
+
+	return
+}
+
+func saveMatrixToPNG(context *gg.Context, path string) (err error) {
+	// ? проверка наличия папки public?
+	if _, err = os.Stat(publicFolderPath); os.IsNotExist(err) {
+		if err = os.Mkdir(publicFolderPath, os.ModePerm); err != nil {
+			log.Error().Msg("failed to create directory")
+			return
+		}
+	}
+
+	return context.SavePNG(path)
+}
+
+func createMatrixPNG(matrixInputData *location.InputData, pointRows []*entity.Point, matrixRows []*entity.MatrixPoint, path string) (err error) {
+	context := createMatrixContext(matrixInputData, pointRows, matrixRows)
+
+	// Удаление предыдущей тепловой карты
+	err = removePreviousPicture(matrixInputData)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Warn().Msgf("file %s does not exist", *matrixInputData.Floor.Heatmap)
+		} else {
+			log.Error().Msg("failed to remove previous heatmap")
+			return
+		}
+	}
+	log.Debug().Msgf("previous heatmap removed successfully")
+
+	// Сохранение матрицы как PNG
+	err = saveMatrixToPNG(context, path)
+	if err != nil {
+		log.Error().Msg("failed to save heatmap to PNG")
+		return
+	}
+
+	return
 }

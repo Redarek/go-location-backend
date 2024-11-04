@@ -3,11 +3,12 @@ package postgres
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
-	"location-backend/internal/domain/dto"
+	"location-backend/internal/domain/entity"
 )
 
 type matrixRepo struct {
@@ -18,7 +19,7 @@ func NewMatrixRepo(pool *pgxpool.Pool) *matrixRepo {
 	return &matrixRepo{pool: pool}
 }
 
-func (r *matrixRepo) Create(ctx context.Context, createMatrixDTOs []*dto.CreateMatrixDTO) (err error) {
+func (r *matrixRepo) Create(ctx context.Context, points []*entity.Point, matrixPoints []*entity.MatrixPoint) (err error) {
 	// Begin a transaction
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -63,23 +64,30 @@ func (r *matrixRepo) Create(ctx context.Context, createMatrixDTOs []*dto.CreateM
 	// }
 
 	// Подготовка данных для таблицы points и matrix
-	pointsRows := make([][]interface{}, len(createMatrixDTOs))
-	var matrixRows [][]interface{}
-	for i, dto := range createMatrixDTOs {
-		pointsRows[i] = []interface{}{dto.FloorID, dto.X, dto.Y}
+	pointsRows := [][]interface{}{}
+	for _, point := range points {
+		pointsRows = append(pointsRows, []interface{}{
+			point.ID,
+			point.FloorID,
+			point.X, point.Y,
+		})
+	}
 
-		for _, matrixPoint := range dto.MatrixPoints {
-			matrixRows = append(matrixRows, []interface{}{
-				matrixPoint.SensorID, matrixPoint.Rssi24, matrixPoint.Rssi5, matrixPoint.Rssi6, matrixPoint.Distance,
-			})
-		}
+	matrixRows := [][]interface{}{}
+	for _, matrixPoint := range matrixPoints {
+		matrixRows = append(matrixRows, []interface{}{
+			matrixPoint.PointID,
+			matrixPoint.SensorID,
+			matrixPoint.RSSI24, matrixPoint.RSSI5, matrixPoint.RSSI6,
+			matrixPoint.Distance,
+		})
 	}
 
 	// Вставка данных в таблицу points
 	_, err = tx.CopyFrom(
 		ctx,
 		pgx.Identifier{"points"},
-		[]string{"floor_id", "x", "y"},
+		[]string{"id", "floor_id", "x", "y"},
 		pgx.CopyFromRows(pointsRows),
 	)
 	if err != nil {
@@ -91,7 +99,7 @@ func (r *matrixRepo) Create(ctx context.Context, createMatrixDTOs []*dto.CreateM
 	_, err = tx.CopyFrom(
 		ctx,
 		pgx.Identifier{"matrix"},
-		[]string{"sensor_id", "rssi24", "rssi5", "rssi6", "distance"},
+		[]string{"point_id", "sensor_id", "rssi24", "rssi5", "rssi6", "distance"},
 		pgx.CopyFromRows(matrixRows),
 	)
 	if err != nil {
@@ -99,5 +107,23 @@ func (r *matrixRepo) Create(ctx context.Context, createMatrixDTOs []*dto.CreateM
 		return err
 	}
 
+	log.Debug().Msg("matrix is saved to database")
+
 	return
+}
+
+func (r *matrixRepo) Delete(ctx context.Context, floorID uuid.UUID) (deletedCount int64, err error) {
+	query := `DELETE FROM points 
+	WHERE floor_id = $1`
+
+	cmdTag, err := r.pool.Exec(ctx, query, floorID)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to delete points")
+		return 0, err
+	}
+
+	deletedCount = cmdTag.RowsAffected()
+	log.Debug().Msgf("%d rows affected", deletedCount)
+
+	return deletedCount, nil
 }

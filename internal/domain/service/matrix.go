@@ -3,11 +3,15 @@ package service
 import (
 	"context"
 
-	"location-backend/internal/domain/dto"
+	"github.com/google/uuid"
+
+	"location-backend/internal/domain/entity"
 )
 
 type IMatrixRepo interface {
-	Create(ctx context.Context, createMatrixDTOs []*dto.CreateMatrixDTO) (err error)
+	Create(ctx context.Context, points []*entity.Point, matrixPoints []*entity.MatrixPoint) (err error)
+
+	Delete(ctx context.Context, floorID uuid.UUID) (deletedCount int64, err error)
 }
 
 type matrixService struct {
@@ -18,7 +22,12 @@ func NewMatrixService(repository IMatrixRepo) *matrixService {
 	return &matrixService{repository: repository}
 }
 
-func (s *matrixService) CreateMatrix(ctx context.Context, createMatrixDTO []*dto.CreateMatrixDTO) (err error) {
-	err = s.repository.Create(ctx, createMatrixDTO)
+func (s *matrixService) CreateMatrix(ctx context.Context, points []*entity.Point, matrixPoints []*entity.MatrixPoint) (err error) {
+	err = s.repository.Create(ctx, points, matrixPoints)
+	return
+}
+
+func (s *matrixService) DeletePoints(ctx context.Context, floorID uuid.UUID) (deletedCount int64, err error) {
+	deletedCount, err = s.repository.Delete(ctx, floorID)
 	return
 }

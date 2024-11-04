@@ -48,6 +48,6 @@ func NewUsecaseComposite(composite *ServiceComposite) (serviceComposite *Usecase
 		sensorUsecase:              usecase.NewSensorUsecase(composite.sensorService, composite.sensorTypeService, composite.floorService),
 		sensorRadioUsecase:         usecase.NewSensorRadioUsecase(composite.sensorRadioService, composite.sensorService),
 
-		matrixUsecase: usecase.NewMatrixUsecase(composite.floorService, composite.wallService, composite.sensorService),
+		matrixUsecase: usecase.NewMatrixUsecase(composite.matrixService, composite.floorService, composite.wallService, composite.sensorService),
 	}
 }
