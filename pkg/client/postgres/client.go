@@ -232,7 +232,7 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         x INTEGER,
         y INTEGER,
         z FLOAT,
-        mac VARCHAR(17) UNIQUE NOT NULL,
+        mac CHAR(17) UNIQUE NOT NULL,
         ip VARCHAR(64) NOT NULL,
         rx_ant_gain FLOAT NOT NULL DEFAULT 0, -- TODO: add check
         hor_rotation_offset INTEGER NOT NULL DEFAULT 0, -- TODO: add check
@@ -309,6 +309,16 @@ func syncTables(pool *pgxpool.Pool) (err error) {
         rssi6 FLOAT NOT NULL,
         distance FLOAT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS devices (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        mac CHAR(17) NOT NULL,
+        sensor_id UUID REFERENCES sensors(id) ON DELETE SET NULL,
+        rssi FLOAT NOT NULL,
+        band VARCHAR(6), -- TODO fix to enum
+        channel_width VARCHAR(32),
+        last_contact_time TIMESTAMPTZ NOT NULL
+    ); 
 
     -- Активация расширения для генерации UUID
     CREATE EXTENSION IF NOT EXISTS pgcrypto;`
