@@ -103,3 +103,62 @@ func (r *deviceRepo) GetAll(ctx context.Context, mac string, floorID uuid.UUID, 
 	log.Debug().Msgf("retrieved %d devices", length)
 	return
 }
+
+// func (r *deviceRepo) Search(ctx context.Context, , limit, offset int) (devices []*entity.Device, err error) {
+// 	query := `SELECT
+// 	d.id,
+// 	d.mac,
+// 	d.sensor_id,
+// 	d.rssi,
+// 	d.band,
+// 	d.channel_width,
+// 	d.last_contact_time
+// FROM devices d
+// JOIN sensors s ON d.sensor_id = s.id AND s.deleted_at IS NULL
+// WHERE d.mac = $1 AND s.floor_id = $2
+// LIMIT NULLIF($3, 0) OFFSET $4`
+// 	args := []interface{}{}
+// 	argIndex := 1 // Нумерация параметров начинается с 1 в pgx
+
+// 	if filter.ID != nil {
+// 		query += fmt.Sprintf(" AND id = $%d", argIndex)
+// 		args = append(args, *filter.ID)
+// 		argIndex++
+// 	}
+// 	if filter.Name != nil {
+// 		query += fmt.Sprintf(" AND name ILIKE $%d", argIndex)
+// 		args = append(args, "%"+*filter.Name+"%")
+// 		argIndex++
+// 	}
+// 	if filter.Email != nil {
+// 		query += fmt.Sprintf(" AND email = $%d", argIndex)
+// 		args = append(args, *filter.Email)
+// 		argIndex++
+// 	}
+// 	if filter.Age != nil {
+// 		query += fmt.Sprintf(" AND age = $%d", argIndex)
+// 		args = append(args, *filter.Age)
+// 		argIndex++
+// 	}
+
+// 	rows, err := r.pool.Query(ctx, query, args...)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to execute query: %w", err)
+// 	}
+// 	defer rows.Close()
+
+// 	var users []User
+// 	for rows.Next() {
+// 		var user User
+// 		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Age); err != nil {
+// 			return nil, fmt.Errorf("failed to scan row: %w", err)
+// 		}
+// 		users = append(users, user)
+// 	}
+
+// 	if rows.Err() != nil {
+// 		return nil, fmt.Errorf("error iterating rows: %w", rows.Err())
+// 	}
+
+// 	return users, nil
+// }
