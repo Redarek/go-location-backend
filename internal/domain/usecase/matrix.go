@@ -22,6 +22,8 @@ const publicFolderPath = "public"
 type IMatrixService interface {
 	CreateMatrix(ctx context.Context, points []*entity.Point, matrixPoints []*entity.MatrixPoint) (err error)
 
+	SearchPoints(ctx context.Context, filter entity.SearchParameters) (points []*entity.Point, err error)
+
 	DeletePoints(ctx context.Context, floorID uuid.UUID) (deletedCount int64, err error)
 }
 
@@ -280,5 +282,9 @@ func createMatrixPNG(matrixInputData *location.InputData, pointRows []*entity.Po
 		return
 	}
 
+	return
+}
+
+func (u *MatrixUsecase) FindPoints(ctx context.Context, mac string) (err error) {
 	return
 }

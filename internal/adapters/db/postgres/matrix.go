@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -10,6 +11,20 @@ import (
 
 	"location-backend/internal/domain/entity"
 )
+
+// type MatrixFilter struct {
+// 	ID      *int
+// 	FloorID uuid.UUID
+// 	// X            *float64
+// 	// Y            *float64
+// 	Band     string
+// 	SensorID uuid.UUID
+
+// 	// RSSI24   *float64
+// 	// RSSI5    *float64
+// 	// RSSI6    *float64
+// 	// Distance *float64
+// }
 
 type matrixRepo struct {
 	pool *pgxpool.Pool
@@ -108,6 +123,72 @@ func (r *matrixRepo) Create(ctx context.Context, points []*entity.Point, matrixP
 	}
 
 	log.Debug().Msg("matrix is saved to database")
+
+	return
+}
+
+func (r *deviceRepo) SearchPoints(ctx context.Context, filter entity.SearchParameters) (points []*entity.Point, err error) {
+	query := `SELECT 
+		p.id,
+		p.floor_id,
+		p.x, p.y,
+
+		-- m.rssi24, m.rssi5, m.rssi6,
+		-- m.distance,
+		COUNT(*) AS count
+	FROM points p 
+	JOIN matrix m ON p.id = m.point_id
+	WHERE 
+		p.floor_id = $1`
+	args := []interface{}{}
+	argIndex := 2
+
+	if len(filter.SensorsBetween) > 0 {
+		query += " AND (0"
+		for sensor, between := range filter.SensorsBetween {
+			query += fmt.Sprintf(" OR (sensor_id = $%d AND rssi%s BETWEEN $%d AND $%d)", argIndex, filter.Band, argIndex+1, argIndex+2)
+			args = append(args, sensor, between.From, between.To)
+			argIndex += 3
+		}
+		query += ")"
+	}
+
+	query += " GROUP BY point_id"
+
+	// TODO убедиться, что не больше 3
+	query += fmt.Sprintf(" HAVING count = $%d", argIndex)
+	args = append(args, filter.SensorsBetween)
+	// argIndex ++
+
+	// //? индекс тут на единицу меньше, чем по факту
+	// query += fmt.Sprintf("LIMIT NULLIF($%d, 0) OFFSET $%d", argIndex, argIndex + 1)
+	// args = append(args, limit, offset)
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to execute query")
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var point *entity.Point
+		err = rows.Scan(
+			&point.ID,
+			&point.FloorID,
+			&point.X, &point.Y,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to scan row")
+			return
+		}
+		points = append(points, point)
+	}
+
+	if rows.Err() != nil {
+		log.Error().Err(err).Msg("error iterating rows")
+		return
+	}
 
 	return
 }

@@ -21,10 +21,23 @@ type MatrixPoint struct {
 	Distance float64   `json:"distance" db:"distance"`
 }
 
-type Matrix struct {
-	ID           int           `json:"id" db:"id"`
-	FloorID      uuid.UUID     `json:"floorId" db:"floor_id"`
-	X            float64       `json:"x" db:"x"`
-	Y            float64       `json:"y" db:"y"`
-	MatrixPoints []MatrixPoint `json:"matrixPoints"`
+// type Matrix struct {
+// 	ID           int           `json:"id" db:"id"`
+// 	FloorID      uuid.UUID     `json:"floorId" db:"floor_id"`
+// 	X            float64       `json:"x" db:"x"`
+// 	Y            float64       `json:"y" db:"y"`
+// 	MatrixPoints []MatrixPoint `json:"matrixPoints"`
+// }
+
+// TODO централизовать
+type SearchParameters struct {
+	FloorID        uuid.UUID
+	Band           string
+	SensorsBetween map[uuid.UUID]BetweenTuple // TODO придумать нормальное имя
+	DetectCount    int
+}
+
+type BetweenTuple struct {
+	From float64
+	To   float64
 }
