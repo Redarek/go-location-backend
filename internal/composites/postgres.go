@@ -14,7 +14,7 @@ type PostgresComposite struct {
 
 func NewPostgresComposite() (сomposite *PostgresComposite, err error) {
 	// Connect to PostgreSQL
-	pool, err := postgres.ConnectPostgres(&config.Postgres)
+	pool, err := postgres.ConnectPostgres(&config.Database)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to PostgreSQL")
 	}

@@ -9,14 +9,14 @@ import (
 )
 
 var (
-	Postgres postgres.PostgresConfig
+	Database postgres.PostgresConfig
 	App      AppConfig
 )
 
 // TODO
-type Config struct {
-	IsDebug bool `env:"IS_DEBUG" env-default:"false"`
-}
+// type Config struct {
+// 	IsDebug bool `env:"IS_DEBUG" env-default:"false"`
+// }
 
 func LoadConfig() {
 	// Load from .env file
@@ -26,8 +26,8 @@ func LoadConfig() {
 	}
 
 	// Parse environment variables
-	if err := env.Parse(&Postgres); err != nil {
-		log.Fatal().Err(err).Msg("failed to parse PostgreSQL config")
+	if err := env.Parse(&Database); err != nil {
+		log.Fatal().Err(err).Msg("failed to parse Database config")
 	}
 
 	if err := env.Parse(&App); err != nil {
