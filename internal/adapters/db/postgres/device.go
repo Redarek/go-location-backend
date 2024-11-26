@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	// "fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -104,7 +105,65 @@ func (r *deviceRepo) GetAll(ctx context.Context, mac string, floorID uuid.UUID, 
 	return
 }
 
-// func (r *deviceRepo) Search(ctx context.Context, , limit, offset int) (devices []*entity.Device, err error) {
+func (r *deviceRepo) GetAllDetailedByMAC(ctx context.Context, mac string, limit, offset int) (devicesDetailed []*entity.DeviceDetailed, err error) {
+	query := `SELECT 
+			d.id, 
+			d.mac,
+			d.sensor_id,
+			d.rssi,
+			d.band,
+			d.channel_width,
+			d.last_contact_time,
+			s.floor_id 
+		FROM devices d
+		JOIN sensors s ON d.sensor_id = s.id AND s.deleted_at IS NULL
+		WHERE d.mac = $1
+		LIMIT NULLIF($2, 0) OFFSET $3`
+	rows, err := r.pool.Query(ctx, query, limit, offset)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to retrieve devices")
+		return
+	}
+	defer rows.Close()
+
+	i := 0
+	for rows.Next() {
+		i++
+		deviceDetailed := &entity.DeviceDetailed{}
+
+		err = rows.Scan(
+			&deviceDetailed.ID,
+			&deviceDetailed.MAC,
+			&deviceDetailed.SensorID,
+			&deviceDetailed.RSSI,
+			&deviceDetailed.Band,
+			&deviceDetailed.ChannelWidth,
+			&deviceDetailed.LastContactTime,
+			&deviceDetailed.FloorID,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to scan device detailed and related data")
+			return
+		}
+
+		devicesDetailed = append(devicesDetailed, deviceDetailed)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("rows iteration error")
+		return
+	}
+
+	if i == 0 {
+		log.Debug().Msg("devices detailed were not found")
+		return nil, service.ErrNotFound
+	}
+
+	log.Debug().Msgf("retrieved devices with detailed info: %v", devicesDetailed)
+	return
+}
+
+// func (r *deviceRepo) Search(ctx context.Context, filter entity.SearchParameters, limit, offset int) (devices []*entity.Device, err error) {
 // 	query := `SELECT
 // 	d.id,
 // 	d.mac,

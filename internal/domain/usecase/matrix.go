@@ -37,19 +37,23 @@ type MatrixUsecase struct {
 	floorService  IFloorService
 	wallService   IWallService
 	sensorService ISensorService
+	deviceService IDeviceService
 }
 
+// TODO придумать как компактно и универсально передавать параметры
 func NewMatrixUsecase(
 	matrixService IMatrixService,
 	floorService IFloorService,
 	wallService IWallService,
 	sensorService ISensorService,
+	deviceService IDeviceService,
 ) *MatrixUsecase {
 	return &MatrixUsecase{
 		matrixService: matrixService,
 		floorService:  floorService,
 		wallService:   wallService,
 		sensorService: sensorService,
+		deviceService: deviceService,
 	}
 }
 
@@ -286,5 +290,16 @@ func createMatrixPNG(matrixInputData *location.InputData, pointRows []*entity.Po
 }
 
 func (u *MatrixUsecase) FindPoints(ctx context.Context, mac string) (err error) {
+
+	devicesDetailed, err := u.deviceService.GetDevicesDetailedByMAC(ctx, mac, 0, 0)
+	if err != nil {
+		log.Error().Msg("failed to get devices detailed")
+		return
+	}
+
+	data := location.Data{
+		MAC: mac,
+	}
+	location.GetParametersForFindXY(data)
 	return
 }

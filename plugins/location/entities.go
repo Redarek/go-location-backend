@@ -2,6 +2,7 @@ package location
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -82,4 +83,15 @@ type Floor struct {
 	SouthAreaIndentMeter float64   `json:"southAreaIndentMeter"`
 	WestAreaIndentMeter  float64   `json:"westAreaIndentMeter"`
 	EastAreaIndentMeter  float64   `json:"eastAreaIndentMeter"`
+}
+
+type Device struct {
+	ID              uuid.UUID
+	MAC             string //? мб удалить
+	FloorID         uuid.UUID
+	SensorID        uuid.UUID //? тут была ссылка
+	RSSI            float64
+	Band            string
+	Channel         int
+	LastContactTime time.Time
 }

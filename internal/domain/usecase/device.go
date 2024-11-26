@@ -10,6 +10,7 @@ import (
 
 type IDeviceService interface {
 	GetDevices(ctx context.Context, mac string, floorID uuid.UUID, limit, offset int) (devices []*entity.Device, err error)
+	GetDevicesDetailedByMAC(ctx context.Context, mac string, limit, offset int) (devicesDetailed []*entity.DeviceDetailed, err error)
 }
 
 type DeviceUsecase struct {

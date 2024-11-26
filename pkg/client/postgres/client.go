@@ -313,7 +313,7 @@ func syncTables(pool *pgxpool.Pool) (err error) {
     CREATE TABLE IF NOT EXISTS devices (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         mac CHAR(17) NOT NULL,
-        sensor_id UUID REFERENCES sensors(id) ON DELETE SET NULL,
+        sensor_id UUID REFERENCES sensors(id) ON DELETE SET NULL, -- если сенсор удалить - null?
         rssi FLOAT NOT NULL,
         band VARCHAR(6), -- TODO fix to enum
         channel_width VARCHAR(32),

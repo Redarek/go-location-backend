@@ -127,7 +127,7 @@ func (r *matrixRepo) Create(ctx context.Context, points []*entity.Point, matrixP
 	return
 }
 
-func (r *deviceRepo) SearchPoints(ctx context.Context, filter entity.SearchParameters) (points []*entity.Point, err error) {
+func (r *matrixRepo) SearchPoints(ctx context.Context, filter entity.SearchParameters) (points []*entity.Point, err error) {
 	query := `SELECT 
 		p.id,
 		p.floor_id,
