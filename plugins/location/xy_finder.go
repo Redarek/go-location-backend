@@ -195,8 +195,6 @@ func getSearchParameters(deviceDetections []*Device, floorID uuid.UUID) (result 
 	var bandCoefficients BandCoefficients = getBandCoefficients(band)
 	var bandAccuracyCorrection float64 = getBandAccuracyCorrection(channel)
 
-	// var whereConditionOrPartsList []Attributes<Matrix>; // TODO
-
 	var sensorBetween map[uuid.UUID]BetweenTuple = make(map[uuid.UUID]BetweenTuple)
 	for _, device := range deviceDetections {
 		if device.RSSI == RSSI_INVISIBLE {
@@ -211,57 +209,8 @@ func getSearchParameters(deviceDetections []*Device, floorID uuid.UUID) (result 
 		var betweenTo float64 = device.RSSI + deltaRSSI + bandAccuracyCorrection   // было округление до 2
 		log.Debug().Msgf("between %.2f and %.2f", betweenFrom, betweenTo)
 
-		// TODO rewrite
-		// var rssiConditionPart Attributes<Matrix> = { rssi24: { [Op.between]: [betweenFrom, betweenTo] } };
-		// if (band == Band.RSSI5)
-		//     rssiConditionPart = { rssi5: { [Op.between]: [betweenFrom, betweenTo] } };
-		// else if (band == Band.RSSI6)
-		//     rssiConditionPart = { rssi6: { [Op.between]: [betweenFrom, betweenTo] } };
-
-		// const whereConditionOrPart: Attributes<Matrix> = {
-		//     [Op.and]: [
-		//         rssiConditionPart,
-		//         { sensor_id: device.sensor_id }
-		//     ]
-		// };
-		// whereConditionOrPartsList.push(whereConditionOrPart);
-
 		sensorBetween[device.SensorID] = BetweenTuple{From: betweenFrom, To: betweenTo}
 	}
-
-	// TODO sth with this
-	// ! del
-	// const res: Matrix[] = await matrixRepository.findAll({
-	//     attributes: [
-	//         "point_id",
-	//         "rssi24",
-	//         "rssi5",
-	//         "distance",
-	//         [sequelize.fn('COUNT', sequelize.col('*')), 'count']
-	//     ],
-	//     include: [{
-	//         model: sequelize.model(Point),
-	//         attributes: [
-	//             "map_id",
-	//             "x",
-	//             "y"
-	//         ],
-	//         where: {
-	//             map_id: mapId
-	//         }
-	//     }],
-	//     where: {
-	//         [Op.or]: whereConditionOrPartsList
-	//     },
-	//     group: ['point_id'],
-	//     having: { count: deviceDetections.length }
-	// }).then(result => {
-	//     if (!result.length) {
-	//         throw new MacNotFoundError();
-	//     }
-
-	//     return result;
-	// });
 
 	result = SearchParameters{
 		FloorID:       floorID,
@@ -269,16 +218,6 @@ func getSearchParameters(deviceDetections []*Device, floorID uuid.UUID) (result 
 		SensorBetween: sensorBetween,
 		DetectCount:   len(deviceDetections),
 	}
-
-	// TODO do sth
-	// var matrixCells []MatrixRow
-	// for _, cell := range points {
-	// 	// pointRowsToInsert = append(pointRowsToInsert, PointRow{id: id, map_id: mapId, x: x_m, y: y_m})
-	// 	// if (cell.sensor_id == ?)
-	// 	log.Debug().Msgf("Cell: %+v", cell)
-	// }
-
-	// return matrixCells
 
 	return
 }
