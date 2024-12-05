@@ -152,14 +152,14 @@ func (d deviceList) Less(i, j int) bool { return d[i].RSSI < d[j].RSSI }
 func (d deviceList) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 
 func determineFloor(filteredDevices []*Device) (result []*Device) {
-	// Распределение устройств по этажам: этаж – список устройств
+	// Группировка устройств по этажам: этаж – список устройств
 	devicesPerFloor := make(map[uuid.UUID]deviceList)
 	for _, device := range filteredDevices {
 		devicesPerFloor[device.FloorID] = append(devicesPerFloor[device.FloorID], device)
 	}
 
 	// Сортировка устройств на этаже по убыванию RSSI
-	for floorID, deviceList := range devicesPerFloor {
+	for _, deviceList := range devicesPerFloor {
 		sort.Sort(sort.Reverse(deviceList))
 
 		//? найти сумму первых трёх?
