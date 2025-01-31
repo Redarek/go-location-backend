@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type IBuildingRepo interface {
@@ -51,8 +52,8 @@ func (s *buildingService) GetBuilding(ctx context.Context, buildingID uuid.UUID)
 	return
 }
 
-func (s *buildingService) GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error) {
-	buildings, err = s.repository.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
+func (s *buildingService) GetBuildings(ctx context.Context, dto *dto.GetBuildingsDTO) (buildings []*entity.Building, err error) {
+	buildings, err = s.repository.GetAll(ctx, dto.SiteID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return buildings, usecase.ErrNotFound

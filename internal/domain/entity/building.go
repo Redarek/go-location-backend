@@ -6,16 +6,16 @@ import (
 )
 
 type Building struct {
-	ID          uuid.UUID           `db:"id"`
-	Name        string              `db:"name"`
-	Description *string             `db:"description"`
-	Country     string              `db:"country"`
-	City        string              `db:"city"`
-	Address     string              `db:"address"`
-	SiteID      uuid.UUID           `db:"site_id"`
-	CreatedAt   pgtype.Timestamptz  `db:"created_at"`
-	UpdatedAt   pgtype.Timestamptz  `db:"updated_at"`
-	DeletedAt   *pgtype.Timestamptz `db:"deleted_at"`
+	ID          uuid.UUID           `json:"id" db:"id"`
+	Name        string              `json:"name" db:"name"`
+	Description *string             `json:"description" db:"description"`
+	Country     string              `json:"country" db:"country"`
+	City        string              `json:"city" db:"city"`
+	Address     string              `json:"address" db:"address"`
+	SiteID      uuid.UUID           `json:"siteId" db:"site_id"`
+	CreatedAt   pgtype.Timestamptz  `json:"createdAt" db:"created_at"`
+	UpdatedAt   pgtype.Timestamptz  `json:"updatedAt" db:"updated_at"`
+	DeletedAt   *pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 }
 
 type BuildingDetailed struct {

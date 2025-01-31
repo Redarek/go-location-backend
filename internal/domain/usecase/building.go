@@ -14,7 +14,7 @@ import (
 type IBuildingService interface {
 	CreateBuilding(ctx context.Context, createBuildingDTO *dto.CreateBuildingDTO) (buildingID uuid.UUID, err error)
 	GetBuilding(ctx context.Context, buildingID uuid.UUID) (building *entity.Building, err error)
-	GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
+	GetBuildings(ctx context.Context, dto *dto.GetBuildingsDTO) (buildings []*entity.Building, err error)
 	// TODO get building list detailed
 
 	UpdateBuilding(ctx context.Context, updateBuildingDTO *dto.PatchUpdateBuildingDTO) (err error)
@@ -72,7 +72,7 @@ func (u *BuildingUsecase) GetBuilding(ctx context.Context, buildingID uuid.UUID)
 	return
 }
 
-func (u *BuildingUsecase) GetBuildings(ctx context.Context, dto dto.GetBuildingsDTO) (buildings []*entity.Building, err error) {
+func (u *BuildingUsecase) GetBuildings(ctx context.Context, dto *dto.GetBuildingsDTO) (buildings []*entity.Building, err error) {
 	buildings, err = u.buildingService.GetBuildings(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

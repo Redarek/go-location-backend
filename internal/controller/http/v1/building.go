@@ -8,8 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -51,8 +50,8 @@ func (h *buildingHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *buildingHandler) CreateBuilding(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateBuildingDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateBuildingDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse building request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -65,10 +64,7 @@ func (h *buildingHandler) CreateBuilding(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.CreateBuildingDTO)(&dto)
-
-	buildingID, err := h.usecase.CreateBuilding(context.Background(), domainDTO)
+	buildingID, err := h.usecase.CreateBuilding(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Err(err).Msg("the site with provided 'site_id' does not exist")
@@ -104,18 +100,13 @@ func (h *buildingHandler) GetBuilding(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// var dto http_dto.GetBuildingDTO = http_dto.GetBuildingDTO{
-	// 	ID: buildingID,
-	// }
+	var dtoObj dto.GetBuildingDTO = dto.GetBuildingDTO{
+		ID: buildingID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetBuildingDTO{
-	// 	ID: dto.ID,
-	// }
-
-	building, err := h.usecase.GetBuilding(context.Background(), buildingID)
+	building, err := h.usecase.GetBuilding(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -131,10 +122,7 @@ func (h *buildingHandler) GetBuilding(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	buildingDTO := (http_dto.BuildingDTO)(*building)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": buildingDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": building})
 }
 
 func (h *buildingHandler) GetBuildings(c *fiber.Ctx) error {
@@ -150,7 +138,7 @@ func (h *buildingHandler) GetBuildings(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetBuildingsDTO = http_dto.GetBuildingsDTO{
+	var dtoObj dto.GetBuildingsDTO = dto.GetBuildingsDTO{
 		SiteID: siteID,
 		Page:   1,
 		Size:   100,
@@ -158,14 +146,7 @@ func (h *buildingHandler) GetBuildings(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetBuildingsDTO{
-		SiteID: dto.SiteID,
-		Limit:  dto.Size,
-		Offset: (dto.Page - 1) * dto.Size,
-	}
-
-	buildings, err := h.usecase.GetBuildings(context.Background(), domainDTO)
+	buildings, err := h.usecase.GetBuildings(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -181,19 +162,12 @@ func (h *buildingHandler) GetBuildings(c *fiber.Ctx) error {
 		))
 	}
 
-	var buildingsDTO []http_dto.BuildingDTO
-	for _, building := range buildings {
-		// Mapping entity -> http DTO
-		buildingDTO := (http_dto.BuildingDTO)(*building)
-		buildingsDTO = append(buildingsDTO, buildingDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": buildingsDTO})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": buildings})
 }
 
 func (h *buildingHandler) PatchUpdateBuilding(c *fiber.Ctx) error {
-	var dto http_dto.PatchUpdateBuildingDTO
-	err := c.BodyParser(&dto)
+	var dtoObj dto.PatchUpdateBuildingDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse building request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -206,10 +180,7 @@ func (h *buildingHandler) PatchUpdateBuilding(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.PatchUpdateBuildingDTO)(&dto)
-
-	err = h.usecase.PatchUpdateBuilding(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateBuilding(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -256,11 +227,6 @@ func (h *buildingHandler) SoftDeleteBuilding(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteBuildingDTO{
-	// 	ID: buildingID,
-	// }
 
 	err = h.usecase.SoftDeleteBuilding(context.Background(), buildingID)
 	if err != nil {
@@ -309,11 +275,6 @@ func (h *buildingHandler) RestoreBuilding(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteBuildingDTO{
-	// 	ID: buildingID,
-	// }
 
 	err = h.usecase.RestoreBuilding(context.Background(), buildingID)
 	if err != nil {
