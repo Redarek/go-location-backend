@@ -1,10 +1,12 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type RegisterUserDTO struct {
-	Username string `db:"username"`
-	Password string `db:"password"`
+	Username string `json:"username" db:"username"`
+	Password string `json:"password" db:"password"`
 }
 
 type CreateUserDTO struct {
@@ -13,12 +15,16 @@ type CreateUserDTO struct {
 }
 
 type LoginUserDTO struct {
-	Username string `db:"username"`
-	Password string `db:"password"`
+	Username string `json:"username" db:"username"`
+	Password string `json:"password" db:"password"`
+}
+
+type GetUserByNameDTO struct {
+	Username string `json:"username" db:"username"`
 }
 
 type PatchUpdateUserDTO struct {
-	ID       uuid.UUID `db:"id"`
-	Username *string   `db:"username"`
-	Password *string   `db:"password"`
+	ID       uuid.UUID `json:"id"`
+	Username *string   `json:"username,omitempty" db:"username"`
+	Password *string   `json:"password,omitempty" db:"password"`
 }

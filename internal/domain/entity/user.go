@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID           `db:"id"`
-	Username     string              `db:"username"`
-	PasswordHash string              `db:"password"`
-	CreatedAt    pgtype.Timestamptz  `db:"created_at"`
-	UpdatedAt    pgtype.Timestamptz  `db:"updated_at"`
-	DeletedAt    *pgtype.Timestamptz `db:"deleted_at"`
+	ID           uuid.UUID           `json:"id" db:"id"`
+	Username     string              `json:"username" db:"username"`
+	PasswordHash string              `json:"-" db:"password"`
+	CreatedAt    pgtype.Timestamptz  `json:"createdAt" db:"created_at"`
+	UpdatedAt    pgtype.Timestamptz  `json:"updatedAt" db:"updated_at"`
+	DeletedAt    *pgtype.Timestamptz `json:"deletedAt" db:"deleted_at"`
 }

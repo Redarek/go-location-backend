@@ -1,15 +1,13 @@
 package v1
 
 import (
-	// "encoding/json"
 	"context"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/internal/middleware"
 	"location-backend/pkg/httperrors"
@@ -44,12 +42,6 @@ func (h *userHandler) Register(r *fiber.Router) fiber.Router {
 	return router
 }
 
-// func (h *bookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-// 	// books := h.bookService.GetAll(context.Background(), 0, 0)
-// 	w.Write([]byte("books"))
-// 	w.WriteHeader(http.StatusOK)
-// }
-
 // Регистрирует нового пользователя, если его не существует.
 //
 // Возвращаемые статусы:
@@ -58,9 +50,8 @@ func (h *userHandler) Register(r *fiber.Router) fiber.Router {
 //	409 Conflict – пользователь уже существует
 //	500 InternalServerError – ошибка сервера
 func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
-	// DTO from client (HTTP/JSON)
-	var dto http_dto.RegisterUserDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.RegisterUserDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse user request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -73,15 +64,9 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.RegisterUserDTO{
-		Username: dto.Username,
-		Password: dto.Password,
-	}
-
 	// ? Нужно ли передавать ctx внутрь?
 	// Call the use case to create the user
-	userID, err := h.usecase.Register(context.Background(), domainDTO)
+	userID, err := h.usecase.Register(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
 			return ctx.Status(fiber.StatusConflict).JSON(httperrors.NewErrorResponse(
@@ -113,8 +98,8 @@ func (h *userHandler) RegisterUser(ctx *fiber.Ctx) error {
 //	401 Unauthorized – неверные логин/пароль или пользователя не существует
 //	500 InternalServerError – ошибка сервера
 func (h *userHandler) Login(ctx *fiber.Ctx) error {
-	var dto http_dto.LoginUserDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.LoginUserDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse user request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -129,13 +114,7 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 
 	// TODO already login err
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.LoginUserDTO{
-		Username: dto.Username,
-		Password: dto.Password,
-	}
-
-	token, err := h.usecase.Login(context.Background(), domainDTO)
+	token, err := h.usecase.Login(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrBadLogin) {
 			return ctx.Status(fiber.StatusUnauthorized).JSON(httperrors.NewErrorResponse(
@@ -159,7 +138,7 @@ func (h *userHandler) Login(ctx *fiber.Ctx) error {
 }
 
 func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
-	var dto http_dto.GetUserByNameDTO = http_dto.GetUserByNameDTO{
+	var dtoObj dto.GetUserByNameDTO = dto.GetUserByNameDTO{
 		Username: ctx.Query("username"),
 	}
 	// accessPointID, err := uuid.Parse(c.Query("id"))
@@ -172,12 +151,7 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetUserByNameDTO{
-	// 	Username: dto.Username,
-	// }
-
-	user, err := h.usecase.GetUserByName(context.Background(), dto.Username)
+	user, err := h.usecase.GetUserByName(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -193,8 +167,5 @@ func (h *userHandler) GetUserByName(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	userDTO := (http_dto.UserDTO)(*user)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": userDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": user})
 }

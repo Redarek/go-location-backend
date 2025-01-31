@@ -107,8 +107,8 @@ func (u *UserUsecase) Login(ctx context.Context, dto *dto.LoginUserDTO) (signedS
 	// return c.JSON(fiber.Map{"token": signedString})
 }
 
-func (u *UserUsecase) GetUserByName(ctx context.Context, username string) (user *entity.User, err error) {
-	user, err = u.userService.GetUserByName(ctx, username)
+func (u *UserUsecase) GetUserByName(ctx context.Context, dto *dto.GetUserByNameDTO) (user *entity.User, err error) {
+	user, err = u.userService.GetUserByName(ctx, dto.Username)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, ErrNotFound
