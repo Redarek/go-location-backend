@@ -140,8 +140,16 @@ func findDeviceDetections(deviceDetections []*Device, mac string, floorID uuid.U
 }
 
 type metric struct {
-	counter int
-	rssiSum float64
+	counter  int
+	rssiSum1 float64
+	rssiSum2 float64
+	rssiSum3 float64
+	rssiSum4 float64
+}
+
+type floorMetric struct {
+	floorID uuid.UUID
+	metric  metric
 }
 
 type deviceList []*Device
@@ -151,43 +159,127 @@ func (d deviceList) Len() int           { return len(d) }
 func (d deviceList) Less(i, j int) bool { return d[i].RSSI < d[j].RSSI }
 func (d deviceList) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 
-func determineFloor(filteredDevices []*Device) (result []*Device) {
+func determineFloor(filteredDevices []*Device) (result uuid.UUID) {
 	// Группировка устройств по этажам: этаж – список устройств
 	devicesPerFloor := make(map[uuid.UUID]deviceList)
 	for _, device := range filteredDevices {
 		devicesPerFloor[device.FloorID] = append(devicesPerFloor[device.FloorID], device)
 	}
 
-	// Сортировка устройств на этаже по убыванию RSSI
-	for _, deviceList := range devicesPerFloor {
-		sort.Sort(sort.Reverse(deviceList))
-
-		//? найти сумму первых трёх?
-	}
-
+	// Вычисление метрик для каждого этажа
+	metricsPerFloor := make(map[uuid.UUID]metric)
 	for floorID, deviceList := range devicesPerFloor {
-		sort.Sort(sort.Reverse(deviceList))
+		metrics := calculateMetrics(deviceList)
+		metricsPerFloor[floorID] = metrics
 	}
 
-	// floor2rssiMetric := make(map[uuid.UUID]metric)
-	for _, device := range filteredDevices {
-
+	// Определение наиболее вероятного этажа
+	var sortedMetrics []floorMetric
+	// TODO переделать metricsPerFloor сразу в структуру
+	for floorID, metric := range metricsPerFloor {
+		sortedMetrics = append(sortedMetrics, floorMetric{floorID, metric})
 	}
-	//? определение метрики?
-	// el, isExists := floor2rssiMetric[detection.FloorID]
-	// if isExists {
-	// 	el.counter += 1
-	// 	el.rssiSum += detection.RSSI
-	// } else {
-	// 	floor2rssiMetric[detection.FloorID] = metric{}
+
+	// Сортировка метрик по приоритету
+	sort.SliceStable(sortedMetrics, func(i, j int) bool {
+		m1, m2 := sortedMetrics[i].metric, sortedMetrics[j].metric
+
+		// Сортировка по количеству элементов (приоритеты 3, 4, 2, >4, 1)
+		priority1 := getPriorityByCount(m1.counter)
+		priority2 := getPriorityByCount(m2.counter)
+		if priority1 != priority2 {
+			return priority1 < priority2 // Меньший номер приоритета выше
+		}
+
+		// Сортировка по метрикам
+		if m1.rssiSum1 != m2.rssiSum1 {
+			return m1.rssiSum1 > m2.rssiSum1
+		}
+		if m1.rssiSum2 != m2.rssiSum2 {
+			return m1.rssiSum2 > m2.rssiSum2
+		}
+		if m1.rssiSum3 != m2.rssiSum3 {
+			return m1.rssiSum3 > m2.rssiSum3
+		}
+		if m1.rssiSum4 != m2.rssiSum4 {
+			return m1.rssiSum4 > m2.rssiSum4
+		}
+
+		// Если всё равное, оставляем порядок как есть
+		return false
+	})
+
+	// Если список пустой, вернуть ошибку
+	if len(sortedMetrics) == 0 {
+		return uuid.Nil
+	}
+
+	// Результат — этаж с лучшей метрикой
+	return sortedMetrics[0].floorID
+
+	// // ещё не работает
+	// for floorID, deviceList := range devicesPerFloor {
+	// 	sort.Sort(sort.Reverse(deviceList))
 	// }
-	//? Determine floor
-	// macEl := 0
-	// for _, el := range floor2rssiMetric {
+
+	// // floor2rssiMetric := make(map[uuid.UUID]metric)
+	// for _, device := range filteredDevices {
 
 	// }
+	// //? определение метрики?
+	// // el, isExists := floor2rssiMetric[detection.FloorID]
+	// // if isExists {
+	// // 	el.counter += 1
+	// // 	el.rssiSum += detection.RSSI
+	// // } else {
+	// // 	floor2rssiMetric[detection.FloorID] = metric{}
+	// // }
+	// //? Determine floor
+	// // macEl := 0
+	// // for _, el := range floor2rssiMetric {
 
-	return
+	// // }
+
+	// return
+}
+
+func calculateMetrics(devices deviceList) metric {
+	sort.Sort(sort.Reverse(devices))
+
+	length := len(devices)
+	metrics := metric{
+		counter: length,
+	}
+	if length >= 1 {
+		metrics.rssiSum1 = devices[0].RSSI
+	}
+	if length >= 2 {
+		metrics.rssiSum2 = metrics.rssiSum1 + devices[1].RSSI
+	}
+	if length >= 3 {
+		metrics.rssiSum3 = metrics.rssiSum2 + devices[2].RSSI
+	}
+	if length >= 4 {
+		metrics.rssiSum4 = metrics.rssiSum3 + devices[3].RSSI
+	}
+	return metrics
+}
+
+// Функция для определения приоритета по количеству элементов
+func getPriorityByCount(count int) int {
+	switch count {
+	case 3:
+		return 1 // Высший приоритет
+	case 4:
+		return 2
+	case 2:
+		return 3
+	default:
+		if count > 4 {
+			return 4
+		}
+		return 5 // Минимальный приоритет для списков с 1 элементом
+	}
 }
 
 func getSearchParameters(deviceDetections []*Device, floorID uuid.UUID) (result SearchParameters) {

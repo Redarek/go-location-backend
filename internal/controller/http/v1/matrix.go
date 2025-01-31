@@ -11,22 +11,14 @@ import (
 	// 	http_dto "location-backend/internal/controller/http/dto"
 	// 	"location-backend/internal/controller/http/mapper"
 	// 	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
 
 const (
 	createMatrixURL = "/"
-
-// 	getSensorURL          = "/"
-// 	getSensorDetailedURL  = "/detailed"
-// 	getSensorsURL         = "/all"
-// 	getSensorsDetailedURL = "/all/detailed"
-
-// 	patchUpdateSensorURL = "/"
-
-// softDeleteSensorURL = "/sd"
-// restoreSensorURL    = "/restore"
+	findPointsURL   = "/find"
 )
 
 type matrixHandler struct {
@@ -51,19 +43,6 @@ func (h *matrixHandler) Register(r *fiber.Router) fiber.Router {
 	router := *r
 	// Create
 	router.Post(createSensorURL, h.CreateMatrix)
-
-	// // Get
-	// router.Get(getSensorURL, h.GetSensor)
-	// router.Get(getSensorDetailedURL, h.GetSensorDetailed)
-	// router.Get(getSensorsURL, h.GetSensors)
-	// router.Get(getSensorsDetailedURL, h.GetSensorsDetailed)
-
-	// // Update
-	// router.Patch(patchUpdateSensorURL, h.PatchUpdateSensor)
-
-	// // Delete
-	// router.Patch(softDeleteSensorURL, h.SoftDeleteSensor)
-	// router.Patch(restoreSensorURL, h.RestoreSensor)
 
 	return router
 }
@@ -116,70 +95,51 @@ func (h *matrixHandler) CreateMatrix(ctx *fiber.Ctx) (err error) { // TODO пе�
 	return ctx.SendStatus(fiber.StatusOK)
 }
 
-// // GetMatrix retrieves a matrix
-// func (s *Fiber) GetMatrix(c *fiber.Ctx) (err error) {
-// 	sID, err := uuid.Parse(c.Query("id"))
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("Failed to parse sensor uuid")
-// 		return
-// 	}
-// 	sensor, err := s.db.GetSensor(sID)
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("Failed to get sensor")
-// 		return
-// 	}
-// 	return c.JSON(fiber.Map{
-// 		"data": sensor,
-// 	})
-// }
+func (h *matrixHandler) FindPoints(ctx *fiber.Ctx) (err error) {
+	var domainDTO dto.FindPointsDTO
+	err = ctx.BodyParser(&domainDTO)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to parse find points")
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+			fiber.StatusBadRequest,
+			"Invalid request body",
+			"Failed to parse find points",
+			nil,
+		))
+	}
 
-// func (s *Fiber) convertWallsFromDB(walls []*model.WallDetailed) []location.Wall {
-// 	convertedWalls := make([]location.Wall, 0, len(walls)) // Initialize a slice to store the converted walls
-// 	for _, dbw := range walls {
-// 		// Ensure all required pointer fields are not nil before dereferencing to prevent runtime panics
-// 		if dbw.X1 == nil || dbw.Y1 == nil || dbw.X2 == nil || dbw.Y2 == nil || dbw.WallType.Thickness == nil || dbw.WallType.Attenuation24 == nil || dbw.WallType.Attenuation5 == nil || dbw.WallType.Attenuation6 == nil {
-// 			log.Error().Msg("One of the required wall coordinates or wall type info is nil")
-// 			return nil
-// 		}
-// 		w := location.Wall{
-// 			ID:            dbw.ID,
-// 			X1:            *dbw.X1,
-// 			Y1:            *dbw.Y1,
-// 			X2:            *dbw.X2,
-// 			Y2:            *dbw.Y2,
-// 			Thickness:     *dbw.WallType.Thickness,
-// 			Attenuation24: *dbw.WallType.Attenuation24,
-// 			Attenuation5:  *dbw.WallType.Attenuation5,
-// 			Attenuation6:  *dbw.WallType.Attenuation6,
-// 		}
-// 		convertedWalls = append(convertedWalls, w)
-// 	}
-// 	return convertedWalls
-// }
+	// TODO validate
 
-// func normalize(value, min, max float64) float64 {
-// 	return (value - min) / (max - min)
-// }
+	points, err := h.matrixUsecase.FindPoints(context.Background(), &domainDTO)
+	if err != nil {
+		// if errors.Is(err, usecase.ErrNotFound) {
+		// 	log.Info().Err(err).Msg("the floor with provided 'floor_id' does not exist")
+		// 	return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+		// 		fiber.StatusBadRequest,
+		// 		"Invalid request body",
+		// 		"The floor with provided 'floor_id' does not exist",
+		// 		nil,
+		// 	))
+		// }
 
-// func generateColorAndOpacity(normalizedValue float64) color.Color {
-// 	var r, g, b, a uint8
-// 	a = 153 // 0.6 * 255
+		// if errors.Is(err, usecase.ErrAlreadyExists) {
+		// 	log.Info().Err(err).Msg("the sensor with provided 'mac' already exists")
+		// 	return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
+		// 		fiber.StatusBadRequest,
+		// 		"Invalid request body",
+		// 		"The sensor with provided 'mac' already exists",
+		// 		nil,
+		// 	))
+		// }
 
-// 	if normalizedValue == 0 {
-// 		r, g, b, a = 0, 0, 0, 0
-// 	} else if normalizedValue <= 0.33 {
-// 		r = 0
-// 		g = uint8((255 * normalizedValue) / 0.33)
-// 		b = 255
-// 	} else if normalizedValue <= 0.66 {
-// 		r = uint8((255 * (normalizedValue - 0.33)) / 0.33)
-// 		g = 255
-// 		b = 0
-// 	} else {
-// 		r = 255
-// 		g = uint8((255 * (1 - normalizedValue)) / 0.34)
-// 		b = 0
-// 	}
+		log.Error().Err(err).Msg("an unexpected error has occurred while trying to find points")
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
+			fiber.StatusInternalServerError,
+			"An unexpected error has occurred while trying to find points",
+			"",
+			nil,
+		))
+	}
 
-// 	return color.NRGBA{R: r, G: g, B: b, A: a}
-// }
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"points": points})
+}

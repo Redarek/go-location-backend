@@ -1,8 +1,8 @@
 package dto
 
-// import (
-// 	"github.com/google/uuid"
-// )
+import (
+	"github.com/google/uuid"
+)
 
 // type CreateMatrixDTO struct {
 // 	FloorID      uuid.UUID `db:"floor_id"`
@@ -18,3 +18,8 @@ package dto
 // 	Rssi6    float64   `db:"rssi6"`
 // 	Distance float64   `db:"distance"`
 // }
+
+type FindPointsDTO struct {
+	FloorID uuid.UUID
+	MAC     string
+}

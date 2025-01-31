@@ -289,16 +289,21 @@ func createMatrixPNG(matrixInputData *location.InputData, pointRows []*entity.Po
 	return
 }
 
-func (u *MatrixUsecase) FindPoints(ctx context.Context, mac string) (err error) {
-
-	devicesDetailed, err := u.deviceService.GetDevicesDetailedByMAC(ctx, mac, 0, 0)
+func (u *MatrixUsecase) FindPoints(ctx context.Context, dto *dto.FindPointsDTO) (points []*entity.Point, err error) {
+	devicesDetailed, err := u.deviceService.GetDevicesDetailedByMAC(ctx, dto.MAC, 0, 0)
 	if err != nil {
 		log.Error().Msg("failed to get devices detailed")
 		return
 	}
 
+	// TODO delete?
+	log.Debug().Msgf("detailed devices: %v", devicesDetailed)
+
+	// TODO что тут должно быть?
+
 	data := location.Data{
-		MAC: mac,
+		MAC: dto.MAC,
+		// TODO заполнить
 	}
 	location.GetParametersForFindXY(data)
 	return
