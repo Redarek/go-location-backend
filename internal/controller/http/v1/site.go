@@ -8,9 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	"location-backend/internal/controller/http/mapper"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -28,15 +26,13 @@ const (
 )
 
 type siteHandler struct {
-	usecase    *usecase.SiteUsecase
-	siteMapper *mapper.SiteMapper
+	usecase *usecase.SiteUsecase
 }
 
 // Регистрирует новый handler
 func NewSiteHandler(usecase *usecase.SiteUsecase) *siteHandler {
 	return &siteHandler{
-		usecase:    usecase,
-		siteMapper: &mapper.SiteMapper{},
+		usecase: usecase,
 	}
 }
 
@@ -58,8 +54,9 @@ func (h *siteHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateSiteDTO
-	err := ctx.BodyParser(&dto)
+	// UserID не передаётся!
+	var dtoObj dto.CreateSiteDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse site request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -84,14 +81,9 @@ func (h *siteHandler) CreateSite(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.CreateSiteDTO{
-		Name:        dto.Name,
-		Description: dto.Description,
-		UserID:      userID,
-	}
+	dtoObj.UserID = userID
 
-	siteID, err := h.usecase.CreateSite(context.Background(), domainDTO)
+	siteID, err := h.usecase.CreateSite(context.Background(), &dtoObj)
 	if err != nil {
 		log.Error().Err(err).Msg("an unexpected error has occurred while trying to create the site")
 		return ctx.Status(fiber.StatusInternalServerError).JSON(httperrors.NewErrorResponse(
@@ -117,18 +109,13 @@ func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 		))
 	}
 
-	var dto http_dto.GetSiteDTO = http_dto.GetSiteDTO{
+	var dtoObj dto.GetSiteDTO = dto.GetSiteDTO{
 		ID: siteID,
 	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetSiteDTO{
-	// 	ID: dto.ID,
-	// }
-
-	site, err := h.usecase.GetSite(context.Background(), dto.ID)
+	site, err := h.usecase.GetSite(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -144,10 +131,7 @@ func (h *siteHandler) GetSite(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	siteDTO := (http_dto.SiteDTO)(*site)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": siteDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": site})
 }
 
 func (h *siteHandler) GetSites(c *fiber.Ctx) error {
@@ -164,7 +148,7 @@ func (h *siteHandler) GetSites(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetSitesDTO = http_dto.GetSitesDTO{
+	var dtoObj dto.GetSitesDTO = dto.GetSitesDTO{
 		UserID: userID,
 		Page:   1,
 		Size:   100,
@@ -172,14 +156,7 @@ func (h *siteHandler) GetSites(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetSitesDTO{
-		UserID: dto.UserID,
-		Limit:  dto.Size,
-		Offset: (dto.Page - 1) * dto.Size,
-	}
-
-	sites, err := h.usecase.GetSites(context.Background(), domainDTO)
+	sites, err := h.usecase.GetSites(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -195,14 +172,7 @@ func (h *siteHandler) GetSites(c *fiber.Ctx) error {
 		))
 	}
 
-	var sitesDTO []http_dto.SiteDTO
-	for _, site := range sites {
-		// Mapping entity -> http DTO
-		siteDTO := (http_dto.SiteDTO)(*site)
-		sitesDTO = append(sitesDTO, siteDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sitesDTO})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sites})
 }
 
 func (h *siteHandler) GetSitesDetailed(c *fiber.Ctx) error {
@@ -219,7 +189,7 @@ func (h *siteHandler) GetSitesDetailed(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetSitesDetailedDTO = http_dto.GetSitesDetailedDTO{
+	var dtoObj dto.GetSitesDetailedDTO = dto.GetSitesDetailedDTO{
 		UserID: userID,
 		Page:   1,
 		Size:   100,
@@ -227,14 +197,7 @@ func (h *siteHandler) GetSitesDetailed(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetSitesDTO{
-		UserID: dto.UserID,
-		Limit:  dto.Size,
-		Offset: (dto.Page - 1) * dto.Size,
-	}
-
-	sitesDetailed, err := h.usecase.GetSitesDetailed(context.Background(), domainDTO)
+	sitesDetailed, err := h.usecase.GetSitesDetailed(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -250,15 +213,12 @@ func (h *siteHandler) GetSitesDetailed(c *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	sitesDetailedDTO := h.siteMapper.DetailedToHTTPList(sitesDetailed)
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sitesDetailedDTO})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sitesDetailed})
 }
 
 func (h *siteHandler) PatchUpdateSite(c *fiber.Ctx) error {
-	var dto http_dto.PatchUpdateSiteDTO
-	err := c.BodyParser(&dto)
+	var dtoObj dto.PatchUpdateSiteDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse site request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -271,10 +231,7 @@ func (h *siteHandler) PatchUpdateSite(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.PatchUpdateSiteDTO)(&dto)
-
-	err = h.usecase.PatchUpdateSite(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateSite(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -321,11 +278,6 @@ func (h *siteHandler) SoftDeleteSite(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteSiteDTO{
-	// 	ID: siteID,
-	// }
 
 	err = h.usecase.SoftDeleteSite(context.Background(), siteID)
 	if err != nil {
@@ -374,11 +326,6 @@ func (h *siteHandler) RestoreSite(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteSiteDTO{
-	// 	ID: siteID,
-	// }
 
 	err = h.usecase.RestoreSite(context.Background(), siteID)
 	if err != nil {

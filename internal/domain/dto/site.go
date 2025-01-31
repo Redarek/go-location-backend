@@ -2,35 +2,35 @@ package dto
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type SiteDTO struct {
-	ID          uuid.UUID           `db:"id"`
-	Name        string              `db:"name"`
-	Description *string             `db:"description"`
-	UserID      uuid.UUID           `db:"user_id"`
-	CreatedAt   pgtype.Timestamptz  `db:"created_at"`
-	UpdatedAt   pgtype.Timestamptz  `db:"updated_at"`
-	DeletedAt   *pgtype.Timestamptz `db:"deleted_at"`
+type CreateSiteDTO struct {
+	Name        string    `json:"name" db:"name"`
+	Description *string   `json:"description" db:"description"`
+	UserID      uuid.UUID `json:"userId" db:"user_id"`
 }
 
-type CreateSiteDTO struct {
-	Name        string    `db:"name"`
-	Description *string   `db:"description"`
-	UserID      uuid.UUID `db:"user_id"`
+// ? нужно ли DTO из одного элемента?
+type GetSiteDTO struct {
+	ID uuid.UUID `json:"id" db:"id"`
 }
 
 type GetSiteDetailedDTO struct {
-	ID     uuid.UUID `db:"id"`
-	Limit  int
-	Offset int
+	ID   uuid.UUID `json:"id" db:"id"`
+	Page int
+	Size int
 }
 
 type GetSitesDTO struct {
-	UserID uuid.UUID `db:"user_id"`
-	Limit  int
-	Offset int
+	UserID uuid.UUID `json:"userId" db:"user_id"`
+	Page   int
+	Size   int
+}
+
+type GetSitesDetailedDTO struct {
+	UserID uuid.UUID `json:"userId" db:"user_id"`
+	Page   int
+	Size   int
 }
 
 // ? Возможно удалить
@@ -41,9 +41,9 @@ type GetSitesDTO struct {
 // }
 
 type PatchUpdateSiteDTO struct {
-	ID          uuid.UUID `db:"id"`
-	Name        *string   `db:"name"`
-	Description *string   `db:"description"`
+	ID          uuid.UUID `json:"id" db:"id"`
+	Name        *string   `json:"name" db:"name"`
+	Description *string   `json:"description" db:"description"`
 	// UserID      *uuid.UUID          `db:"user_id"` // TODO Возможно позже стоит добавить
 }
 
