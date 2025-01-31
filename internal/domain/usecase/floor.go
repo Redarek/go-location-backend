@@ -14,7 +14,7 @@ import (
 type IFloorService interface {
 	CreateFloor(ctx context.Context, createFloorDTO *dto.CreateFloorDTO) (floorID uuid.UUID, err error)
 	GetFloor(ctx context.Context, floorID uuid.UUID) (floor *entity.Floor, err error)
-	GetFloors(ctx context.Context, getDTO dto.GetFloorsDTO) (floors []*entity.Floor, err error)
+	GetFloors(ctx context.Context, getDTO *dto.GetFloorsDTO) (floors []*entity.Floor, err error)
 	// TODO get floor list detailed
 
 	UpdateFloor(ctx context.Context, updateFloorDTO *dto.PatchUpdateFloorDTO) (err error)
@@ -73,7 +73,7 @@ func (u *FloorUsecase) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *
 	return
 }
 
-func (u *FloorUsecase) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (floors []*entity.Floor, err error) {
+func (u *FloorUsecase) GetFloors(ctx context.Context, dto *dto.GetFloorsDTO) (floors []*entity.Floor, err error) {
 	floors, err = u.floorService.GetFloors(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

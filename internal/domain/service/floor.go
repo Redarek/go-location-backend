@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type IFloorRepo interface {
@@ -50,8 +51,8 @@ func (s *floorService) GetFloor(ctx context.Context, floorID uuid.UUID) (floor *
 	return
 }
 
-func (s *floorService) GetFloors(ctx context.Context, dto dto.GetFloorsDTO) (floors []*entity.Floor, err error) {
-	floors, err = s.repository.GetAll(ctx, dto.BuildingID, dto.Limit, dto.Offset)
+func (s *floorService) GetFloors(ctx context.Context, dto *dto.GetFloorsDTO) (floors []*entity.Floor, err error) {
+	floors, err = s.repository.GetAll(ctx, dto.BuildingID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return floors, usecase.ErrNotFound

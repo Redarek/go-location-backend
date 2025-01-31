@@ -8,8 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -51,8 +50,8 @@ func (h *floorHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *floorHandler) CreateFloor(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateFloorDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateFloorDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse floor request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -65,10 +64,7 @@ func (h *floorHandler) CreateFloor(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.CreateFloorDTO)(&dto)
-
-	floorID, err := h.usecase.CreateFloor(context.Background(), domainDTO)
+	floorID, err := h.usecase.CreateFloor(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Err(err).Msg("the site with provided 'building_id' does not exist")
@@ -104,18 +100,13 @@ func (h *floorHandler) GetFloor(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// var dto http_dto.GetFloorDTO = http_dto.GetFloorDTO{
-	// 	ID: floorID,
-	// }
+	var dtoObj dto.GetFloorDTO = dto.GetFloorDTO{
+		ID: floorID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetFloorDTO{
-	// 	ID: dto.ID,
-	// }
-
-	floor, err := h.usecase.GetFloor(context.Background(), floorID)
+	floor, err := h.usecase.GetFloor(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -131,10 +122,7 @@ func (h *floorHandler) GetFloor(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	floorDTO := (http_dto.FloorDTO)(*floor)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": floorDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": floor})
 }
 
 func (h *floorHandler) GetFloors(c *fiber.Ctx) error {
@@ -150,7 +138,7 @@ func (h *floorHandler) GetFloors(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetFloorsDTO = http_dto.GetFloorsDTO{
+	var dtoObj dto.GetFloorsDTO = dto.GetFloorsDTO{
 		BuildingID: buildingID,
 		Page:       1,
 		Size:       100,
@@ -158,14 +146,7 @@ func (h *floorHandler) GetFloors(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetFloorsDTO{
-		BuildingID: dto.BuildingID,
-		Limit:      dto.Size,
-		Offset:     (dto.Page - 1) * dto.Size,
-	}
-
-	floors, err := h.usecase.GetFloors(context.Background(), domainDTO)
+	floors, err := h.usecase.GetFloors(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -181,19 +162,12 @@ func (h *floorHandler) GetFloors(c *fiber.Ctx) error {
 		))
 	}
 
-	var floorsDTO []http_dto.FloorDTO
-	for _, floor := range floors {
-		// Mapping entity -> http DTO
-		floorDTO := (http_dto.FloorDTO)(*floor)
-		floorsDTO = append(floorsDTO, floorDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": floorsDTO})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": floors})
 }
 
 func (h *floorHandler) PatchUpdateFloor(c *fiber.Ctx) error {
-	var dto http_dto.PatchUpdateFloorDTO
-	err := c.BodyParser(&dto)
+	var dtoObj dto.PatchUpdateFloorDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse floor request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -206,10 +180,7 @@ func (h *floorHandler) PatchUpdateFloor(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.PatchUpdateFloorDTO)(&dto)
-
-	err = h.usecase.PatchUpdateFloor(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateFloor(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -256,11 +227,6 @@ func (h *floorHandler) SoftDeleteFloor(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteFloorDTO{
-	// 	ID: floorID,
-	// }
 
 	err = h.usecase.SoftDeleteFloor(context.Background(), floorID)
 	if err != nil {
@@ -309,11 +275,6 @@ func (h *floorHandler) RestoreFloor(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteFloorDTO{
-	// 	ID: floorID,
-	// }
 
 	err = h.usecase.RestoreFloor(context.Background(), floorID)
 	if err != nil {

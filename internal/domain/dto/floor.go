@@ -2,64 +2,44 @@ package dto
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type FloorDTO struct {
-	ID                   uuid.UUID           `db:"id"`
-	Name                 string              `db:"name"`
-	Number               int                 `db:"number"`
-	Image                *string             `db:"image"`
-	Heatmap              *string             `db:"heatmap"`
-	WidthInPixels        int                 `db:"width_in_pixels"`
-	HeightInPixels       int                 `db:"height_in_pixels"`
-	Scale                float64             `db:"scale"`
-	CellSizeMeter        float64             `db:"cell_size_meter"`
-	NorthAreaIndentMeter float64             `db:"north_area_indent_meter"`
-	SouthAreaIndentMeter float64             `db:"south_area_indent_meter"`
-	WestAreaIndentMeter  float64             `db:"west_area_indent_meter"`
-	EastAreaIndentMeter  float64             `db:"east_area_indent_meter"`
-	BuildingID           uuid.UUID           `db:"building_id"`
-	CreatedAt            pgtype.Timestamptz  `db:"createdAt"`
-	UpdatedAt            pgtype.Timestamptz  `db:"updatedAt"`
-	DeletedAt            *pgtype.Timestamptz `db:"deletedAt"`
+type CreateFloorDTO struct {
+	Name                 string    `json:"name" db:"name"`
+	Number               int       `json:"number" db:"number"`
+	Image                *string   `json:"image" db:"image"`
+	WidthInPixels        int       `json:"widthInPixels" db:"width_in_pixels"`
+	HeightInPixels       int       `json:"heightInPixels" db:"height_in_pixels"`
+	Scale                float64   `json:"scale" db:"scale"`
+	CellSizeMeter        float64   `json:"cellSizeMeter" db:"cell_size_meter"`
+	NorthAreaIndentMeter float64   `json:"northAreaIndentMeter" db:"north_area_indent_meter"`
+	SouthAreaIndentMeter float64   `json:"southAreaIndentMeter" db:"south_area_indent_meter"`
+	WestAreaIndentMeter  float64   `json:"westAreaIndentMeter" db:"west_area_indent_meter"`
+	EastAreaIndentMeter  float64   `json:"eastAreaIndentMeter" db:"east_area_indent_meter"`
+	BuildingID           uuid.UUID `json:"buildingId" db:"building_id"`
 }
 
-type CreateFloorDTO struct {
-	Name   string  `db:"name"`
-	Number int     `db:"number"`
-	Image  *string `db:"image"`
-	// Heatmap              *string   `db:"heatmap"`
-	WidthInPixels        int       `db:"width_in_pixels"`
-	HeightInPixels       int       `db:"height_in_pixels"`
-	Scale                float64   `db:"scale"`
-	CellSizeMeter        float64   `db:"cell_size_meter"`
-	NorthAreaIndentMeter float64   `db:"north_area_indent_meter"`
-	SouthAreaIndentMeter float64   `db:"south_area_indent_meter"`
-	WestAreaIndentMeter  float64   `db:"west_area_indent_meter"`
-	EastAreaIndentMeter  float64   `db:"east_area_indent_meter"`
-	BuildingID           uuid.UUID `db:"building_id"`
+type GetFloorDTO struct {
+	ID uuid.UUID `json:"id" db:"id"`
 }
 
 type PatchUpdateFloorDTO struct {
-	ID     uuid.UUID `db:"id"`
-	Name   *string   `db:"name"`
-	Number *int      `db:"number"`
-	Image  *string   `db:"image"`
-	// Heatmap              *string   `db:"heatmap"`
-	WidthInPixels        *int     `db:"width_in_pixels"`
-	HeightInPixels       *int     `db:"height_in_pixels"`
-	Scale                *float64 `db:"scale"`
-	CellSizeMeter        *float64 `db:"cell_size_meter"`
-	NorthAreaIndentMeter *float64 `db:"north_area_indent_meter"`
-	SouthAreaIndentMeter *float64 `db:"south_area_indent_meter"`
-	WestAreaIndentMeter  *float64 `db:"west_area_indent_meter"`
-	EastAreaIndentMeter  *float64 `db:"east_area_indent_meter"`
-	// BuildingID           uuid.UUID `db:"buildingId" db:"building_id"`
+	ID                   uuid.UUID `json:"id" db:"id"`
+	Name                 *string   `json:"name" db:"name"`
+	Number               *int      `json:"number" db:"number"`
+	Image                *string   `json:"image" db:"image"`
+	WidthInPixels        *int      `json:"widthInPixels" db:"width_in_pixels"`
+	HeightInPixels       *int      `json:"heightInPixels" db:"height_in_pixels"`
+	Scale                *float64  `json:"scale" db:"scale"`
+	CellSizeMeter        *float64  `json:"cellSizeMeter" db:"cell_size_meter"`
+	NorthAreaIndentMeter *float64  `json:"northAreaIndentMeter" db:"north_area_indent_meter"`
+	SouthAreaIndentMeter *float64  `json:"southAreaIndentMeter" db:"south_area_indent_meter"`
+	WestAreaIndentMeter  *float64  `json:"westAreaIndentMeter" db:"west_area_indent_meter"`
+	EastAreaIndentMeter  *float64  `json:"eastAreaIndentMeter" db:"east_area_indent_meter"`
 }
 
 type GetFloorsDTO struct {
-	BuildingID uuid.UUID `db:"id"`
-	Limit      int
-	Offset     int
+	BuildingID uuid.UUID `json:"buildingId" db:"building_id"`
+	Page       int
+	Size       int
 }
