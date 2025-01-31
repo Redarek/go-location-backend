@@ -27,12 +27,6 @@ type GetSitesDTO struct {
 	Size   int
 }
 
-type GetSitesDetailedDTO struct {
-	UserID uuid.UUID `json:"userId" db:"user_id"`
-	Page   int
-	Size   int
-}
-
 // ? Возможно удалить
 // type GetSitesDetailedDTO struct {
 // 	UserID uuid.UUID `db:"user_id"`

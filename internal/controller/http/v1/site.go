@@ -189,7 +189,7 @@ func (h *siteHandler) GetSitesDetailed(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dtoObj dto.GetSitesDetailedDTO = dto.GetSitesDetailedDTO{
+	var dtoObj dto.GetSitesDTO = dto.GetSitesDTO{
 		UserID: userID,
 		Page:   1,
 		Size:   100,
