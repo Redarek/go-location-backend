@@ -8,8 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
@@ -39,8 +38,8 @@ func (h *roleHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateRoleDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateRoleDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse user request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -53,12 +52,7 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := &domain_dto.CreateRoleDTO{
-		Name: dto.Name,
-	}
-
-	roleID, err := h.usecase.CreateRole(context.Background(), domainDTO)
+	roleID, err := h.usecase.CreateRole(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrAlreadyExists) {
 			return ctx.Status(fiber.StatusConflict).JSON(httperrors.NewErrorResponse(
@@ -96,16 +90,7 @@ func (h *roleHandler) GetRoleByIDorName(ctx *fiber.Ctx) error {
 			))
 		}
 
-		// var dto http_dto.GetRoleDTO = http_dto.GetRoleDTO{
-		// 	ID: uuid,
-		// }
-
 		// TODO validate
-
-		// Mapping http DTO -> domain DTO
-		// domainDTO := &domain_dto.GetRoleDTO{
-		// 	ID: dto.ID,
-		// }
 
 		role, err = h.usecase.GetRole(context.Background(), roleID)
 		if err != nil {
@@ -123,19 +108,14 @@ func (h *roleHandler) GetRoleByIDorName(ctx *fiber.Ctx) error {
 			))
 		}
 	} else if ctx.Query("name") != "" {
-		var dto http_dto.GetRoleByNameDTO = http_dto.GetRoleByNameDTO{
+		var dtoObj dto.GetRoleByNameDTO = dto.GetRoleByNameDTO{
 			Name: ctx.Query("name"),
 		}
 
 		// TODO validate
 
-		// Mapping http DTO -> domain DTO
-		// domainDTO := domain_dto.GetRoleByNameDTO{
-		// 	Name: dto.Name,
-		// }
-
 		var err error
-		role, err = h.usecase.GetRoleByName(context.Background(), dto.Name)
+		role, err = h.usecase.GetRoleByName(context.Background(), dtoObj.Name)
 		if err != nil {
 			if errors.Is(err, usecase.ErrNotFound) {
 				ctx.Status(fiber.StatusNoContent)
@@ -160,8 +140,5 @@ func (h *roleHandler) GetRoleByIDorName(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	roleDTO := (http_dto.RoleDTO)(*role)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": roleDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": role})
 }
