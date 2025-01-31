@@ -124,11 +124,11 @@ func (u *MatrixUsecase) getMatrixInputData(ctx context.Context, floorID uuid.UUI
 
 	getWallsDTO := dto.GetWallsDTO{
 		FloorID: floorID,
-		Limit:   0,
-		Offset:  0,
+		Page:    0,
+		Size:    0,
 	}
 
-	wallsDetailed, err := u.wallService.GetWallsDetailed(ctx, getWallsDTO)
+	wallsDetailed, err := u.wallService.GetWallsDetailed(ctx, &getWallsDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			log.Debug().Msg("no any wall were found on the floor")
@@ -147,6 +147,7 @@ func (u *MatrixUsecase) getMatrixInputData(ctx context.Context, floorID uuid.UUI
 	sensors, err := u.sensorService.GetSensors(ctx, getSensorsDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
+			// TODO передавать данную ошибку наверх
 			log.Error().Err(err).Msg("no any sensor were found on the floor")
 			return
 		}

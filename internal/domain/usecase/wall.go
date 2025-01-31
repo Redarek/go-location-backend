@@ -15,8 +15,8 @@ type IWallService interface {
 	CreateWall(ctx context.Context, createWallDTO *dto.CreateWallDTO) (wallID uuid.UUID, err error)
 	GetWall(ctx context.Context, wallID uuid.UUID) (wall *entity.Wall, err error)
 	GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wallDetailed *entity.WallDetailed, err error)
-	GetWalls(ctx context.Context, getDTO dto.GetWallsDTO) (walls []*entity.Wall, err error)
-	GetWallsDetailed(ctx context.Context, dto dto.GetWallsDTO) (wallsDetailed []*entity.WallDetailed, err error)
+	GetWalls(ctx context.Context, getDTO *dto.GetWallsDTO) (walls []*entity.Wall, err error)
+	GetWallsDetailed(ctx context.Context, dto *dto.GetWallsDTO) (wallsDetailed []*entity.WallDetailed, err error)
 
 	UpdateWall(ctx context.Context, updateWallDTO *dto.PatchUpdateWallDTO) (err error)
 
@@ -87,7 +87,7 @@ func (u *WallUsecase) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 	return
 }
 
-func (u *WallUsecase) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls []*entity.Wall, err error) {
+func (u *WallUsecase) GetWalls(ctx context.Context, dto *dto.GetWallsDTO) (walls []*entity.Wall, err error) {
 	walls, err = u.wallService.GetWalls(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

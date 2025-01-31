@@ -8,8 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -51,8 +50,8 @@ func (h *wallTypeHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *wallTypeHandler) CreateWallType(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateWallTypeDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateWallTypeDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse wallType request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -65,10 +64,7 @@ func (h *wallTypeHandler) CreateWallType(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.CreateWallTypeDTO)(&dto)
-
-	wallTypeID, err := h.usecase.CreateWallType(context.Background(), domainDTO)
+	wallTypeID, err := h.usecase.CreateWallType(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Err(err).Msg("the site with provided 'site_id' does not exist")
@@ -104,18 +100,13 @@ func (h *wallTypeHandler) GetWallType(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// var dto http_dto.GetWallTypeDTO = http_dto.GetWallTypeDTO{
-	// 	ID: wallTypeID,
-	// }
+	var dtoObj dto.GetWallTypeDTO = dto.GetWallTypeDTO{
+		ID: wallTypeID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetWallTypeDTO{
-	// 	ID: dto.ID,
-	// }
-
-	wallType, err := h.usecase.GetWallType(context.Background(), wallTypeID)
+	wallType, err := h.usecase.GetWallType(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -131,10 +122,7 @@ func (h *wallTypeHandler) GetWallType(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	wallTypeDTO := http_dto.WallTypeDTO(*wallType)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallTypeDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallType})
 }
 
 func (h *wallTypeHandler) GetWallTypes(c *fiber.Ctx) error {
@@ -150,7 +138,7 @@ func (h *wallTypeHandler) GetWallTypes(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetWallTypesDTO = http_dto.GetWallTypesDTO{
+	var dtoObj dto.GetWallTypesDTO = dto.GetWallTypesDTO{
 		SiteID: siteID,
 		Page:   1,
 		Size:   100,
@@ -158,14 +146,7 @@ func (h *wallTypeHandler) GetWallTypes(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetWallTypesDTO{
-		SiteID: dto.SiteID,
-		Limit:  dto.Size,
-		Offset: (dto.Page - 1) * dto.Size,
-	}
-
-	wallTypes, err := h.usecase.GetWallTypes(context.Background(), domainDTO)
+	wallTypes, err := h.usecase.GetWallTypes(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -181,19 +162,12 @@ func (h *wallTypeHandler) GetWallTypes(c *fiber.Ctx) error {
 		))
 	}
 
-	var wallTypesDTO []http_dto.WallTypeDTO
-	for _, wallType := range wallTypes {
-		// Mapping domain DTO -> http DTO
-		wallTypeDTO := (http_dto.WallTypeDTO)(*wallType)
-		wallTypesDTO = append(wallTypesDTO, wallTypeDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallTypesDTO})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallTypes})
 }
 
 func (h *wallTypeHandler) PatchUpdateWallType(c *fiber.Ctx) error {
-	var dto http_dto.PatchUpdateWallTypeDTO
-	err := c.BodyParser(&dto)
+	var dtoObj dto.PatchUpdateWallTypeDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse wallType request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -206,10 +180,7 @@ func (h *wallTypeHandler) PatchUpdateWallType(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.PatchUpdateWallTypeDTO)(&dto)
-
-	err = h.usecase.PatchUpdateWallType(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateWallType(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -256,11 +227,6 @@ func (h *wallTypeHandler) SoftDeleteWallType(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteWallTypeDTO{
-	// 	ID: wallTypeID,
-	// }
 
 	err = h.usecase.SoftDeleteWallType(context.Background(), wallTypeID)
 	if err != nil {
@@ -309,11 +275,6 @@ func (h *wallTypeHandler) RestoreWallType(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteWallTypeDTO{
-	// 	ID: wallTypeID,
-	// }
 
 	err = h.usecase.RestoreWallType(context.Background(), wallTypeID)
 	if err != nil {

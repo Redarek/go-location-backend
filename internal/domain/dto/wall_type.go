@@ -2,45 +2,34 @@ package dto
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type WallTypeDTO struct {
-	ID            uuid.UUID           `db:"id"`
-	Name          string              `db:"name"`
-	Color         string              `db:"color"`
-	Attenuation24 float64             `db:"attenuation_24"`
-	Attenuation5  float64             `db:"attenuation_5"`
-	Attenuation6  float64             `db:"attenuation_6"`
-	Thickness     float64             `db:"thickness"`
-	SiteID        uuid.UUID           `db:"site_id"`
-	CreatedAt     pgtype.Timestamptz  `db:"created_at"`
-	UpdatedAt     pgtype.Timestamptz  `db:"updated_at"`
-	DeletedAt     *pgtype.Timestamptz `db:"deleted_at"`
+type CreateWallTypeDTO struct {
+	Name          string    `json:"name" db:"name"`
+	Color         string    `json:"color" db:"color"`
+	Attenuation24 float64   `json:"attenuation24" db:"attenuation_24"`
+	Attenuation5  float64   `json:"attenuation5" db:"attenuation_5"`
+	Attenuation6  float64   `json:"attenuation6" db:"attenuation_6"`
+	Thickness     float64   `json:"thickness" db:"thickness"`
+	SiteID        uuid.UUID `json:"siteId" db:"site_id"`
 }
 
-type CreateWallTypeDTO struct {
-	Name          string    `db:"name"`
-	Color         string    `db:"color"`
-	Attenuation24 float64   `db:"attenuation_24"`
-	Attenuation5  float64   `db:"attenuation_5"`
-	Attenuation6  float64   `db:"attenuation_6"`
-	Thickness     float64   `db:"thickness"`
-	SiteID        uuid.UUID `db:"site_id"`
+type GetWallTypeDTO struct {
+	ID uuid.UUID `json:"id" db:"id"`
 }
 
 type PatchUpdateWallTypeDTO struct {
-	ID            uuid.UUID `db:"id"`
-	Name          *string   `db:"name"`
-	Color         *string   `db:"color"`
-	Attenuation24 *float64  `db:"attenuation_24"`
-	Attenuation5  *float64  `db:"attenuation_5"`
-	Attenuation6  *float64  `db:"attenuation_6"`
-	Thickness     *float64  `db:"thickness"`
+	ID            uuid.UUID `json:"id" db:"id"`
+	Name          *string   `json:"name" db:"name"`
+	Color         *string   `json:"color" db:"color"`
+	Attenuation24 *float64  `json:"attenuation24" db:"attenuation_24"`
+	Attenuation5  *float64  `json:"attenuation5" db:"attenuation_5"`
+	Attenuation6  *float64  `json:"attenuation6" db:"attenuation_6"`
+	Thickness     *float64  `json:"thickness" db:"thickness"`
 }
 
 type GetWallTypesDTO struct {
-	SiteID uuid.UUID `db:"site_id"`
-	Limit  int
-	Offset int
+	SiteID uuid.UUID `json:"siteId" db:"site_id"`
+	Page   int
+	Size   int
 }

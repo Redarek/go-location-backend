@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type IWallTypeRepo interface {
@@ -51,8 +52,8 @@ func (s *wallTypeService) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 	return
 }
 
-func (s *wallTypeService) GetWallTypes(ctx context.Context, dto dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error) {
-	wallTypes, err = s.repository.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
+func (s *wallTypeService) GetWallTypes(ctx context.Context, dto *dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error) {
+	wallTypes, err = s.repository.GetAll(ctx, dto.SiteID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return wallTypes, usecase.ErrNotFound

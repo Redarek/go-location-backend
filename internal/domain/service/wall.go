@@ -10,6 +10,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type IWallRepo interface {
@@ -84,8 +85,8 @@ func (s *wallService) GetWallDetailed(ctx context.Context, wallID uuid.UUID) (wa
 	return
 }
 
-func (s *wallService) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls []*entity.Wall, err error) {
-	walls, err = s.wallRepo.GetAll(ctx, dto.FloorID, dto.Limit, dto.Offset)
+func (s *wallService) GetWalls(ctx context.Context, dto *dto.GetWallsDTO) (walls []*entity.Wall, err error) {
+	walls, err = s.wallRepo.GetAll(ctx, dto.FloorID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return walls, usecase.ErrNotFound
@@ -97,8 +98,8 @@ func (s *wallService) GetWalls(ctx context.Context, dto dto.GetWallsDTO) (walls 
 	return
 }
 
-func (s *wallService) GetWallsDetailed(ctx context.Context, dto dto.GetWallsDTO) (wallsDetailed []*entity.WallDetailed, err error) {
-	wallsDetailed, err = s.wallRepo.GetAllDetailed(ctx, dto.FloorID, dto.Limit, dto.Offset)
+func (s *wallService) GetWallsDetailed(ctx context.Context, dto *dto.GetWallsDTO) (wallsDetailed []*entity.WallDetailed, err error) {
+	wallsDetailed, err = s.wallRepo.GetAllDetailed(ctx, dto.FloorID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, usecase.ErrNotFound

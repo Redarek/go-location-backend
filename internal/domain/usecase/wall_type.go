@@ -14,7 +14,7 @@ import (
 type IWallTypeService interface {
 	CreateWallType(ctx context.Context, createWallTypeDTO *dto.CreateWallTypeDTO) (wallTypeID uuid.UUID, err error)
 	GetWallType(ctx context.Context, wallTypeID uuid.UUID) (wallType *entity.WallType, err error)
-	GetWallTypes(ctx context.Context, getDTO dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error)
+	GetWallTypes(ctx context.Context, getDTO *dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error)
 	// TODO get wallType list detailed
 
 	UpdateWallType(ctx context.Context, updateWallTypeDTO *dto.PatchUpdateWallTypeDTO) (err error)
@@ -72,7 +72,7 @@ func (u *WallTypeUsecase) GetWallType(ctx context.Context, wallTypeID uuid.UUID)
 	return
 }
 
-func (u *WallTypeUsecase) GetWallTypes(ctx context.Context, dto dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error) {
+func (u *WallTypeUsecase) GetWallTypes(ctx context.Context, dto *dto.GetWallTypesDTO) (wallTypes []*entity.WallType, err error) {
 	wallTypes, err = u.wallTypeService.GetWallTypes(ctx, dto)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

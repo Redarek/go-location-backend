@@ -8,8 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -53,8 +52,8 @@ func (h *wallHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *wallHandler) CreateWall(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateWallDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateWallDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse wall request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -67,10 +66,7 @@ func (h *wallHandler) CreateWall(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.CreateWallDTO)(&dto)
-
-	wallID, err := h.usecase.CreateWall(context.Background(), domainDTO)
+	wallID, err := h.usecase.CreateWall(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Msg("the site with provided 'floor_id' does not exist")
@@ -106,18 +102,13 @@ func (h *wallHandler) GetWall(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// var dto http_dto.GetWallDTO = http_dto.GetWallDTO{
-	// 	ID: wallID,
-	// }
+	var dtoObj dto.GetWallDTO = dto.GetWallDTO{
+		ID: wallID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetWallDTO{
-	// 	ID: dto.ID,
-	// }
-
-	wall, err := h.usecase.GetWall(context.Background(), wallID)
+	wall, err := h.usecase.GetWall(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -133,10 +124,7 @@ func (h *wallHandler) GetWall(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	wallDTO := (http_dto.WallDTO)(*wall)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wall})
 }
 
 func (h *wallHandler) GetWallDetailed(ctx *fiber.Ctx) error {
@@ -151,18 +139,13 @@ func (h *wallHandler) GetWallDetailed(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// var dto http_dto.GetWallDTO = http_dto.GetWallDTO{
-	// 	ID: wallID,
-	// }
+	var dtoObj dto.GetWallDTO = dto.GetWallDTO{
+		ID: wallID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetWallDTO{
-	// 	ID: dto.ID,
-	// }
-
-	wallDetailed, err := h.usecase.GetWallDetailed(context.Background(), wallID)
+	wallDetailed, err := h.usecase.GetWallDetailed(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -178,24 +161,7 @@ func (h *wallHandler) GetWallDetailed(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	wallDetailedDTO := http_dto.WallDetailedDTO{
-		WallDTO: http_dto.WallDTO{
-			ID:         wallDetailed.ID,
-			X1:         wallDetailed.X1,
-			Y1:         wallDetailed.Y1,
-			X2:         wallDetailed.X2,
-			Y2:         wallDetailed.Y2,
-			WallTypeID: wallDetailed.WallTypeID,
-			FloorID:    wallDetailed.FloorID,
-			CreatedAt:  wallDetailed.CreatedAt,
-			UpdatedAt:  wallDetailed.UpdatedAt,
-			DeletedAt:  wallDetailed.DeletedAt,
-		},
-		WallTypeDTO: (http_dto.WallTypeDTO)(wallDetailed.WallType),
-	}
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallDetailedDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallDetailed})
 }
 
 func (h *wallHandler) GetWalls(c *fiber.Ctx) error {
@@ -211,7 +177,7 @@ func (h *wallHandler) GetWalls(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetWallsDTO = http_dto.GetWallsDTO{
+	var dtoObj dto.GetWallsDTO = dto.GetWallsDTO{
 		FloorID: floorID,
 		Page:    1,
 		Size:    100,
@@ -219,14 +185,7 @@ func (h *wallHandler) GetWalls(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetWallsDTO{
-		FloorID: dto.FloorID,
-		Limit:   dto.Size,
-		Offset:  (dto.Page - 1) * dto.Size,
-	}
-
-	walls, err := h.usecase.GetWalls(context.Background(), domainDTO)
+	walls, err := h.usecase.GetWalls(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -242,19 +201,12 @@ func (h *wallHandler) GetWalls(c *fiber.Ctx) error {
 		))
 	}
 
-	var wallsDTO []http_dto.WallDTO
-	for _, wall := range walls {
-		// Mapping entity -> http DTO
-		wallDTO := (http_dto.WallDTO)(*wall)
-		wallsDTO = append(wallsDTO, wallDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": wallsDTO})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": walls})
 }
 
 func (h *wallHandler) PatchUpdateWall(c *fiber.Ctx) error {
-	var dto http_dto.PatchUpdateWallDTO
-	err := c.BodyParser(&dto)
+	var dtoObj dto.PatchUpdateWallDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse wall request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -267,10 +219,7 @@ func (h *wallHandler) PatchUpdateWall(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.PatchUpdateWallDTO)(&dto)
-
-	err = h.usecase.PatchUpdateWall(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateWall(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -317,11 +266,6 @@ func (h *wallHandler) SoftDeleteWall(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteWallDTO{
-	// 	ID: wallID,
-	// }
 
 	err = h.usecase.SoftDeleteWall(context.Background(), wallID)
 	if err != nil {
@@ -370,11 +314,6 @@ func (h *wallHandler) RestoreWall(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteWallDTO{
-	// 	ID: wallID,
-	// }
 
 	err = h.usecase.RestoreWall(context.Background(), wallID)
 	if err != nil {
