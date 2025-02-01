@@ -140,11 +140,11 @@ func (u *MatrixUsecase) getMatrixInputData(ctx context.Context, floorID uuid.UUI
 
 	getSensorsDTO := dto.GetSensorsDTO{
 		FloorID: floorID,
-		Limit:   0,
-		Offset:  0,
+		Page:    0,
+		Size:    0,
 	}
 
-	sensors, err := u.sensorService.GetSensors(ctx, getSensorsDTO)
+	sensors, err := u.sensorService.GetSensors(ctx, &getSensorsDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			// TODO передавать данную ошибку наверх

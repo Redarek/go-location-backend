@@ -14,7 +14,7 @@ import (
 type ISensorRadioTemplateService interface {
 	CreateSensorRadioTemplate(ctx context.Context, createDTO *dto.CreateSensorRadioTemplateDTO) (sensorRadioTemplateID uuid.UUID, err error)
 	GetSensorRadioTemplate(ctx context.Context, sensorRadioTemplateID uuid.UUID) (sensorRadioTemplate *entity.SensorRadioTemplate, err error)
-	GetSensorRadioTemplates(ctx context.Context, getDTO dto.GetSensorRadioTemplatesDTO) (sensorRadioTemplates []*entity.SensorRadioTemplate, err error)
+	GetSensorRadioTemplates(ctx context.Context, getDTO *dto.GetSensorRadioTemplatesDTO) (sensorRadioTemplates []*entity.SensorRadioTemplate, err error)
 
 	UpdateSensorRadioTemplate(ctx context.Context, patchUpdateDTO *dto.PatchUpdateSensorRadioTemplateDTO) (err error)
 
@@ -71,7 +71,7 @@ func (u *SensorRadioTemplateUsecase) GetSensorRadioTemplate(ctx context.Context,
 	return
 }
 
-func (u *SensorRadioTemplateUsecase) GetSensorRadioTemplates(ctx context.Context, getDTO dto.GetSensorRadioTemplatesDTO) (sensorRadioTemplates []*entity.SensorRadioTemplate, err error) {
+func (u *SensorRadioTemplateUsecase) GetSensorRadioTemplates(ctx context.Context, getDTO *dto.GetSensorRadioTemplatesDTO) (sensorRadioTemplates []*entity.SensorRadioTemplate, err error) {
 	sensorRadioTemplates, err = u.sensorRadioTemplateService.GetSensorRadioTemplates(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

@@ -10,6 +10,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type ISensorRadioTemplateRepo interface {
@@ -48,8 +49,8 @@ func (s *sensorRadioTemplateService) GetSensorRadioTemplate(ctx context.Context,
 	return
 }
 
-func (s *sensorRadioTemplateService) GetSensorRadioTemplates(ctx context.Context, dto dto.GetSensorRadioTemplatesDTO) (sensorRadioTemplates []*entity.SensorRadioTemplate, err error) {
-	sensorRadioTemplates, err = s.repository.GetAll(ctx, dto.SensorTypeID, dto.Limit, dto.Offset)
+func (s *sensorRadioTemplateService) GetSensorRadioTemplates(ctx context.Context, dto *dto.GetSensorRadioTemplatesDTO) (sensorRadioTemplates []*entity.SensorRadioTemplate, err error) {
+	sensorRadioTemplates, err = s.repository.GetAll(ctx, dto.SensorTypeID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return sensorRadioTemplates, usecase.ErrNotFound

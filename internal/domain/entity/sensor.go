@@ -10,7 +10,7 @@ import (
 type Sensor struct {
 	ID                 uuid.UUID           `json:"id" db:"id"`
 	Name               string              `json:"name" db:"name"`
-	Color              *string             `db:"color"`
+	Color              *string             `json:"color" db:"color"`
 	X                  *int                `json:"x" db:"x"`
 	Y                  *int                `json:"y" db:"y"`
 	Z                  *float64            `json:"z" db:"z"`

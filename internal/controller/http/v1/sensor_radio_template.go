@@ -8,9 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	"location-backend/internal/controller/http/mapper"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -27,15 +25,13 @@ const (
 )
 
 type sensorRadioTemplateHandler struct {
-	usecase   *usecase.SensorRadioTemplateUsecase
-	srtMapper *mapper.SensorRadioTemplateMapper
+	usecase *usecase.SensorRadioTemplateUsecase
 }
 
 // Регистрирует новый handler
 func NewSensorRadioTemplateHandler(usecase *usecase.SensorRadioTemplateUsecase) *sensorRadioTemplateHandler {
 	return &sensorRadioTemplateHandler{
-		usecase:   usecase,
-		srtMapper: &mapper.SensorRadioTemplateMapper{},
+		usecase: usecase,
 	}
 }
 
@@ -55,8 +51,8 @@ func (h *sensorRadioTemplateHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *sensorRadioTemplateHandler) CreateSensorRadioTemplate(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateSensorRadioTemplateDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateSensorRadioTemplateDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse sensor radio template request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -69,10 +65,7 @@ func (h *sensorRadioTemplateHandler) CreateSensorRadioTemplate(ctx *fiber.Ctx) e
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := h.srtMapper.CreateHTTPtoDomain(&dto)
-
-	sensorRadioTemplateID, err := h.usecase.CreateSensorRadioTemplate(context.Background(), domainDTO)
+	sensorRadioTemplateID, err := h.usecase.CreateSensorRadioTemplate(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Msg("the site with provided 'sensor_type_id' does not exist")
@@ -97,7 +90,7 @@ func (h *sensorRadioTemplateHandler) CreateSensorRadioTemplate(ctx *fiber.Ctx) e
 }
 
 func (h *sensorRadioTemplateHandler) GetSensorRadioTemplate(ctx *fiber.Ctx) error {
-	srtID, err := uuid.Parse(ctx.Query("id"))
+	sensorRadioTemplateID, err := uuid.Parse(ctx.Query("id"))
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -108,18 +101,13 @@ func (h *sensorRadioTemplateHandler) GetSensorRadioTemplate(ctx *fiber.Ctx) erro
 		))
 	}
 
-	// var dto http_dto.GetSensorRadioTemplateDTO = http_dto.GetSensorRadioTemplateDTO{
-	// 	ID: sensorRadioTemplateID,
-	// }
+	var dtoObj dto.GetSensorRadioTemplateDTO = dto.GetSensorRadioTemplateDTO{
+		ID: sensorRadioTemplateID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetSensorRadioTemplateDTO{
-	// 	ID: dto.ID,
-	// }
-
-	srtDomainDTO, err := h.usecase.GetSensorRadioTemplate(context.Background(), srtID)
+	sensorRadioTemplate, err := h.usecase.GetSensorRadioTemplate(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -135,10 +123,7 @@ func (h *sensorRadioTemplateHandler) GetSensorRadioTemplate(ctx *fiber.Ctx) erro
 		))
 	}
 
-	// Mapping entity -> http DTO
-	srtHttpDTO := h.srtMapper.EntityDomainToHTTP(srtDomainDTO)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": srtHttpDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": sensorRadioTemplate})
 }
 
 func (h *sensorRadioTemplateHandler) GetSensorRadioTemplates(c *fiber.Ctx) error {
@@ -154,7 +139,7 @@ func (h *sensorRadioTemplateHandler) GetSensorRadioTemplates(c *fiber.Ctx) error
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetSensorRadioTemplatesDTO = http_dto.GetSensorRadioTemplatesDTO{
+	var dtoObj dto.GetSensorRadioTemplatesDTO = dto.GetSensorRadioTemplatesDTO{
 		SensorTypeID: sensorTypeID,
 		Page:         1,
 		Size:         100,
@@ -162,14 +147,7 @@ func (h *sensorRadioTemplateHandler) GetSensorRadioTemplates(c *fiber.Ctx) error
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetSensorRadioTemplatesDTO{
-		SensorTypeID: dto.SensorTypeID,
-		Limit:        dto.Size,
-		Offset:       (dto.Page - 1) * dto.Size,
-	}
-
-	sensorRadioTemplates, err := h.usecase.GetSensorRadioTemplates(context.Background(), domainDTO)
+	sensorRadioTemplates, err := h.usecase.GetSensorRadioTemplates(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -185,19 +163,12 @@ func (h *sensorRadioTemplateHandler) GetSensorRadioTemplates(c *fiber.Ctx) error
 		))
 	}
 
-	var srtHttpDTOs []*http_dto.SensorRadioTemplateDTO
-	for _, srtDomainDTO := range sensorRadioTemplates {
-		// Mapping entity -> http DTO
-		srtHttpDTO := h.srtMapper.EntityDomainToHTTP(srtDomainDTO)
-		srtHttpDTOs = append(srtHttpDTOs, srtHttpDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": srtHttpDTOs})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sensorRadioTemplates})
 }
 
 func (h *sensorRadioTemplateHandler) PatchUpdateSensorRadioTemplate(c *fiber.Ctx) error {
-	var httpDTO http_dto.PatchUpdateSensorRadioTemplateDTO
-	err := c.BodyParser(&httpDTO)
+	var dtoObj dto.PatchUpdateSensorRadioTemplateDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse sensor radio template request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -210,10 +181,7 @@ func (h *sensorRadioTemplateHandler) PatchUpdateSensorRadioTemplate(c *fiber.Ctx
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := h.srtMapper.UpdateHTTPtoDomain(&httpDTO)
-
-	err = h.usecase.PatchUpdateSensorRadioTemplate(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateSensorRadioTemplate(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -260,11 +228,6 @@ func (h *sensorRadioTemplateHandler) SoftDeleteSensorRadioTemplate(c *fiber.Ctx)
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteSensorRadioTemplateDTO{
-	// 	ID: sensorRadioTemplateID,
-	// }
 
 	err = h.usecase.SoftDeleteSensorRadioTemplate(context.Background(), sensorRadioTemplateID)
 	if err != nil {
@@ -313,11 +276,6 @@ func (h *sensorRadioTemplateHandler) RestoreSensorRadioTemplate(c *fiber.Ctx) er
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteSensorRadioTemplateDTO{
-	// 	ID: sensorRadioTemplateID,
-	// }
 
 	err = h.usecase.RestoreSensorRadioTemplate(context.Background(), sensorRadioTemplateID)
 	if err != nil {

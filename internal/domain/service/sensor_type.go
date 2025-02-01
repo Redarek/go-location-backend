@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type ISensorTypeRepo interface {
@@ -84,8 +85,8 @@ func (s *sensorTypeService) GetSensorType(ctx context.Context, sensorTypeID uuid
 // 	return
 // }
 
-func (s *sensorTypeService) GetSensorTypes(ctx context.Context, dto dto.GetSensorTypesDTO) (sensorTypes []*entity.SensorType, err error) {
-	sensorTypes, err = s.sensorTypeRepo.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
+func (s *sensorTypeService) GetSensorTypes(ctx context.Context, dto *dto.GetSensorTypesDTO) (sensorTypes []*entity.SensorType, err error) {
+	sensorTypes, err = s.sensorTypeRepo.GetAll(ctx, dto.SiteID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return sensorTypes, usecase.ErrNotFound

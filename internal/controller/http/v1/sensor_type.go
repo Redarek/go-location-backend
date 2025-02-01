@@ -8,9 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	"location-backend/internal/controller/http/mapper"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -28,17 +26,13 @@ const (
 )
 
 type sensorTypeHandler struct {
-	usecase      *usecase.SensorTypeUsecase
-	sensorMapper *mapper.SensorTypeMapper
-	// aprtMapper *mapper.AccessPointRadioTemplateMapper
+	usecase *usecase.SensorTypeUsecase
 }
 
 // Регистрирует новый handler
 func NewSensorTypeHandler(usecase *usecase.SensorTypeUsecase) *sensorTypeHandler {
 	return &sensorTypeHandler{
-		usecase:      usecase,
-		sensorMapper: &mapper.SensorTypeMapper{},
-		// aprtMapper: &mapper.AccessPointRadioTemplateMapper{},
+		usecase: usecase,
 	}
 }
 
@@ -60,8 +54,8 @@ func (h *sensorTypeHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *sensorTypeHandler) CreateSensorType(ctx *fiber.Ctx) error {
-	var httpDTO http_dto.CreateSensorTypeDTO
-	err := ctx.BodyParser(&httpDTO)
+	var dtoObj dto.CreateSensorTypeDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse sensor type request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -74,11 +68,7 @@ func (h *sensorTypeHandler) CreateSensorType(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.CreateSensorTypeDTO)(&httpDTO)
-	// domainDTO := h.aptMapper.CreateHTTPtoDomain(&httpDTO) // Избыточный метод
-
-	sensorTypeID, err := h.usecase.CreateSensorType(context.Background(), domainDTO)
+	sensorTypeID, err := h.usecase.CreateSensorType(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Err(err).Msg("the site with provided 'site_id' does not exist")
@@ -114,18 +104,13 @@ func (h *sensorTypeHandler) GetSensorType(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// var dto http_dto.GetSensorTypeDTO = http_dto.GetSensorTypeDTO{
-	// 	ID: sensorTypeID,
-	// }
+	var dtoObj dto.GetSensorTypeDTO = dto.GetSensorTypeDTO{
+		ID: sensorTypeID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetSensorTypeDTO{
-	// 	ID: dto.ID,
-	// }
-
-	apt, err := h.usecase.GetSensorType(context.Background(), sensorTypeID)
+	sensorType, err := h.usecase.GetSensorType(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -141,11 +126,7 @@ func (h *sensorTypeHandler) GetSensorType(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	// aptHttpDTO := h.aptMapper.EntityDomainToHTTP(aptDomainDTO)
-	aptHttpDTO := (http_dto.SensorTypeDTO)(*apt)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": aptHttpDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": sensorType})
 }
 
 // func (h *sensorTypeHandler) GetSensorTypeDetailed(ctx *fiber.Ctx) error {
@@ -228,7 +209,7 @@ func (h *sensorTypeHandler) GetSensorTypes(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetSensorTypesDTO = http_dto.GetSensorTypesDTO{
+	var dtoObj dto.GetSensorTypesDTO = dto.GetSensorTypesDTO{
 		SiteID: siteID,
 		Page:   1,
 		Size:   100,
@@ -236,14 +217,7 @@ func (h *sensorTypeHandler) GetSensorTypes(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetSensorTypesDTO{
-		SiteID: dto.SiteID,
-		Limit:  dto.Size,
-		Offset: (dto.Page - 1) * dto.Size,
-	}
-
-	aptDomainDTOs, err := h.usecase.GetSensorTypes(context.Background(), domainDTO)
+	sensorTypes, err := h.usecase.GetSensorTypes(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -259,19 +233,12 @@ func (h *sensorTypeHandler) GetSensorTypes(c *fiber.Ctx) error {
 		))
 	}
 
-	var aptHttpDTOs []http_dto.SensorTypeDTO
-	for _, aptDomainDTO := range aptDomainDTOs {
-		// Mapping entity -> http DTO
-		sensorTypeDTO := (http_dto.SensorTypeDTO)(*aptDomainDTO)
-		aptHttpDTOs = append(aptHttpDTOs, sensorTypeDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": aptHttpDTOs})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sensorTypes})
 }
 
 func (h *sensorTypeHandler) PatchUpdateSensorType(c *fiber.Ctx) error {
-	var httpDTO http_dto.PatchUpdateSensorTypeDTO
-	err := c.BodyParser(&httpDTO)
+	var dtoObj dto.PatchUpdateSensorTypeDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse sensor type request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -284,10 +251,7 @@ func (h *sensorTypeHandler) PatchUpdateSensorType(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := (*domain_dto.PatchUpdateSensorTypeDTO)(&httpDTO)
-
-	err = h.usecase.PatchUpdateSensorType(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateSensorType(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -334,11 +298,6 @@ func (h *sensorTypeHandler) SoftDeleteSensorType(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteSensorTypeDTO{
-	// 	ID: sensorTypeID,
-	// }
 
 	err = h.usecase.SoftDeleteSensorType(context.Background(), sensorTypeID)
 	if err != nil {
@@ -387,11 +346,6 @@ func (h *sensorTypeHandler) RestoreSensorType(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteSensorTypeDTO{
-	// 	ID: sensorTypeID,
-	// }
 
 	err = h.usecase.RestoreSensorType(context.Background(), sensorTypeID)
 	if err != nil {

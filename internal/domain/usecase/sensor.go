@@ -15,9 +15,9 @@ type ISensorService interface {
 	CreateSensor(ctx context.Context, createDTO *dto.CreateSensorDTO) (sensorID uuid.UUID, err error)
 	GetSensor(ctx context.Context, sensorID uuid.UUID) (sensor *entity.Sensor, err error)
 	GetSensorByMAC(ctx context.Context, mac string) (sensor *entity.Sensor, err error)
-	GetSensorDetailed(ctx context.Context, getDTO dto.GetSensorDetailedDTO) (sensorDetailed *entity.SensorDetailed, err error)
-	GetSensors(ctx context.Context, getDTO dto.GetSensorsDTO) (sensors []*entity.Sensor, err error)
-	GetSensorsDetailed(ctx context.Context, dto dto.GetSensorsDetailedDTO) (sensorsDetailed []*entity.SensorDetailed, err error)
+	GetSensorDetailed(ctx context.Context, getDTO *dto.GetSensorDetailedDTO) (sensorDetailed *entity.SensorDetailed, err error)
+	GetSensors(ctx context.Context, getDTO *dto.GetSensorsDTO) (sensors []*entity.Sensor, err error)
+	GetSensorsDetailed(ctx context.Context, dto *dto.GetSensorsDetailedDTO) (sensorsDetailed []*entity.SensorDetailed, err error)
 
 	UpdateSensor(ctx context.Context, patchUpdateDTO *dto.PatchUpdateSensorDTO) (err error)
 
@@ -102,7 +102,7 @@ func (u *SensorUsecase) GetSensor(ctx context.Context, sensorID uuid.UUID) (sens
 	return
 }
 
-func (u *SensorUsecase) GetSensorDetailed(ctx context.Context, getDTO dto.GetSensorDetailedDTO) (sensorDetailed *entity.SensorDetailed, err error) {
+func (u *SensorUsecase) GetSensorDetailed(ctx context.Context, getDTO *dto.GetSensorDetailedDTO) (sensorDetailed *entity.SensorDetailed, err error) {
 	sensorDetailed, err = u.sensorService.GetSensorDetailed(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -116,7 +116,7 @@ func (u *SensorUsecase) GetSensorDetailed(ctx context.Context, getDTO dto.GetSen
 	return
 }
 
-func (u *SensorUsecase) GetSensors(ctx context.Context, getDTO dto.GetSensorsDTO) (sensors []*entity.Sensor, err error) {
+func (u *SensorUsecase) GetSensors(ctx context.Context, getDTO *dto.GetSensorsDTO) (sensors []*entity.Sensor, err error) {
 	sensors, err = u.sensorService.GetSensors(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -130,7 +130,7 @@ func (u *SensorUsecase) GetSensors(ctx context.Context, getDTO dto.GetSensorsDTO
 	return
 }
 
-func (u *SensorUsecase) GetSensorsDetailed(ctx context.Context, getDTO dto.GetSensorsDetailedDTO) (sensorsDetailed []*entity.SensorDetailed, err error) {
+func (u *SensorUsecase) GetSensorsDetailed(ctx context.Context, getDTO *dto.GetSensorsDetailedDTO) (sensorsDetailed []*entity.SensorDetailed, err error) {
 	sensorsDetailed, err = u.sensorService.GetSensorsDetailed(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

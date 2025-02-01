@@ -15,7 +15,7 @@ type ISensorTypeService interface {
 	CreateSensorType(ctx context.Context, createDTO *dto.CreateSensorTypeDTO) (sensorTypeID uuid.UUID, err error)
 	GetSensorType(ctx context.Context, sensorTypeID uuid.UUID) (sensorType *entity.SensorType, err error)
 	// GetSensorTypeDetailed(ctx context.Context, getDTO dto.GetSensorTypeDetailedDTO) (sensorTypeDetailed *entity.SensorTypeDetailed, err error)
-	GetSensorTypes(ctx context.Context, getDTO dto.GetSensorTypesDTO) (sensorTypes []*entity.SensorType, err error)
+	GetSensorTypes(ctx context.Context, getDTO *dto.GetSensorTypesDTO) (sensorTypes []*entity.SensorType, err error)
 
 	UpdateSensorType(ctx context.Context, patchUpdateDTO *dto.PatchUpdateSensorTypeDTO) (err error)
 
@@ -92,7 +92,7 @@ func (u *SensorTypeUsecase) GetSensorType(ctx context.Context, sensorTypeID uuid
 // 	return
 // }
 
-func (u *SensorTypeUsecase) GetSensorTypes(ctx context.Context, getDTO dto.GetSensorTypesDTO) (sensorTypes []*entity.SensorType, err error) {
+func (u *SensorTypeUsecase) GetSensorTypes(ctx context.Context, getDTO *dto.GetSensorTypesDTO) (sensorTypes []*entity.SensorType, err error) {
 	sensorTypes, err = u.sensorTypeService.GetSensorTypes(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

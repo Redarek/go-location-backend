@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type ISensorRepo interface {
@@ -120,7 +121,7 @@ func (s *sensorService) GetSensorByMAC(ctx context.Context, mac string) (sensor 
 // 	return
 // }
 
-func (s *sensorService) GetSensorDetailed(ctx context.Context, dto dto.GetSensorDetailedDTO) (apDetailed *entity.SensorDetailed, err error) {
+func (s *sensorService) GetSensorDetailed(ctx context.Context, dto *dto.GetSensorDetailedDTO) (apDetailed *entity.SensorDetailed, err error) {
 	apDetailed, err = s.sensorRepo.GetOneDetailed(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -133,8 +134,8 @@ func (s *sensorService) GetSensorDetailed(ctx context.Context, dto dto.GetSensor
 	return
 }
 
-func (s *sensorService) GetSensors(ctx context.Context, dto dto.GetSensorsDTO) (sensors []*entity.Sensor, err error) {
-	sensors, err = s.sensorRepo.GetAll(ctx, dto.FloorID, dto.Limit, dto.Offset)
+func (s *sensorService) GetSensors(ctx context.Context, dto *dto.GetSensorsDTO) (sensors []*entity.Sensor, err error) {
+	sensors, err = s.sensorRepo.GetAll(ctx, dto.FloorID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return sensors, usecase.ErrNotFound
@@ -146,8 +147,8 @@ func (s *sensorService) GetSensors(ctx context.Context, dto dto.GetSensorsDTO) (
 	return
 }
 
-func (s *sensorService) GetSensorsDetailed(ctx context.Context, dto dto.GetSensorsDetailedDTO) (sensors []*entity.SensorDetailed, err error) {
-	sensors, err = s.sensorRepo.GetAllDetailed(ctx, dto.FloorID, dto.Limit, dto.Offset)
+func (s *sensorService) GetSensorsDetailed(ctx context.Context, dto *dto.GetSensorsDetailedDTO) (sensors []*entity.SensorDetailed, err error) {
+	sensors, err = s.sensorRepo.GetAllDetailed(ctx, dto.FloorID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return sensors, usecase.ErrNotFound
