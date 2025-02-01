@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type IAccessPointTypeRepo interface {
@@ -53,7 +54,7 @@ func (s *accessPointTypeService) GetAccessPointType(ctx context.Context, accessP
 	return
 }
 
-func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context, dto dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
+func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context, dto *dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
 	accessPointType, err := s.accessPointTypeRepo.GetOne(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -63,7 +64,7 @@ func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context,
 		return
 	}
 
-	accessPointRadioTemplates, err := s.accessPointRadioTemplateRepo.GetAll(ctx, dto.ID, dto.Limit, dto.Offset)
+	accessPointRadioTemplates, err := s.accessPointRadioTemplateRepo.GetAll(ctx, dto.ID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			err = nil
@@ -81,8 +82,8 @@ func (s *accessPointTypeService) GetAccessPointTypeDetailed(ctx context.Context,
 	return
 }
 
-func (s *accessPointTypeService) GetAccessPointTypes(ctx context.Context, dto dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error) {
-	accessPointTypes, err = s.accessPointTypeRepo.GetAll(ctx, dto.SiteID, dto.Limit, dto.Offset)
+func (s *accessPointTypeService) GetAccessPointTypes(ctx context.Context, dto *dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error) {
+	accessPointTypes, err = s.accessPointTypeRepo.GetAll(ctx, dto.SiteID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPointTypes, usecase.ErrNotFound

@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type IAccessPointRadioRepo interface {
@@ -47,8 +48,8 @@ func (s *accessPointRadioService) GetAccessPointRadio(ctx context.Context, acces
 	return
 }
 
-func (s *accessPointRadioService) GetAccessPointRadios(ctx context.Context, dto dto.GetAccessPointRadiosDTO) (accessPointRadios []*entity.AccessPointRadio, err error) {
-	accessPointRadios, err = s.repository.GetAll(ctx, dto.AccessPointID, dto.Limit, dto.Offset)
+func (s *accessPointRadioService) GetAccessPointRadios(ctx context.Context, dto *dto.GetAccessPointRadiosDTO) (accessPointRadios []*entity.AccessPointRadio, err error) {
+	accessPointRadios, err = s.repository.GetAll(ctx, dto.AccessPointID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPointRadios, usecase.ErrNotFound

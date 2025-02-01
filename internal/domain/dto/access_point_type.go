@@ -2,54 +2,39 @@ package dto
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type AccessPointTypeDTO struct {
-	ID        uuid.UUID           `db:"id"`
-	Name      string              `db:"name"`
-	Model     string              `db:"model"`
-	Color     string              `db:"color"`
-	Z         float64             `db:"z"`
-	IsVirtual bool                `db:"is_virtual"`
-	SiteID    uuid.UUID           `db:"site_id"`
-	CreatedAt pgtype.Timestamptz  `db:"created_at"`
-	UpdatedAt pgtype.Timestamptz  `db:"updated_at"`
-	DeletedAt *pgtype.Timestamptz `db:"deleted_at"`
-}
-
-type AccessPointTypeDetailedDTO struct {
-	AccessPointTypeDTO
-	RadioTemplatesDTO []*AccessPointRadioTemplateDTO
-}
-
 type CreateAccessPointTypeDTO struct {
-	Name      string    `db:"name"`
-	Model     string    `db:"model"`
-	Color     string    `db:"color"`
-	Z         float64   `db:"z"`
-	IsVirtual bool      `db:"is_virtual"`
-	SiteID    uuid.UUID `db:"site_id"`
+	Name      string    `json:"name" db:"name"`
+	Model     string    `json:"model" db:"model"`
+	Color     string    `json:"color" db:"color"`
+	Z         float64   `json:"z" db:"z"`
+	IsVirtual bool      `json:"isVirtual" db:"is_virtual"`
+	SiteID    uuid.UUID `json:"siteId" db:"site_id"`
+}
+
+type GetAccessPointTypeDTO struct {
+	ID uuid.UUID `json:"id" db:"id"`
 }
 
 type GetAccessPointTypesDTO struct {
-	SiteID uuid.UUID `db:"site_id"`
-	Limit  int
-	Offset int
+	SiteID uuid.UUID `json:"siteId" db:"site_id"`
+	Page   int
+	Size   int
 }
 
 type GetAccessPointTypeDetailedDTO struct {
-	ID     uuid.UUID `db:"id"`
-	Limit  int
-	Offset int
+	ID   uuid.UUID `json:"id" db:"id"`
+	Page int
+	Size int
 }
 
 type PatchUpdateAccessPointTypeDTO struct {
-	ID        uuid.UUID `db:"id"`
-	Name      *string   `db:"name"`
-	Model     *string   `db:"model"`
-	Color     *string   `db:"color"`
-	Z         *float64  `db:"z"`
-	IsVirtual *bool     `db:"is_virtual"`
+	ID        uuid.UUID `json:"id" db:"id"`
+	Name      *string   `json:"name" db:"name"`
+	Model     *string   `json:"model" db:"model"`
+	Color     *string   `json:"color" db:"color"`
+	Z         *float64  `json:"z" db:"z"`
+	IsVirtual *bool     `json:"isVirtual" db:"is_virtual"`
 	// SiteID      *uuid.UUID          `db:"user_id"` // TODO Возможно позже стоит добавить
 }

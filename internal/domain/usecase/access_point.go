@@ -14,9 +14,9 @@ import (
 type IAccessPointService interface {
 	CreateAccessPoint(ctx context.Context, createDTO *dto.CreateAccessPointDTO) (accessPointID uuid.UUID, err error)
 	GetAccessPoint(ctx context.Context, accessPointID uuid.UUID) (accessPoint *entity.AccessPoint, err error)
-	GetAccessPointDetailed(ctx context.Context, getDTO dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error)
-	GetAccessPoints(ctx context.Context, getDTO dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error)
-	GetAccessPointsDetailed(ctx context.Context, dto dto.GetAccessPointsDetailedDTO) (accessPoints []*entity.AccessPointDetailed, err error)
+	GetAccessPointDetailed(ctx context.Context, getDTO *dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error)
+	GetAccessPoints(ctx context.Context, getDTO *dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error)
+	GetAccessPointsDetailed(ctx context.Context, dto *dto.GetAccessPointsDetailedDTO) (accessPoints []*entity.AccessPointDetailed, err error)
 
 	UpdateAccessPoint(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointDTO) (err error)
 
@@ -90,7 +90,7 @@ func (u *AccessPointUsecase) GetAccessPoint(ctx context.Context, accessPointID u
 	return
 }
 
-func (u *AccessPointUsecase) GetAccessPointDetailed(ctx context.Context, getDTO dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
+func (u *AccessPointUsecase) GetAccessPointDetailed(ctx context.Context, getDTO *dto.GetAccessPointDetailedDTO) (accessPointDetailed *entity.AccessPointDetailed, err error) {
 	accessPointDetailed, err = u.accessPointService.GetAccessPointDetailed(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -104,7 +104,7 @@ func (u *AccessPointUsecase) GetAccessPointDetailed(ctx context.Context, getDTO 
 	return
 }
 
-func (u *AccessPointUsecase) GetAccessPoints(ctx context.Context, getDTO dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error) {
+func (u *AccessPointUsecase) GetAccessPoints(ctx context.Context, getDTO *dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error) {
 	accessPoints, err = u.accessPointService.GetAccessPoints(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -118,7 +118,7 @@ func (u *AccessPointUsecase) GetAccessPoints(ctx context.Context, getDTO dto.Get
 	return
 }
 
-func (u *AccessPointUsecase) GetAccessPointsDetailed(ctx context.Context, getDTO dto.GetAccessPointsDetailedDTO) (accessPointsDetailed []*entity.AccessPointDetailed, err error) {
+func (u *AccessPointUsecase) GetAccessPointsDetailed(ctx context.Context, getDTO *dto.GetAccessPointsDetailedDTO) (accessPointsDetailed []*entity.AccessPointDetailed, err error) {
 	accessPointsDetailed, err = u.accessPointService.GetAccessPointsDetailed(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

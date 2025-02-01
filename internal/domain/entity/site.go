@@ -17,10 +17,10 @@ type Site struct {
 
 type SiteDetailed struct {
 	Site
-	Buildings        []*Building
-	WallTypes        []*WallType
-	AccessPointTypes []*AccessPointType
-	SensorTypes      []*SensorType
+	Buildings        []*Building        `json:"buildings"`
+	WallTypes        []*WallType        `json:"wallTypes"`
+	AccessPointTypes []*AccessPointType `json:"accessPointTypes"`
+	SensorTypes      []*SensorType      `json:"sensorTypes"`
 }
 
 // type SiteView struct {

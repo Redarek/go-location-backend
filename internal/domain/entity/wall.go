@@ -20,5 +20,5 @@ type Wall struct {
 
 type WallDetailed struct {
 	Wall
-	WallType WallType
+	WallType WallType `json:"wallType"`
 }

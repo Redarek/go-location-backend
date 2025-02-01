@@ -2,55 +2,41 @@ package dto
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type AccessPointRadioDTO struct {
-	ID            uuid.UUID           `db:"id"`
-	Number        int                 `db:"number"`
-	Channel       int                 `db:"channel"`
-	Channel2      *int                `db:"channel2"`
-	ChannelWidth  string              `db:"channel_width"`
-	WiFi          string              `db:"wifi"`
-	Power         int                 `db:"power"`
-	Bandwidth     string              `db:"bandwidth"`
-	GuardInterval int                 `db:"guard_interval"`
-	IsActive      bool                `db:"is_active"`
-	AccessPointID uuid.UUID           `db:"access_point_id"`
-	CreatedAt     pgtype.Timestamptz  `db:"createdAt"`
-	UpdatedAt     pgtype.Timestamptz  `db:"updatedAt"`
-	DeletedAt     *pgtype.Timestamptz `db:"deletedAt"`
+type CreateAccessPointRadioDTO struct {
+	Number        int       `json:"number" db:"number"`
+	Channel       int       `json:"channel" db:"channel"`
+	Channel2      *int      `json:"channel2" db:"channel2"`
+	ChannelWidth  string    `json:"channelWidth" db:"channel_width"`
+	WiFi          string    `json:"wifi" db:"wifi"`
+	Power         int       `json:"power" db:"power"`
+	Bandwidth     string    `json:"bandwidth" db:"bandwidth"`
+	GuardInterval int       `json:"guardInterval" db:"guard_interval"`
+	IsActive      bool      `json:"isActive" db:"is_active"`
+	AccessPointID uuid.UUID `json:"accessPointId" db:"access_point_id"`
 }
 
-type CreateAccessPointRadioDTO struct {
-	Number        int       `db:"number"`
-	Channel       int       `db:"channel"`
-	Channel2      *int      `db:"channel2"`
-	ChannelWidth  string    `db:"channel_width"`
-	WiFi          string    `db:"wifi"`
-	Power         int       `db:"power"`
-	Bandwidth     string    `db:"bandwidth"`
-	GuardInterval int       `db:"guard_interval"`
-	IsActive      bool      `db:"is_active"`
-	AccessPointID uuid.UUID `db:"access_point_id"`
+type GetAccessPointRadioDTO struct {
+	ID uuid.UUID `json:"id" db:"id"`
 }
 
 type PatchUpdateAccessPointRadioDTO struct {
-	ID            uuid.UUID  `db:"id"`
-	Number        *int       `db:"number"`
-	Channel       *int       `db:"channel"`
-	Channel2      *int       `db:"channel2"`
-	ChannelWidth  *string    `db:"channel_width"`
-	WiFi          *string    `db:"wifi"`
-	Power         *int       `db:"power"`
-	Bandwidth     *string    `db:"bandwidth"`
-	GuardInterval *int       `db:"guard_interval"`
-	IsActive      *bool      `db:"is_active"`
-	AccessPointID *uuid.UUID `db:"access_point_id"`
+	ID            uuid.UUID  `json:"id" db:"id"`
+	Number        *int       `json:"number" db:"number"`
+	Channel       *int       `json:"channel" db:"channel"`
+	Channel2      *int       `json:"channel2" db:"channel2"`
+	ChannelWidth  *string    `json:"channelWidth" db:"channel_width"`
+	WiFi          *string    `json:"wifi" db:"wifi"`
+	Power         *int       `json:"power" db:"power"`
+	Bandwidth     *string    `json:"bandwidth" db:"bandwidth"`
+	GuardInterval *int       `json:"guardInterval" db:"guard_interval"`
+	IsActive      *bool      `json:"isActive" db:"is_active"`
+	AccessPointID *uuid.UUID `json:"accessPointId" db:"access_point_id"`
 }
 
 type GetAccessPointRadiosDTO struct {
-	AccessPointID uuid.UUID `db:"access_point_id"`
-	Limit         int
-	Offset        int
+	AccessPointID uuid.UUID `json:"accessPointId" db:"access_point_id"`
+	Page          int
+	Size          int
 }

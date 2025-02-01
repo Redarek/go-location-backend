@@ -14,7 +14,7 @@ import (
 type IAccessPointRadioTemplateService interface {
 	CreateAccessPointRadioTemplate(ctx context.Context, createDTO *dto.CreateAccessPointRadioTemplateDTO) (accessPointRadioTemplateID uuid.UUID, err error)
 	GetAccessPointRadioTemplate(ctx context.Context, accessPointRadioTemplateID uuid.UUID) (accessPointRadioTemplate *entity.AccessPointRadioTemplate, err error)
-	GetAccessPointRadioTemplates(ctx context.Context, getDTO dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error)
+	GetAccessPointRadioTemplates(ctx context.Context, getDTO *dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error)
 
 	UpdateAccessPointRadioTemplate(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointRadioTemplateDTO) (err error)
 
@@ -71,7 +71,7 @@ func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplate(ctx contex
 	return
 }
 
-func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplates(ctx context.Context, getDTO dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error) {
+func (u *AccessPointRadioTemplateUsecase) GetAccessPointRadioTemplates(ctx context.Context, getDTO *dto.GetAccessPointRadioTemplatesDTO) (accessPointRadioTemplates []*entity.AccessPointRadioTemplate, err error) {
 	accessPointRadioTemplates, err = u.accessPointRadioTemplateService.GetAccessPointRadioTemplates(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

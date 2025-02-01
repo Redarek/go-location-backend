@@ -20,5 +20,5 @@ type Building struct {
 
 type BuildingDetailed struct {
 	Building
-	Floors []*Floor
+	Floors []*Floor `json:"floors"`
 }

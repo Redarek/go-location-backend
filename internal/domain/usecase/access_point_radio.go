@@ -14,7 +14,7 @@ import (
 type IAccessPointRadioService interface {
 	CreateAccessPointRadio(ctx context.Context, createDTO *dto.CreateAccessPointRadioDTO) (accessPointRadioID uuid.UUID, err error)
 	GetAccessPointRadio(ctx context.Context, accessPointRadioID uuid.UUID) (accessPointRadio *entity.AccessPointRadio, err error)
-	GetAccessPointRadios(ctx context.Context, getDTO dto.GetAccessPointRadiosDTO) (accessPointRadios []*entity.AccessPointRadio, err error)
+	GetAccessPointRadios(ctx context.Context, getDTO *dto.GetAccessPointRadiosDTO) (accessPointRadios []*entity.AccessPointRadio, err error)
 
 	UpdateAccessPointRadio(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointRadioDTO) (err error)
 
@@ -71,7 +71,7 @@ func (u *AccessPointRadioUsecase) GetAccessPointRadio(ctx context.Context, acces
 	return
 }
 
-func (u *AccessPointRadioUsecase) GetAccessPointRadios(ctx context.Context, getDTO dto.GetAccessPointRadiosDTO) (accessPointRadios []*entity.AccessPointRadio, err error) {
+func (u *AccessPointRadioUsecase) GetAccessPointRadios(ctx context.Context, getDTO *dto.GetAccessPointRadiosDTO) (accessPointRadios []*entity.AccessPointRadio, err error) {
 	accessPointRadios, err = u.accessPointRadioService.GetAccessPointRadios(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

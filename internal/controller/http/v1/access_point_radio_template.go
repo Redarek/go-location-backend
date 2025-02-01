@@ -8,9 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	"location-backend/internal/controller/http/mapper"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -27,15 +25,13 @@ const (
 )
 
 type accessPointRadioTemplateHandler struct {
-	usecase    *usecase.AccessPointRadioTemplateUsecase
-	aprtMapper *mapper.AccessPointRadioTemplateMapper
+	usecase *usecase.AccessPointRadioTemplateUsecase
 }
 
 // Регистрирует новый handler
 func NewAccessPointRadioTemplateHandler(usecase *usecase.AccessPointRadioTemplateUsecase) *accessPointRadioTemplateHandler {
 	return &accessPointRadioTemplateHandler{
-		usecase:    usecase,
-		aprtMapper: &mapper.AccessPointRadioTemplateMapper{},
+		usecase: usecase,
 	}
 }
 
@@ -55,8 +51,8 @@ func (h *accessPointRadioTemplateHandler) Register(r *fiber.Router) fiber.Router
 }
 
 func (h *accessPointRadioTemplateHandler) CreateAccessPointRadioTemplate(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateAccessPointRadioTemplateDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateAccessPointRadioTemplateDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse access point radio template request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -69,10 +65,7 @@ func (h *accessPointRadioTemplateHandler) CreateAccessPointRadioTemplate(ctx *fi
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := h.aprtMapper.CreateHTTPtoDomain(&dto)
-
-	accessPointRadioTemplateID, err := h.usecase.CreateAccessPointRadioTemplate(context.Background(), domainDTO)
+	accessPointRadioTemplateID, err := h.usecase.CreateAccessPointRadioTemplate(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Msg("the site with provided 'access_point_type_id' does not exist")
@@ -108,18 +101,13 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplate(ctx *fiber
 		))
 	}
 
-	// var dto http_dto.GetAccessPointRadioTemplateDTO = http_dto.GetAccessPointRadioTemplateDTO{
-	// 	ID: accessPointRadioTemplateID,
-	// }
+	var dtoObj dto.GetAccessPointRadioTemplateDTO = dto.GetAccessPointRadioTemplateDTO{
+		ID: aprtID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetAccessPointRadioTemplateDTO{
-	// 	ID: dto.ID,
-	// }
-
-	aprtDomainDTO, err := h.usecase.GetAccessPointRadioTemplate(context.Background(), aprtID)
+	aprt, err := h.usecase.GetAccessPointRadioTemplate(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -135,10 +123,7 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplate(ctx *fiber
 		))
 	}
 
-	// Mapping entity -> http DTO
-	aprtHttpDTO := h.aprtMapper.EntityDomainToHTTP(aprtDomainDTO)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": aprtHttpDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": aprt})
 }
 
 func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplates(c *fiber.Ctx) error {
@@ -154,7 +139,7 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplates(c *fiber.
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetAccessPointRadioTemplatesDTO = http_dto.GetAccessPointRadioTemplatesDTO{
+	var dtoObj dto.GetAccessPointRadioTemplatesDTO = dto.GetAccessPointRadioTemplatesDTO{
 		AccessPointTypeID: accessPointTypeID,
 		Page:              1,
 		Size:              100,
@@ -162,14 +147,7 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplates(c *fiber.
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetAccessPointRadioTemplatesDTO{
-		AccessPointTypeID: dto.AccessPointTypeID,
-		Limit:             dto.Size,
-		Offset:            (dto.Page - 1) * dto.Size,
-	}
-
-	accessPointRadioTemplates, err := h.usecase.GetAccessPointRadioTemplates(context.Background(), domainDTO)
+	accessPointRadioTemplates, err := h.usecase.GetAccessPointRadioTemplates(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -185,19 +163,12 @@ func (h *accessPointRadioTemplateHandler) GetAccessPointRadioTemplates(c *fiber.
 		))
 	}
 
-	var aprtHttpDTOs []*http_dto.AccessPointRadioTemplateDTO
-	for _, aprtDomainDTO := range accessPointRadioTemplates {
-		// Mapping entity -> http DTO
-		aprtHttpDTO := h.aprtMapper.EntityDomainToHTTP(aprtDomainDTO)
-		aprtHttpDTOs = append(aprtHttpDTOs, aprtHttpDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": aprtHttpDTOs})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointRadioTemplates})
 }
 
 func (h *accessPointRadioTemplateHandler) PatchUpdateAccessPointRadioTemplate(c *fiber.Ctx) error {
-	var httpDTO http_dto.PatchUpdateAccessPointRadioTemplateDTO
-	err := c.BodyParser(&httpDTO)
+	var dtoObj dto.PatchUpdateAccessPointRadioTemplateDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse access point radio template request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -210,10 +181,7 @@ func (h *accessPointRadioTemplateHandler) PatchUpdateAccessPointRadioTemplate(c 
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := h.aprtMapper.UpdateHTTPtoDomain(&httpDTO)
-
-	err = h.usecase.PatchUpdateAccessPointRadioTemplate(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateAccessPointRadioTemplate(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -260,11 +228,6 @@ func (h *accessPointRadioTemplateHandler) SoftDeleteAccessPointRadioTemplate(c *
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteAccessPointRadioTemplateDTO{
-	// 	ID: accessPointRadioTemplateID,
-	// }
 
 	err = h.usecase.SoftDeleteAccessPointRadioTemplate(context.Background(), accessPointRadioTemplateID)
 	if err != nil {
@@ -313,11 +276,6 @@ func (h *accessPointRadioTemplateHandler) RestoreAccessPointRadioTemplate(c *fib
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteAccessPointRadioTemplateDTO{
-	// 	ID: accessPointRadioTemplateID,
-	// }
 
 	err = h.usecase.RestoreAccessPointRadioTemplate(context.Background(), accessPointRadioTemplateID)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/entity"
 	"location-backend/internal/domain/usecase"
+	"location-backend/pkg/utils"
 )
 
 type IAccessPointRepo interface {
@@ -106,7 +107,7 @@ func (s *accessPointService) GetAccessPoint(ctx context.Context, accessPointID u
 // 	return
 // }
 
-func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto.GetAccessPointDetailedDTO) (apDetailed *entity.AccessPointDetailed, err error) {
+func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto *dto.GetAccessPointDetailedDTO) (apDetailed *entity.AccessPointDetailed, err error) {
 	apDetailed, err = s.accessPointRepo.GetOneDetailed(ctx, dto.ID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -119,8 +120,8 @@ func (s *accessPointService) GetAccessPointDetailed(ctx context.Context, dto dto
 	return
 }
 
-func (s *accessPointService) GetAccessPoints(ctx context.Context, dto dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error) {
-	accessPoints, err = s.accessPointRepo.GetAll(ctx, dto.FloorID, dto.Limit, dto.Offset)
+func (s *accessPointService) GetAccessPoints(ctx context.Context, dto *dto.GetAccessPointsDTO) (accessPoints []*entity.AccessPoint, err error) {
+	accessPoints, err = s.accessPointRepo.GetAll(ctx, dto.FloorID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPoints, usecase.ErrNotFound
@@ -132,8 +133,8 @@ func (s *accessPointService) GetAccessPoints(ctx context.Context, dto dto.GetAcc
 	return
 }
 
-func (s *accessPointService) GetAccessPointsDetailed(ctx context.Context, dto dto.GetAccessPointsDetailedDTO) (accessPoints []*entity.AccessPointDetailed, err error) {
-	accessPoints, err = s.accessPointRepo.GetAllDetailed(ctx, dto.FloorID, dto.Limit, dto.Offset)
+func (s *accessPointService) GetAccessPointsDetailed(ctx context.Context, dto *dto.GetAccessPointsDetailedDTO) (accessPoints []*entity.AccessPointDetailed, err error) {
+	accessPoints, err = s.accessPointRepo.GetAllDetailed(ctx, dto.FloorID, dto.Size, utils.GetOffset(dto.Page, dto.Size))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return accessPoints, usecase.ErrNotFound

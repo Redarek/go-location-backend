@@ -14,8 +14,8 @@ import (
 type IAccessPointTypeService interface {
 	CreateAccessPointType(ctx context.Context, createDTO *dto.CreateAccessPointTypeDTO) (accessPointTypeID uuid.UUID, err error)
 	GetAccessPointType(ctx context.Context, accessPointTypeID uuid.UUID) (accessPointType *entity.AccessPointType, err error)
-	GetAccessPointTypeDetailed(ctx context.Context, getDTO dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error)
-	GetAccessPointTypes(ctx context.Context, getDTO dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error)
+	GetAccessPointTypeDetailed(ctx context.Context, getDTO *dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error)
+	GetAccessPointTypes(ctx context.Context, getDTO *dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error)
 
 	UpdateAccessPointType(ctx context.Context, patchUpdateDTO *dto.PatchUpdateAccessPointTypeDTO) (err error)
 
@@ -78,7 +78,7 @@ func (u *AccessPointTypeUsecase) GetAccessPointType(ctx context.Context, accessP
 	return
 }
 
-func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context, getDTO dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
+func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context, getDTO *dto.GetAccessPointTypeDetailedDTO) (accessPointTypeDetailed *entity.AccessPointTypeDetailed, err error) {
 	accessPointTypeDetailed, err = u.accessPointTypeService.GetAccessPointTypeDetailed(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -92,7 +92,7 @@ func (u *AccessPointTypeUsecase) GetAccessPointTypeDetailed(ctx context.Context,
 	return
 }
 
-func (u *AccessPointTypeUsecase) GetAccessPointTypes(ctx context.Context, getDTO dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error) {
+func (u *AccessPointTypeUsecase) GetAccessPointTypes(ctx context.Context, getDTO *dto.GetAccessPointTypesDTO) (accessPointTypes []*entity.AccessPointType, err error) {
 	accessPointTypes, err = u.accessPointTypeService.GetAccessPointTypes(ctx, getDTO)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {

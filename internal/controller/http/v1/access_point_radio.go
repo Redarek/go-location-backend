@@ -8,9 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	http_dto "location-backend/internal/controller/http/dto"
-	"location-backend/internal/controller/http/mapper"
-	domain_dto "location-backend/internal/domain/dto"
+	"location-backend/internal/domain/dto"
 	"location-backend/internal/domain/usecase"
 	"location-backend/pkg/httperrors"
 )
@@ -27,15 +25,13 @@ const (
 )
 
 type accessPointRadioHandler struct {
-	usecase   *usecase.AccessPointRadioUsecase
-	aprMapper *mapper.AccessPointRadioMapper
+	usecase *usecase.AccessPointRadioUsecase
 }
 
 // Регистрирует новый handler
 func NewAccessPointRadioHandler(usecase *usecase.AccessPointRadioUsecase) *accessPointRadioHandler {
 	return &accessPointRadioHandler{
-		usecase:   usecase,
-		aprMapper: &mapper.AccessPointRadioMapper{},
+		usecase: usecase,
 	}
 }
 
@@ -55,8 +51,8 @@ func (h *accessPointRadioHandler) Register(r *fiber.Router) fiber.Router {
 }
 
 func (h *accessPointRadioHandler) CreateAccessPointRadio(ctx *fiber.Ctx) error {
-	var dto http_dto.CreateAccessPointRadioDTO
-	err := ctx.BodyParser(&dto)
+	var dtoObj dto.CreateAccessPointRadioDTO
+	err := ctx.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse access point radio request body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -69,10 +65,7 @@ func (h *accessPointRadioHandler) CreateAccessPointRadio(ctx *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := h.aprMapper.CreateHTTPtoDomain(&dto)
-
-	accessPointRadioID, err := h.usecase.CreateAccessPointRadio(context.Background(), domainDTO)
+	accessPointRadioID, err := h.usecase.CreateAccessPointRadio(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			log.Info().Msg("the access point with provided 'access_point_id' does not exist")
@@ -97,7 +90,7 @@ func (h *accessPointRadioHandler) CreateAccessPointRadio(ctx *fiber.Ctx) error {
 }
 
 func (h *accessPointRadioHandler) GetAccessPointRadio(ctx *fiber.Ctx) error {
-	aprID, err := uuid.Parse(ctx.Query("id"))
+	accessPointRadioID, err := uuid.Parse(ctx.Query("id"))
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse 'id' as UUID")
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -108,18 +101,13 @@ func (h *accessPointRadioHandler) GetAccessPointRadio(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// var dto http_dto.GetAccessPointRadioDTO = http_dto.GetAccessPointRadioDTO{
-	// 	ID: accessPointRadioID,
-	// }
+	var dtoObj dto.GetAccessPointRadioDTO = dto.GetAccessPointRadioDTO{
+		ID: accessPointRadioID,
+	}
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.GetAccessPointRadioDTO{
-	// 	ID: dto.ID,
-	// }
-
-	aprDomainDTO, err := h.usecase.GetAccessPointRadio(context.Background(), aprID)
+	accessPointRadio, err := h.usecase.GetAccessPointRadio(context.Background(), dtoObj.ID)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			ctx.Status(fiber.StatusNoContent)
@@ -135,10 +123,7 @@ func (h *accessPointRadioHandler) GetAccessPointRadio(ctx *fiber.Ctx) error {
 		))
 	}
 
-	// Mapping entity -> http DTO
-	aprHttpDTO := h.aprMapper.EntityDomainToHTTP(aprDomainDTO)
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": aprHttpDTO})
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointRadio})
 }
 
 func (h *accessPointRadioHandler) GetAccessPointRadios(c *fiber.Ctx) error {
@@ -154,7 +139,7 @@ func (h *accessPointRadioHandler) GetAccessPointRadios(c *fiber.Ctx) error {
 	}
 
 	// TODO реализовать передачу page и size
-	var dto http_dto.GetAccessPointRadiosDTO = http_dto.GetAccessPointRadiosDTO{
+	var dtoObj dto.GetAccessPointRadiosDTO = dto.GetAccessPointRadiosDTO{
 		AccessPointID: accessPointID,
 		Page:          1,
 		Size:          100,
@@ -162,14 +147,7 @@ func (h *accessPointRadioHandler) GetAccessPointRadios(c *fiber.Ctx) error {
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := domain_dto.GetAccessPointRadiosDTO{
-		AccessPointID: dto.AccessPointID,
-		Limit:         dto.Size,
-		Offset:        (dto.Page - 1) * dto.Size,
-	}
-
-	accessPointRadios, err := h.usecase.GetAccessPointRadios(context.Background(), domainDTO)
+	accessPointRadios, err := h.usecase.GetAccessPointRadios(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNoContent)
@@ -185,19 +163,12 @@ func (h *accessPointRadioHandler) GetAccessPointRadios(c *fiber.Ctx) error {
 		))
 	}
 
-	var aprtHttpDTOs []*http_dto.AccessPointRadioDTO
-	for _, aprtDomainDTO := range accessPointRadios {
-		// Mapping entity -> http DTO
-		aprtHttpDTO := h.aprMapper.EntityDomainToHTTP(aprtDomainDTO)
-		aprtHttpDTOs = append(aprtHttpDTOs, aprtHttpDTO)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": aprtHttpDTOs})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessPointRadios})
 }
 
 func (h *accessPointRadioHandler) PatchUpdateAccessPointRadio(c *fiber.Ctx) error {
-	var httpDTO http_dto.PatchUpdateAccessPointRadioDTO
-	err := c.BodyParser(&httpDTO)
+	var dtoObj dto.PatchUpdateAccessPointRadioDTO
+	err := c.BodyParser(&dtoObj)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to parse access point radio request body")
 		return c.Status(fiber.StatusBadRequest).JSON(httperrors.NewErrorResponse(
@@ -210,10 +181,7 @@ func (h *accessPointRadioHandler) PatchUpdateAccessPointRadio(c *fiber.Ctx) erro
 
 	// TODO validate
 
-	// Mapping http DTO -> domain DTO
-	domainDTO := h.aprMapper.UpdateHTTPtoDomain(&httpDTO)
-
-	err = h.usecase.PatchUpdateAccessPointRadio(context.Background(), domainDTO)
+	err = h.usecase.PatchUpdateAccessPointRadio(context.Background(), &dtoObj)
 	if err != nil {
 		if errors.Is(err, usecase.ErrNotFound) {
 			c.Status(fiber.StatusNotFound).JSON(httperrors.NewErrorResponse(
@@ -260,11 +228,6 @@ func (h *accessPointRadioHandler) SoftDeleteAccessPointRadio(c *fiber.Ctx) error
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteAccessPointRadioDTO{
-	// 	ID: accessPointRadioID,
-	// }
 
 	err = h.usecase.SoftDeleteAccessPointRadio(context.Background(), accessPointRadioID)
 	if err != nil {
@@ -313,11 +276,6 @@ func (h *accessPointRadioHandler) RestoreAccessPointRadio(c *fiber.Ctx) error {
 	}
 
 	// TODO validate
-
-	// Mapping http DTO -> domain DTO
-	// domainDTO := domain_dto.SoftDeleteAccessPointRadioDTO{
-	// 	ID: accessPointRadioID,
-	// }
 
 	err = h.usecase.RestoreAccessPointRadio(context.Background(), accessPointRadioID)
 	if err != nil {
